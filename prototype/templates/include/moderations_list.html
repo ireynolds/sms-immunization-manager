@@ -1,0 +1,24 @@
+{% if moderations %}
+<table class="table">
+    <thead>
+        <tr>
+            <td>Date</td>
+            <td>User</td>
+            <td>Actions</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for message in moderations %}
+            <tr>
+                <td>{{ message.date }}</td>
+                <td>{{ message.user}}</td>
+                <td>{{ message.conversation | length }}</td>
+                <td><a href="{{ message.get_absolute_url }}">Message Details</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-center">This region has no moderations</p>
+{% endif %}

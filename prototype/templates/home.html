@@ -1,0 +1,38 @@
+{% extends "moderator-base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<h1>Global Regions</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Children</td>
+            <td>Moderations</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for node in roots %}
+            <tr>
+                <td><a href="{{ node.get_absolute_url }}">{{ node }}</a></td>
+                <td>{{ node.children_count }}</td>
+                <td>{{ node.moderations_count }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<h1>Global Moderations</h1>
+
+<div class="container">
+    <div class="panel">
+        <div class="panel-body">
+            {% include "include/moderations_list.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}

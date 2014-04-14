@@ -1,0 +1,35 @@
+{% extends "moderator-base.html" %}
+
+{% block title %}{{ node }}{% endblock %}
+
+{% block breadcrumbs %}{% include "include/breadcrumbs.html" %}{% endblock %}
+
+{% block content %}
+<h1>{{ node }}</h1>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="panel panel-primary">
+                <div class="panel-heading">Moderations</div>
+                <div class="panel-body">
+                    {% with moderations=node.moderations %}
+                        {% include "include/moderations_list.html" %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 panel">
+            <div class="panel panel-default">
+                <div class="panel-heading">Region Children</div>
+                <div class="panel-body">
+                    {% with children=node.children.all %}
+                        {% include "include/child_table.html" %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

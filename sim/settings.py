@@ -194,6 +194,10 @@ INSTALLED_APPS = (
     "django_tables2",
     "selectable",
     "south",
+    
+    # SIM apps
+    'prototype',
+
     # RapidSMS
     "rapidsms",
     "rapidsms.backends.database",

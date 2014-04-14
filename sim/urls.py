@@ -20,4 +20,6 @@ urlpatterns = patterns('',
 
     # Third party URLs
     (r'^selectable/', include('selectable.urls')),
+
+    (r'^prototype/', include('prototype.urls')),
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
