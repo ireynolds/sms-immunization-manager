@@ -1,37 +1,65 @@
-{% extends "moderator-base.html" %}
+{% extends "prototype-base.html" %}
 
 {% block title %}Home{% endblock %}
 
-{% block breadcrumbs %}{% endblock %}
+{% block breadcrumbs %}
+<div class="container">
+    <ol class="breadcrumb">
+        <li class="active">Facilities</li>
+    </ol>
+</div>
+{% endblock %}
 
 {% block content %}
-<h1>Global Regions</h1>
-<table class="table">
-    <thead>
-        <tr>
-            <td>Name</td>
-            <td>Children</td>
-            <td>Moderations</td>
-        </tr>
-    </thead>
-    <tbody>
-        {% for node in roots %}
-            <tr>
-                <td><a href="{{ node.get_absolute_url }}">{{ node }}</a></td>
-                <td>{{ node.children_count }}</td>
-                <td>{{ node.moderations_count }}</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-
-<h1>Global Moderations</h1>
 
 <div class="container">
-    <div class="panel">
+    <div class="row">
+        <div class="col-md-7">
+            <div class="panel panel-primary">
+                <div class="panel-heading">Global Moderations</div>
+                <div class="panel-body">
+                    {% include "include/moderations_list.html" %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="panel panel-default">
+                <div class="panel-heading">Global Users</div>
+                <div class="panel-body">
+                    {% include "include/user_list.html" %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading">Facilities</div>
         <div class="panel-body">
-            {% include "include/moderations_list.html" %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td>Name</td>
+                        <td>Users</td>
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in facilities %}
+                        <tr>
+                            <td><a href="{{ f.get_absolute_url }}">{{ f }}</a></td>
+                            <td>{{ f.phoneuser_set.all.count }}</td>
+                            <td>
+                                {% if f.pending_actions.count %}
+                                <span class="label label-danger">{{ f.pending_actions.count }} pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

@@ -18,5 +18,9 @@
                 <td>{{ item.contents }}</td>
             </tr>
         </table>
+
+        {% for action in item.actions.all %}
+            {% include "include/conversation/action.html" %}
+        {% endfor %}
     </div>
 </div>

@@ -1,88 +1,32 @@
 from django.db import models
 from django.core.urlresolvers import reverse
+import reversion
 
-class HeirarchyNode(models.Model):
+class Facility(models.Model):
     """
-    A node in the administrative heirarchy of a country
+    A facility represented in DHIS2
     """
-    # The complete name of the administrative entity
-    name = models.CharField(max_length=100)
-
-    # A short abbreviation. Will typically be displayed in the context of parent nodes.
-    abbreviation = models.CharField(max_length=10, blank=True)
-
-    # A URL-suitable unique identifier for this entity
-    slug = models.SlugField(max_length=50, unique=True)
-
-    # A description of this entity, localized for residents of the entity
-    description = models.TextField(blank=True)
-
-    # The primary key of this administrative entity in DHIS2
+    # The primary key of this facility in DHIS2
     dhis2_pk = models.CharField(max_length=100)
 
-    # The parent of this entity
-    parent = models.ForeignKey("HeirarchyNode", blank=True, null=True, related_name="children")
+    # The complete name of this facility
+    name = models.CharField(max_length=250)
+
+    # A description of this facility, localized for workers at this facility
+    description = models.TextField(blank=True)
 
     class Meta:
+        verbose_name_plural="facilities"
         ordering = ['name']
 
     def __unicode__(self):
         return self.name
 
     def get_absolute_url(self):
-        return "/prototype/node/%d/" % self.pk
+        return '/prototype/facility/%d/' % self.pk
 
-    def moderations_count(self):
-        """
-        Returns the number of pending moderations in this region and its children
-        """
-        total = self.moderations().count()
-
-        for node in self.children.all():
-            total += node.moderations_count()
-
-        return total
-
-    def phone_users(self):
-        """
-        Returns the number of phone users in this region and its children
-        """
-        total = self.phoneuser_set.all().count()
-
-        for node in self.children.all():
-            total += node.phone_users()
-
-        return total
-
-    def children_count(self):
-        """
-        Returns the number of child nodes (including children of children, etc.)
-        """
-        total = 0
-        for node in self.children.all():
-            total += 1 + node.children_count()
-
-        return total
-
-    def root_path(self):
-        """
-        Returns a path from this node to a root node.
-        """
-        node = self
-        path = []
-
-        while node != None:
-            path.append(node)
-            node = node.parent
-
-        path.reverse()
-        return path
-
-    def moderations(self):
-        """
-        Returns a collection of messages for this region that require moderation
-        """
-        return Message.objects.filter(user__heirarchy_node=self, moderation_hold=True, message_context=None)
+    def pending_actions(self):
+        return MessageAction.objects.filter(moderation_state='PENDING', message__user__facility=self)
 
 class PhoneUser(models.Model):
     """
@@ -95,17 +39,38 @@ class PhoneUser(models.Model):
     name = models.CharField(max_length=100, blank=True)
 
     # The administrative entity for which this user works
-    heirarchy_node = models.ForeignKey(HeirarchyNode, blank=True, null=True)
-
-    # If True, this user was created automatically in response to an unexpected
-    # message and has not yet been approved by a moderator
-    moderation_hold = models.BooleanField(default=True)
+    facility = models.ForeignKey(Facility, blank=True, null=True)
 
     def __unicode__(self):
         if self.name:
-            return "%s (%s)" % (self.number, self.name)
+            return "%s (%s)" % (self.name, self.number)
         else:
             return self.number
+
+    def pending_actions(self):
+        return MessageAction.objects.filter(moderation_state='PENDING', message__user=self)
+
+    def get_absolute_url(self):
+        return '/prototype/user/%d/' % self.pk
+
+    def log_items(self):
+        items = []
+        items.extend([(m, m.date) for m in self.message_set.all()])
+
+        versions = [(v.field_dict, v.revision.date_created) for v in reversion.get_for_object(self)]
+
+        # A bit of a hack: add a RENDER_TEMPLATE for each version dictionary to make it consistent
+        # with other models used in the conversation view
+        for fields, date in versions:
+            fields['RENDER_TEMPLATE'] = "include/conversation/user_version.html"
+            fields[date] = date
+            items.append((fields, date))
+
+        items.sort(key=lambda i: i[1])
+
+        return map(lambda i: i[0], items)
+
+
 
 class Message(models.Model):
     """
@@ -123,75 +88,72 @@ class Message(models.Model):
     # The user associated with this message
     user = models.ForeignKey(PhoneUser)
 
-    # If True, this message could not be automatically processed and requires moderator action
-    moderation_hold = models.BooleanField(default=True)
+    RENDER_TEMPLATE = "include/conversation/message.html"
 
-    # The message this message pertains to. Used when disambiguation or confirmation texts are
-    # received
-    message_context = models.ForeignKey("Message", related_name="context_children", blank=True, null=True)
+    class Meta:
+        get_latest_by = 'date'
 
     def __unicode__(self):
         return "%s: '%s'" % (self.number, self.contents)
 
     def get_absolute_url(self):
-        if self.message_context == None:
-            return "/prototype/message/%d/" % self.pk
-        else:
-            return self.message_context.get_absolute_url();
+        return "/prototype/message/%d/" % self.pk
 
-    def conversation(self):
-        """
-        Returns the sequence of message and actions taken to process this message. Returns a list
-        of Message and MessageResult instances in chronological order from earliest to latest.
-        """
-        result = [self]
-        result.extend(self.context_children.all())
-        result.extend(self.results.all())
-        result.sort(key=lambda x: x.date)
-        return result
-
-    def conversation_template(self):
-        """
-        Returns the name of a template used to render this item in a conversation
-        """
-        return "include/conversation/message.html"
-
-ACTIONS = (
-    ('SYNTAX', 'Malformed Message'),
-    ('DHIS2', 'DHIS2 Update Made'),
-    ('DISAMBIG', 'User Data Disambiguated'),
-    ('DUPLICATE', 'Duplicate Update Detected'),
-    ('RESPONSE', 'SMS Response Sent'),
-    ('MODERATION', 'Approved by Moderator'),
+MODERATION_STATES = (
+    ('NONE', "No moderation required"),
+    ('PENDING', "Pending moderation"),
+    ('APPROVED', "Approved"),
+    ('DISMISSED', 'Dismissed'),
 )
 
-class MessageResult(models.Model):
+ACTION_TITLES = (
+    ('MALFORMED', 'Malformed Message'),
+    ('DHIS2_UPDATE', 'DHIS2 Update'),
+    ('USER_UPDATE', 'User Data Update'),
+    ('SMS_RESPONSE', 'SMS Response'),
+)
+
+class MessageAction(models.Model):
     """
-    An action that was taken as a result of a message
+    An action that was taken as a result of a message. Can be held for moderation before being
+    applied.
     """
     # The action that was taken
-    action = models.CharField(max_length=15, choices=ACTIONS)
+    action = models.CharField(max_length=15, choices=ACTION_TITLES)
 
     # A description of the action that was taken
     description = models.TextField(blank=True)
 
     # The message for which the action is taken
-    message = models.ForeignKey(Message, related_name="results")
+    message = models.ForeignKey(Message, related_name="actions")
 
-    # When the action was taken
+    # When the action was created
     date = models.DateTimeField(auto_now_add = True)
+
+    # The moderation state of this action
+    moderation_state = models.CharField(max_length=15, choices=MODERATION_STATES)
+
+    class Meta:
+        get_latest_by = 'date'
 
     def __unicode__(self):
         return "%s: %s" % (self.action, self.description)
 
-    def conversation_template(self):
+    def title(self):
         """
-        Returns the name of a template used to render this item in a conversation
+        Returns the human-readable title of this action
         """
-        return "include/conversation/result.html"
+        return dict(ACTION_TITLES)[self.action]
 
-    def display_action(self):
+    def moderation_state_text(self):
         """
-        Returns the human-readable action of this MessageResult
+        Returns the human-readable moderation state of this action
         """
-        return dict(ACTIONS)[self.action]
+        return dict(MODERATION_STATES)[self.moderation_state]
+
+    def get_absolute_url(self):
+        return self.message.get_absolute_url()
+
+# Register models for versioning
+reversion.register(PhoneUser)
+reversion.register(Facility)

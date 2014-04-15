@@ -1,0 +1,60 @@
+{% extends "prototype-base.html" %}
+
+{% block title %}{{ user }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container">
+    <ol class="breadcrumb">
+        <li><a href="/prototype/">Facilities</a></li>
+        {% if user.facility %}
+        <li><a href="{{ user.facility.get_absolute_url }}">{{ user.facility.name }}</a></li>
+        {% endif %}
+        <li class="active">{{ user }}</a></li>
+    </ol>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 panel">
+            <div class="panel panel-default">
+                <div class="panel-heading">User Details</div>
+                <div class="panel-body">
+                    <table class="table">
+                        <tr>
+                            <td>Name</td>
+                            <td>{{ user.name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Phone Number</td>
+                            <td>{{ user.number }}</td>
+                        </tr>
+                        <tr>
+                            <td>Facility</td>
+                            <td>{{ user.facility }}</td>
+                        </tr>
+                    </table>
+                    <p class="text-center"><button type="button" class="btn btn-default">Edit User Information</button></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="panel panel-primary">
+                <div class="panel-heading">Activity Log</div>
+                <div class="panel-body">
+                    {% if user.log_items %}
+                        {% for item in user.log_items %}
+                            {% include item.RENDER_TEMPLATE %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center">No Messages</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

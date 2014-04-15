@@ -197,6 +197,7 @@ INSTALLED_APPS = (
     
     # SIM apps
     'prototype',
+    'reversion',
 
     # RapidSMS
     "rapidsms",
