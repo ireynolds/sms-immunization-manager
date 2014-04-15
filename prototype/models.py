@@ -113,6 +113,13 @@ ACTION_TITLES = (
     ('SMS_RESPONSE', 'SMS Response'),
 )
 
+ACTION_ICONS = (
+    ('MALFORMED', 'warning-sign'),
+    ('DHIS2_UPDATE', 'cloud-upload'),
+    ('USER_UPDATE', 'pencil'),
+    ('SMS_RESPONSE', 'repeat'),
+)
+
 class MessageAction(models.Model):
     """
     An action that was taken as a result of a message. Can be held for moderation before being
@@ -144,6 +151,12 @@ class MessageAction(models.Model):
         Returns the human-readable title of this action
         """
         return dict(ACTION_TITLES)[self.action]
+
+    def icon(self):
+        """
+        Returns the icon for this action
+        """
+        return dict(ACTION_ICONS)[self.action]
 
     def moderation_state_text(self):
         """
