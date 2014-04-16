@@ -198,6 +198,7 @@ INSTALLED_APPS = (
     # SIM apps
     'prototype',
     'reversion',
+    'dhis2',
 
     # RapidSMS
     "rapidsms",
@@ -222,4 +223,6 @@ LOGIN_REDIRECT_URL = '/'
 RAPIDSMS_HANDLERS = (
     'rapidsms.contrib.echo.handlers.echo.EchoHandler',
     'rapidsms.contrib.echo.handlers.ping.PingHandler',
+    # 'rapidsms.contrib.handlers.KeywordHandler',
+    'handlers.HelpHandler',
 )
