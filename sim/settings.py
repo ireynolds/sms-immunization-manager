@@ -196,9 +196,12 @@ INSTALLED_APPS = (
     "south",
     
     # SIM apps
+    'operations.parser',
+    'dhis2',
+    'notifications',
+
     'prototype',
     'reversion',
-    'dhis2',
 
     # RapidSMS
     "rapidsms",
@@ -209,7 +212,7 @@ INSTALLED_APPS = (
     "rapidsms.contrib.messaging",
     "rapidsms.contrib.registration",
     "rapidsms.contrib.echo",
-    "rapidsms.contrib.default",  # Must be last
+    #"rapidsms.contrib.default",  # Must be last
 )
 
 INSTALLED_BACKENDS = {
