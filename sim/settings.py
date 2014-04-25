@@ -196,7 +196,11 @@ INSTALLED_APPS = (
     "south",
     
     # SIM apps
-    'operations.parser',
+    'operation_parser',
+    'stock',
+    'equipment',
+    'registration',
+    'permissions',
     'dhis2',
     'notifications',
 
@@ -210,8 +214,8 @@ INSTALLED_APPS = (
     "rapidsms.contrib.httptester",
     "rapidsms.contrib.messagelog",
     "rapidsms.contrib.messaging",
-    "rapidsms.contrib.registration",
-    "rapidsms.contrib.echo",
+    #"rapidsms.contrib.registration",
+    #"rapidsms.contrib.echo",
     #"rapidsms.contrib.default",  # Must be last
 )
 
@@ -229,3 +233,33 @@ RAPIDSMS_HANDLERS = (
     # 'rapidsms.contrib.handlers.KeywordHandler',
     'handlers.HelpHandler',
 )
+
+# ------------------------------------------------------------------------------
+# SIM-specific settings below
+# ------------------------------------------------------------------------------
+# A list of AppBase subclasses that should be used by RapidSMS' router, in
+# addition to those autodiscovered from INSTALLED_APPS.
+# TODO: Is it possible to make these references be strings, for consistency with
+# the rest of settings.py?
+import stock.apps as _stock_apps
+import equipment.apps as _equipment_apps
+RAPIDSMS_APP_BASES = (
+    _stock_apps.StockLevel,
+    _stock_apps.StockOut,
+    _equipment_apps.FridgeFailure,
+)
+
+# Configure the RapidSMS router based on RAPIDSMS_APP_BASES
+from rapidsms.router.blocking import BlockingRouter
+RAPIDSMS_ROUTER = BlockingRouter()
+
+for app in RAPIDSMS_APP_BASES:
+    RAPIDSMS_ROUTER.add_app(app)
+
+# Assign operation codes to AppBase handlers.
+# TODO: Perhaps assert that opcodes are only characters.
+SIM_OPERATION_CODES = {
+    "SL": _stock_apps.StockLevel,
+    "SO": _stock_apps.StockOut,
+    "FF": _equipment_apps.FridgeFailure,
+}
