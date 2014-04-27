@@ -180,6 +180,16 @@ LOGGING = {
     }
 }
 
+SIM_APPS = (
+    'operation_parser',
+    'stock',
+    'equipment',
+    'registration',
+    'permissions',
+    'dhis2',
+    'notifications'
+)
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -194,15 +204,8 @@ INSTALLED_APPS = (
     "django_tables2",
     "selectable",
     "south",
-    
-    # SIM apps
-    'operation_parser',
-    'stock',
-    'equipment',
-    'registration',
-    'permissions',
-    'dhis2',
-    'notifications',
+
+) + SIM_APPS + (
 
     'prototype',
     'reversion',
