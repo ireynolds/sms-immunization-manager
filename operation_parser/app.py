@@ -14,14 +14,16 @@ class OperationParser(AppBase):
     """
 
     def parse(self, message):
+        # This will be necessary later, when the parser recognizes invalid opcodes.
         opcodes = settings.SIM_OPERATION_CODES.keys()
 
-        # For now, pretend the message has the following operations:
-        operations = {
-            "SL": "StockLevelParamsGoHere",
-            "SO": "StockOutParamsGoHere",
-            "FF": "FridgeFailureParamsGoHere",
-        }
+        text = message.text.strip()
+
+        # For now, the parser merely assumes one operation, prefaced by an 
+        # arbitrary argument string.
+        opcode = text[:2]
+        args = text[2:].strip()
+        operations = { opcode: args }
 
         message.fields['operations'] = operations
         logger.debug("Parser detected operations: %s" % repr(operations))
