@@ -180,6 +180,16 @@ LOGGING = {
     }
 }
 
+SIM_APPS = (
+    'operation_parser',
+    'stock',
+    'equipment',
+    'registration',
+    'permissions',
+    'dhis2',
+    'notifications'
+)
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -194,15 +204,8 @@ INSTALLED_APPS = (
     "django_tables2",
     "selectable",
     "south",
-    
-    # SIM apps
-    'operation_parser',
-    'stock',
-    'equipment',
-    'registration',
-    'permissions',
-    'dhis2',
-    'notifications',
+
+) + SIM_APPS + (
 
     'prototype',
     'reversion',
@@ -260,6 +263,6 @@ for app in RAPIDSMS_APP_BASES:
 # TODO: Perhaps assert that opcodes are only characters.
 SIM_OPERATION_CODES = {
     "SL": _stock_apps.StockLevel,
-    "SO": _stock_apps.StockOut,
+    "SE": _stock_apps.StockOut,
     "FF": _equipment_apps.FridgeFailure,
 }
