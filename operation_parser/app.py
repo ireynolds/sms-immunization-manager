@@ -35,7 +35,6 @@ class OperationParser(AppBase):
 
         text = message.text
         text = gobbler.strip_delimiters(text)
-        text = disambiguate_o0(text)
         text = text.upper()
 
         opcode_indices = _find_opcodes(text, opcodes)
@@ -58,7 +57,10 @@ class OperationParser(AppBase):
         for start, end in bounds:
             operation = text[start:end]
             opcode = operation[:2]
+
             args = gobbler.strip_delimiters(operation[2:])
+            args = disambiguate_o0(args)
+
             operations.append( (opcode, args) )
 
         message.fields['operations'] = dict(operations)
