@@ -58,15 +58,6 @@ def gobble_all(pattern, string):
 
     return (matches, string) if matches else (None, string)
 
-def disambiguate_o0(string):
-    """
-    Returns the given string with all instances of "o" and "O" replaced by 
-    "0". Many non-English-speaking users use "o", "O", and "0" 
-    interchangeably, and this function can be used to effectively treat all 
-    "o" and "O" characters as "0". 
-    """
-    return string.replace("o", "0").replace("O", "0")
-
 def strip_delimiters(string):
     """
     Returns a copy of string in which delimiter characters have been 

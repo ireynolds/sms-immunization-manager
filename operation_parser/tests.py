@@ -20,7 +20,7 @@ class MockMessage:
         self.text = text
         self.fields = {}
 
-class OperationParserTest(TestCase):
+class AppTest(TestCase):
     """
     Tests for app.OperationParser.
     """
@@ -31,7 +31,7 @@ class OperationParserTest(TestCase):
         # No connection -- leave it as None
         op = app.OperationParser(None)
         msg = MockMessage(text)
-        op.parse(msg)
+        op.parse(msg, opcodes=["SL", "SE", "FF", "FT"])
         return msg.fields['operations']
 
     def check(self, text, *expected_ops):
@@ -39,15 +39,48 @@ class OperationParserTest(TestCase):
         actual_ops = self.parse(text)
         self.assertEqual(expected_ops, actual_ops)
 
-    ## Tests
+    ## Test OperationParser
 
-    def test_recognize_opcode(self):
+    def test_parse_one_opcode_no_args(self):
         self.check("SL",
             ("SL", ""))
 
-    def test_not_split_args(self):
+    def test_parse_one_opcode_strip_args(self):
         self.check("SL P 100",
             ("SL", "P 100"))
+
+    def test_parse_one_opcode_no_delimiters(self):
+        self.check("SLP500", 
+            ("SL", "P500"))
+
+    def test_parse_two_opcodes_with_args(self):
+        self.check("SLP500FFA",
+            ("SL", "P500"),
+            ("FF", "A"))
+
+    def test_parse_two_opcodes_first_assumed_ft(self):
+        self.check("A10B0SLD200P1770",
+            ("FT", "A10B0"),
+            ("SL", "D200P1770"))
+
+    def test_parse_three_opcodes_with_args(self):
+        self.check("FT0SLP875FFB",
+            ("FT", "0"),
+            ("SL", "P875"),
+            ("FF", "B"))
+
+    def test_parse_two_opcodes_bad_casing(self):
+        self.check("fTA50SlP12ffC",
+            ("FT", "A50"),
+            ("SL", "P12"),
+            ("FF", "C"))
+
+    # Test disambiguate_o0
+
+    def test_disambiguate_o0(self):
+        self.assertEqual(
+            "0ab0q0000",
+            app.disambiguate_o0("oab0qoO0O"))
 
 class GobblerTest(TestCase):
     """
@@ -143,13 +176,6 @@ class GobblerTest(TestCase):
     def test_gobble_all_multiple_matches_with_delimiters(self):
         self.assertGobblesAll("aa", ";aa\t\t;,,aa;  ;;b,\tbb",
             ["aa", "aa"], ";  ;;b,\tbb")
-
-    # Test disambiguate_o0
-
-    def test_disambiguate_o0(self):
-        self.assertEqual(
-            "0ab0q0000",
-            gobbler.disambiguate_o0("oab0qoO0O"))
 
     # Test strip_delimiters
 

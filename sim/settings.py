@@ -263,6 +263,6 @@ for app in RAPIDSMS_APP_BASES:
 # TODO: Perhaps assert that opcodes are only characters.
 SIM_OPERATION_CODES = {
     "SL": _stock_apps.StockLevel,
-    "SO": _stock_apps.StockOut,
+    "SE": _stock_apps.StockOut,
     "FF": _equipment_apps.FridgeFailure,
 }
