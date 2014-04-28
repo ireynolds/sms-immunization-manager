@@ -44,8 +44,7 @@ class OperationParser(AppBase):
         # HACK ATTACK!!!!!!
         #
         # When the message does not lead with any opcode, that opcode is assumed
-        # to be "FT". This is prepended to the message, and the index 0 is
-        # added to the list of opcode indices.
+        # to be "FT". 
         #
         if 0 not in opcode_indices:
             text = "FT" + text
@@ -61,12 +60,6 @@ class OperationParser(AppBase):
             opcode = operation[:2]
             args = gobbler.strip_delimiters(operation[2:])
             operations.append( (opcode, args) )
-
-        # # For now, the parser merely assumes one operation, prefaced by an 
-        # # arbitrary argument string.
-        # opcode = text[:2]
-        # args = text[2:].strip()
-        # operations = { opcode: args }
 
         message.fields['operations'] = dict(operations)
         logger.debug("Parser detected operations: %s" % repr(operations))
