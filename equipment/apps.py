@@ -1,6 +1,6 @@
 from sim.operations import OperationBase, filter_by_opcode
 
-class FridgeFailure(OperationBase):
+class EquipmentFailure(OperationBase):
     """
     A stub implementation of this operation
     """
@@ -17,6 +17,6 @@ class FridgeFailure(OperationBase):
                                                           fridge_code="a")
 
         if commit_results == None:
-            message.respond("FridgeFailure stub failed! %s" % repr(check_results))
+            message.respond("EquipmentFailure stub failed! %s" % repr(check_results))
         else:
-            message.respond("FridgeFailure stub succeeded!")
+            message.respond("EquipmentFailure stub succeeded!")

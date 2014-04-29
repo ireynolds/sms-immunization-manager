@@ -20,5 +20,5 @@ def stock_out_notification(message, **kwargs):
     message.respond("Stock out notification sent")
 
 
-commit_signal.connect(fridge_failure_notification, sender=FridgeFailure)
+commit_signal.connect(fridge_failure_notification, sender=EquipmentFailure)
 commit_signal.connect(stock_out_notification, sender=StockOut)

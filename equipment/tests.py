@@ -7,7 +7,7 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 
-from apps import FridgeFailure
+from apps import EquipmentFailure
 import operation_parser.app
 from sim.operations import commit_signal, check_signal
 
@@ -19,13 +19,13 @@ class MockMessage:
         self.text = text
         self.fields = {}
 
-class FridgeFailureTest(TestCase):
+class EquipmentFailureTest(TestCase):
 
     def call_and_capture(self, text, check=None, commit=None, respond=None):
         if check:
-            check_signal.connect(check, sender=FridgeFailure)
+            check_signal.connect(check, sender=EquipmentFailure)
         if commit:
-            commit_signal.connect(commit, sender=FridgeFailure)
+            commit_signal.connect(commit, sender=EquipmentFailure)
 
         msg = MockMessage(text)
         if respond:
@@ -36,7 +36,7 @@ class FridgeFailureTest(TestCase):
         op = operation_parser.app.OperationParser(None)
         op.parse(msg)
 
-        ff = FridgeFailure(None)
+        ff = EquipmentFailure(None)
         ff.handle(msg)
 
     def test_handle(self):
