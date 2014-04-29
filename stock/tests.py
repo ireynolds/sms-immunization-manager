@@ -7,13 +7,25 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 from stock.apps import StockLevel, StockOut
+from sim.operations import check_signal
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+
+class MockMessage:
+    """
+    A useful class that satisfies the interface of a RapidSMS
+    Message on which StockLevel and StockOut depends.
+    """
+    def __init__(self, fields):
+        # Satisfy the interface upon which StockLevel.handle depends
+        self.fields = {}
+
+class MockListner:
+    """
+    A class to help test the passing of values via a signal.
+    """
+    def mock_listen(message, **kwargs):
+        self.message = message
+        self.stock_levels = kwargs
 
 class SingleStockTests(TestCase):
     """
@@ -23,31 +35,22 @@ class SingleStockTests(TestCase):
         """
         Tests the parsing of a valid message containing a single character stock code () and level
         """
+        print "IN A TEST"
 
-        # define a test signal listener
-        def test_listener(message, **kwargs):
-            self.message = message
-            self.stock_levels = kwargs
+        ml = MockListner()
 
         # Create an instance of StockLevel
-        sl = StockLevel(router)
+        sl = StockLevel(None)
 
         # Create a test message
-        msg = IncommingMessage(text="A1")
+        msg = MockMessage({ "operations": { "SO", "A1" }})
+
+        # Register a test listner
+        check_signal.connect(ml.mock_listen, sender=StockLevel)
 
         # Pass the test message to the handle method
         sl.handle(msg)
 
         # Verify the contents of the values passed with the signal
-        self.assertEqual(test_listener.message, "A1")
-        self.assertEqual(test_listener.stock_levels["A"], 1)
-
-        # codes = ["A"]
-        # message = "A1"
-        
-        # parsed = parse_stock_levels(codes, message)
-        # stock_levels = parsed(0)
-        # remaining = parsed(1)
-
-        # self.assertEqual(len(remaining), 0)
-        # self.assertEqual(stock_levels["A"], 1)
+        self.assertEqual(ml.message, "A1")
+        self.assertEqual(ml.stock_levels["A"], 1)

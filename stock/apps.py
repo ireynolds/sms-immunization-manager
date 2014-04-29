@@ -1,32 +1,55 @@
 import django.dispatch
 from sim.operations import OperationBase, filter_by_opcode
+from operation_parser import gobbler
+
+# Regular Expressions for parsing the stock code and level
+STOCK_CODE = "[A-z]+"
+STOCK_LEVEL = "[0-9]+"
+STOCK_LEVEL_OP_CODE = "SL"
+STOCK_OUT_OP_CODE = "SO"
 
 class StockLevel(OperationBase):
     """
     Parses stock codes and inventory levels from the provided message and sends
-    the check and commit signals.
+    the check and commit signals to the registered listners.
     """
-
     @filter_by_opcode
     def handle(self, message):
 
-        # parse all stock codes and value pairs
-        parsed = parse_stock_levels(get_stock_codes, message.text)
-        stock_levels = parsed(0)
-        remaining = parsed(1)
+        # parse a list of stock code followed by level
+        text = message.fields['operations'][STOCK_LEVEL_OP_CODE]
+        levels, remaining = gobble_all(STOCK_CODE + STOCK_LEVEL, text)
 
         if len(remaining) > 0:
-            # there was a parsing failure
-            message.respond("StockLevel parse failed! Successfully parsed everything before: %s" % remaining)
+            # there are still characters remaining, meaning there was a parsing failure
+
+            #TODO: i18n for this error message
+            message.respond("Error with message. We understood everything until: %s" % remaining)
             return None
+
+        # create a dictionary: stock code -> stock level
+        stock_levels = dict(map(lambda l: gobble(STOCK_CODE, l), levels))
 
         check_results, commit_results = self.send_signals(message=message,
                                                           stock_levels=stock_levels)
 
         if commit_results == None:
+            # there were errors in the check phase, commit never attempted
             message.respond("StockLevel stub failed! %s" % repr(check_results))
         else:
-            message.respond("StockLevel stub succeeded!")
+            # sort all the errors that were found
+            onlyErrors = filter(lambda r: r != None, commit_results)
+            errors = sorted(onlyErrors, key=lambda e: e.severity, reverse=True)
+
+            if len(errors) > 0:
+                # respond with the error of the greatest severity
+                message.respond(errors[0].text)
+
+            else:
+                # respond with a success
+
+                #TODO: i18n for this success message
+                message.respond("Thank you for your report.")
 
 class StockOut(OperationBase):
     """
@@ -42,56 +65,3 @@ class StockOut(OperationBase):
             message.respond("StockOut stub failed! %s" % repr(check_results))
         else:
             message.respond("StockOut stub succeeded!")
-
-# temp location - this information will not be stored here.
-def get_stock_codes():
-    return ["A", "B", "C", "D", "AA", "BB", "CD"]
-
-
-def get_stock_codes_regex(stock_codes):
-    """
-    Produces a regex OR of all the provided stock codes
-    stock_codes: a list of stock code strings
-    returns: a regex string
-    """
-
-    regex = "("
-    for code in stock_codes:
-        regex += "|" + code
-    regex += ")"
-    return regex
-
-def parse_stock_levels(stock_codes, message):
-    re_codes = get_stock_codes_regex(stock_codes)
-    stock_levels = map()
-
-    # try to parse first stock code
-    parsed = gobble(re_codes, message)
-
-    if parsed:
-        stock_code = parsed(0)
-        parsed = gobble("\d+", parsed(1))
-        if parsed:
-            stock_inv = parsed(0)
-            stock_levels[stock_code] = int(stock_inv)
-
-    # try to parse the remaining stock codes
-    while parsed:
-        parsed = gobble(re_codes, parsed(1))
-        if parsed:
-            stock_code = parsed(0)
-            parsed = gobble("\d+", parsed(1))
-            if parsed:
-                stock_inv = parsed(0)
-                stock_levels[stock_code] = int(stock_inv)
-
-    return (stock_levels, parsed)
-
-def gobble(pattern, source):
-    matched = re.match("\\W*" + pattern, source)
-
-    if (matched):
-        matched = matched.group(0)
-        return (matched, source[len(matched):])
-
-    return None
