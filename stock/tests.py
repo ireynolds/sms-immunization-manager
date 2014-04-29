@@ -21,20 +21,7 @@ class MockMessage:
 
     def respond(self, response):
         #TODO: something else
-        print ">>> " + response + "<<<\n"
-
-class MockListner:
-    """
-    A class to help test the passing of values via a signal.
-    """
-    def __init__(self):
-        self.message = ""
-        self.stock_levels = {}
-
-    def mock_listen(message, **kwargs):
-        print "\n##############################################\n"
-        self.message = message
-        self.stock_levels = kwargs
+        self.respnse = respnse
 
 class SingleStockTests(TestCase):
     """
@@ -44,8 +31,10 @@ class SingleStockTests(TestCase):
         """
         Tests the parsing of a valid message containing a single character stock code () and level
         """
+        self.stock_levels = {}
 
-        ml = MockListner()
+        def mock_listen(**kwargs):
+            self.stock_levels = kwargs['stock_levels']
 
         # Create an instance of StockLevel
         sl = StockLevel(None)
@@ -54,11 +43,10 @@ class SingleStockTests(TestCase):
         msg = MockMessage({ "operations": { "SL": "A1" }})
 
         # Register a test listner
-        check_signal.connect(lambda message, **kwargs: ml.mock_listen(message, **kwargs), sender=StockLevel)
+        check_signal.connect(mock_listen, sender=StockLevel)
 
         # Pass the test message to the handle method
         sl.handle(msg)
 
         # Verify the contents of the values passed with the signal
-        self.assertEqual(ml.message, "A1")
-        self.assertEqual(ml.stock_levels["A"], 1)
+        self.assertEqual(self.stock_levels["A"], 1)

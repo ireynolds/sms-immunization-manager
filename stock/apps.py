@@ -28,11 +28,11 @@ class StockLevel(OperationBase):
             return None
 
         # create a dictionary: stock code -> stock level
-        stock_levels = dict(map(lambda l: gobbler.gobble(STOCK_CODE, l), levels))
+        stock_levels = map(lambda l: gobbler.gobble(STOCK_CODE, l), levels)
+        stock_levels = dict(map(lambda (code, level): (code, int(level)), stock_levels))
 
         check_results, commit_results = self.send_signals(message=message,
                                                           stock_levels=stock_levels)
-
         # if commit_results == None:
         #     # there were errors in the check phase, commit never attempted
         #     message.respond("StockLevel stub failed! %s" % repr(check_results))
@@ -53,11 +53,25 @@ class StockLevel(OperationBase):
 
 class StockOut(OperationBase):
     """
-    A stub implementation of this operation
+    Parses stock codes and inventory levels from the provided message and sends
+    the check and commit signals to the registered listners.
     """
 
     @filter_by_opcode
     def handle(self, message):
+
+        text = message.fields['operations'][STOCK_LEVEL_OP_CODE]
+        codes, remaining = gobbler.gobble_all(STOCK_CODE, text)
+
+        if len(remaining) > 0:
+            # there are still characters remaining, meaning there was a parsing failure
+
+            #TODO: i18n for this error message
+            message.respond("Error with message. We understood everything until: %s" % remaining)
+            return None
+
+        # stock_codes = set(map(lambda l: gobbler.gobble(STOCK_CODE, l), codes))
+
         check_results, commit_results = self.send_signals(message=message,
                                                           stock_code="a")
 
