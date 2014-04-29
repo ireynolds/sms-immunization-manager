@@ -17,13 +17,22 @@ class MockMessage:
     """
     def __init__(self, fields):
         # Satisfy the interface upon which StockLevel.handle depends
-        self.fields = {}
+        self.fields = fields
+
+    def respond(self, response):
+        #TODO: something else
+        print ">>> " + response + "<<<\n"
 
 class MockListner:
     """
     A class to help test the passing of values via a signal.
     """
+    def __init__(self):
+        self.message = ""
+        self.stock_levels = {}
+
     def mock_listen(message, **kwargs):
+        print "\n##############################################\n"
         self.message = message
         self.stock_levels = kwargs
 
@@ -35,7 +44,6 @@ class SingleStockTests(TestCase):
         """
         Tests the parsing of a valid message containing a single character stock code () and level
         """
-        print "IN A TEST"
 
         ml = MockListner()
 
@@ -43,10 +51,10 @@ class SingleStockTests(TestCase):
         sl = StockLevel(None)
 
         # Create a test message
-        msg = MockMessage({ "operations": { "SO", "A1" }})
+        msg = MockMessage({ "operations": { "SL": "A1" }})
 
         # Register a test listner
-        check_signal.connect(ml.mock_listen, sender=StockLevel)
+        check_signal.connect(lambda message, **kwargs: ml.mock_listen(message, **kwargs), sender=StockLevel)
 
         # Pass the test message to the handle method
         sl.handle(msg)

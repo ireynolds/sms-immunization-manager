@@ -10,5 +10,5 @@ def requires_even_phone_number(message, **kwargs):
         return None
     return "Odd numbered phone numbers are not allowed!"
 
-check_signal.connect(requires_even_phone_number, sender=StockLevel)
+# check_signal.connect(requires_even_phone_number, sender=StockLevel)
 check_signal.connect(requires_even_phone_number, sender=StockOut)

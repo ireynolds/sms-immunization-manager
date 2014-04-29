@@ -60,6 +60,7 @@ def filter_by_opcode(handle_func):
 
         if len(set(msg.fields['operations'].keys()) & func_self.get_opcodes()) == 0:
             # This message does contain a matching opcode
+            print "\n missing operations @@@@@@@@@@@@@@@@@@@@@\n"
             return False
 
         # Otherwise, this message contains a matching opcode
