@@ -264,5 +264,5 @@ for app in RAPIDSMS_APP_BASES:
 SIM_OPERATION_CODES = {
     "SL": _stock_apps.StockLevel,
     "SE": _stock_apps.StockOut,
-    "FF": _equipment_apps.FridgeFailure,
+    "NF": _equipment_apps.FridgeFailure,
 }

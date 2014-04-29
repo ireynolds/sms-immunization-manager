@@ -7,6 +7,12 @@ class FridgeFailure(OperationBase):
 
     @filter_by_opcode
     def handle(self, message):
+        ops = message.fields['operations']
+        
+        if "NF" in ops:
+            self.handle_nf(message, ops["NF"])
+
+    def handle_nf(self, message, args):
         check_results, commit_results = self.send_signals(message=message,
                                                           fridge_code="a")
 
