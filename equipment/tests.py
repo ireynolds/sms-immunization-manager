@@ -51,24 +51,29 @@ class EquipmentFailureTest(TestCase):
 
         @log_if_called('check')
         def capture_check(**kwargs): ns.check_args = kwargs
-        check_signal.connect(capture_check, sender=EquipmentFailure)
+        check_signal.connect(capture_check, sender=EquipmentFailure, weak=False)
             
         @log_if_called('commit')
         def capture_commit(**kwargs): ns.commit_args = kwargs
-        commit_signal.connect(capture_commit, sender=EquipmentFailure)
+        commit_signal.connect(capture_commit, sender=EquipmentFailure, weak=False)
             
         @log_if_called('respond')
         def capture_respond(response): ns.responses.append(response)
         msg.respond = capture_respond
 
-        if check: check_signal.connect(check, sender=EquipmentFailure)
-        if commit: commit_signal.connect(commit, sender=EquipmentFailure)
+        if check: check_signal.connect(check, sender=EquipmentFailure, weak=False)
+        if commit: commit_signal.connect(commit, sender=EquipmentFailure, weak=False)
 
         op = operation_parser.app.OperationParser(None)
         op.parse(msg)
 
         ff = EquipmentFailure(None)
         ff.handle(msg)
+
+        check_signal.disconnect(capture_check)
+        if check: check_signal.disconnect(check)
+        commit_signal.disconnect(capture_commit)
+        if commit: commit_signal.disconnect(commit)
 
         return ns
 
