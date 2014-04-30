@@ -19,19 +19,50 @@ class MockMessage:
         self.text = text
         self.fields = {}
 
+called_fns = None
+
+class log_if_called:
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, func):
+        def log_if_called_decorated(*args, **kwargs):
+            called_fns.add(self.name)
+            func(*args, **kwargs)
+        return log_if_called_decorated
+
+class Namespace: 
+    '''Just an empty container.'''
+    pass
+
 class EquipmentFailureTest(TestCase):
 
-    def call_and_capture(self, text, check=None, commit=None, respond=None):
-        if check:
-            check_signal.connect(check, sender=EquipmentFailure)
-        if commit:
-            commit_signal.connect(commit, sender=EquipmentFailure)
-
+    def send(self, text, check=None, commit=None):
         msg = MockMessage(text)
-        if respond:
-            msg.respond = lambda response: respond(response)
-        else:
-            msg.respond = lambda response: None
+
+        ns = Namespace()
+        
+        # Called at most once
+        ns.check_args = None
+        ns.commit_args = None
+
+        # Possibly called many times
+        ns.responses = []
+
+        @log_if_called('check')
+        def capture_check(**kwargs): ns.check_args = kwargs
+        check_signal.connect(capture_check, sender=EquipmentFailure)
+            
+        @log_if_called('commit')
+        def capture_commit(**kwargs): ns.commit_args = kwargs
+        commit_signal.connect(capture_commit, sender=EquipmentFailure)
+            
+        @log_if_called('respond')
+        def capture_respond(response): ns.responses.append(response)
+        msg.respond = capture_respond
+
+        if check: check_signal.connect(check, sender=EquipmentFailure)
+        if commit: commit_signal.connect(commit, sender=EquipmentFailure)
 
         op = operation_parser.app.OperationParser(None)
         op.parse(msg)
@@ -39,25 +70,74 @@ class EquipmentFailureTest(TestCase):
         ff = EquipmentFailure(None)
         ff.handle(msg)
 
-    def test_handle(self):
-        def check(**kwargs):
-            callbacks['check'] = True
+        return ns
 
-        def commit(**kwargs):
-            callbacks['commit'] = True
+    def setUp(self):
+        global called_fns
+        called_fns = set()
 
-        def respond(response):
-            callbacks['respond'] = True
+    def assertCalled(self, *names):
+        for name in names:
+            self.assertIn(name, called_fns)
 
-        # None have been called yet
-        callbacks = {
-            'check': False,
-            'commit': False,
-            'respond': False 
-        }
+    def assertNotCalled(self, *names):
+        for name in names:
+            self.assertNotIn(name, called_fns)
 
-        self.call_and_capture("NF A B", commit=commit, check=check, respond=respond)
+    def test_handle_simple(self):
+        ns = self.send("NF A")
+        self.assertCalled('check', 'commit', 'respond')
 
-        self.assertTrue(callbacks['check'], "check was not called")
-        self.assertTrue(callbacks['commit'], "commit was not called")
-        self.assertTrue(callbacks['respond'], "respond was not called")
+        # It is assumed in all other tests that check_args and commit_args have 
+        # the same keys and (mostly) the same values.
+
+        self.assertIn('message', ns.check_args)
+        self.assertIn('equipment_id', ns.check_args)
+
+        self.assertIn('message', ns.commit_args)
+        self.assertIn('equipment_id', ns.commit_args)
+
+        self.assertEqual(1, len(ns.responses))
+
+    def test_handle_one_valid_arg(self):
+        ns = self.send("NF A")
+        
+        self.assertCalled('check', 'commit', 'respond')
+
+        self.assertEqual("A", ns.commit_args['equipment_id'])
+
+        self.assertEqual(1, len(ns.responses))        
+        self.assertIn('Success', ns.responses[0])
+
+    def test_with_no_arg(self):
+        ns = self.send("NF")
+        self.assertCalled('check', 'commit', 'respond')
+
+        self.assertEqual(None, ns.check_args['equipment_id'])
+
+        self.assertEqual(1, len(ns.responses))        
+        self.assertIn('Success', ns.responses[0])
+
+    def test_with_two_valid_args(self):
+        ns = self.send("NF A B")
+        self.assertNotCalled('check', 'commit')
+        self.assertCalled('respond')
+
+        self.assertEqual(1, len(ns.responses))
+        self.assertIn("OK until", ns.responses[0])
+    
+    def test_one_invalid_arg(self):
+        ns = self.send('NF Q')
+        self.assertNotCalled('commit')
+        self.assertCalled('check', 'respond')
+
+        self.assertEqual(1, len(ns.responses))
+        self.assertIn("OK until", ns.responses[0])
+
+    def test_valid_followed_by_junk(self):
+        ns = self.send('NF A001')
+        self.assertNotCalled('check', 'commit')
+        self.assertCalled('respond')
+
+        self.assertEqual(1, len(ns.responses))
+        self.assertIn("OK until", ns.responses[0])
