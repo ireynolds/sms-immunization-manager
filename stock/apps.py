@@ -6,7 +6,7 @@ from operation_parser import gobbler
 STOCK_CODE = "[A-z]+"
 STOCK_LEVEL = "[0-9]+"
 STOCK_LEVEL_OP_CODE = "SL"
-STOCK_OUT_OP_CODE = "SO"
+STOCK_OUT_OP_CODE = "SE"
 
 class StockLevel(OperationBase):
     """
@@ -20,7 +20,7 @@ class StockLevel(OperationBase):
         text = message.fields['operations'][STOCK_LEVEL_OP_CODE]
         levels, remaining = gobbler.gobble_all(STOCK_CODE + STOCK_LEVEL, text)
 
-        if len(remaining) > 0:
+        if len(remaining) > 0 or levels == ():
             # there are still characters remaining, meaning there was a parsing failure
 
             #TODO: i18n for this error message
@@ -61,22 +61,26 @@ class StockOut(OperationBase):
     @filter_by_opcode
     def handle(self, message):
 
-        text = message.fields['operations'][STOCK_LEVEL_OP_CODE]
+        text = message.fields['operations'][STOCK_OUT_OP_CODE]
         codes, remaining = gobbler.gobble_all(STOCK_CODE, text)
 
-        if len(remaining) > 0:
+        if len(remaining) > 0 or codes == None:
             # there are still characters remaining, meaning there was a parsing failure
 
             #TODO: i18n for this error message
             message.respond("Error with message. We understood everything until: %s" % remaining)
             return None
 
-        stock_codes = set(map(lambda l: gobbler.gobble(STOCK_CODE, l), codes))
+        # TODO: Should this accept more than one stock code per message?
+        # Either way rewrite the parsing to make this statement more clear
+        stock_code = codes[0][0]
 
         check_results, commit_results = self.send_signals(message=message,
-                                                          stock_code=A)
+                                                          stock_code=stock_code)
 
         if commit_results == None:
-            message.respond("StockOut stub failed! %s" % repr(check_results))
+            # there were errors in the check phase, commit never attempted
+            # TODO: Select the error with the highest priority and respond
+            message.respond("Error with message. %s" % repr(check_results))
         else:
-            message.respond("StockOut stub succeeded!")
+            message.respond("Thanks for your report.")

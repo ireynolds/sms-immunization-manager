@@ -19,5 +19,5 @@ def stock_out_dhis2_commit(message, stock_code=None, **kwargs):
     message.respond("Stock out commit made")
 
 
-commit_signal.connect(stock_level_dhis2_commit, sender=StockLevel)
-commit_signal.connect(stock_out_dhis2_commit, sender=StockOut)
+#commit_signal.connect(stock_level_dhis2_commit, sender=StockLevel)
+#commit_signal.connect(stock_out_dhis2_commit, sender=StockOut)
