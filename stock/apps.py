@@ -24,7 +24,7 @@ class StockLevel(OperationBase):
             # there are still characters remaining, meaning there was a parsing failure
 
             #TODO: i18n for this error message
-            message.respond("Error with message. We understood everything until: %s" % remaining)
+            message.respond("Please try again. We understood everything until: %s" % remaining)
             return None
 
         # create a dictionary: stock code -> stock level
@@ -33,9 +33,10 @@ class StockLevel(OperationBase):
 
         check_results, commit_results = self.send_signals(message=message,
                                                           stock_levels=stock_levels)
-        # if commit_results == None:
-        #     # there were errors in the check phase, commit never attempted
-        #     message.respond("StockLevel stub failed! %s" % repr(check_results))
+        if commit_results == None:
+            # there were errors in the check phase, commit never attempted
+            # TODO: Select the error with the highest priority and respond
+            message.respond("Error with message. %s" % repr(check_results))
         # else:
         #     # sort all the errors that were found
         #     onlyErrors = filter(lambda r: r != None, commit_results)
@@ -70,10 +71,10 @@ class StockOut(OperationBase):
             message.respond("Error with message. We understood everything until: %s" % remaining)
             return None
 
-        # stock_codes = set(map(lambda l: gobbler.gobble(STOCK_CODE, l), codes))
+        stock_codes = set(map(lambda l: gobbler.gobble(STOCK_CODE, l), codes))
 
         check_results, commit_results = self.send_signals(message=message,
-                                                          stock_code="a")
+                                                          stock_code=A)
 
         if commit_results == None:
             message.respond("StockOut stub failed! %s" % repr(check_results))
