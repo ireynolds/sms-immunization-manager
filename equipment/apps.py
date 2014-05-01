@@ -12,19 +12,10 @@ def _has_errors(results):
     return len(_errors(results)) > 0
 
 class EquipmentFailure(OperationBase):
-    """
-    A stub implementation of this operation
-    """
 
     @filter_by_opcode
     def handle(self, message):
-        ops = message.fields['operations']
-        
-        if "NF" in ops:
-            self.handle_nf(message, ops["NF"])
-
-    def handle_nf(self, message, args):
-        equipment_id, remaining = gobble("[A-Z]", args.upper())
+        equipment_id, remaining = gobble("[A-Z]", message.fields['operations']["NF"].upper())
         # It's okay if equipment_id is None--this is within spec.
 
         # Extra stuff--reject with error
@@ -45,3 +36,4 @@ class EquipmentFailure(OperationBase):
             message.respond(str(_top_error(results)))
         else:
             message.respond("Success. Thanks for your input!")
+
