@@ -17,32 +17,39 @@ class TooManyArgsException(Exception):
 class UnrecognizedTextException(Exception):
     pass
 
-def _take_at_most_one_equipment_id(args):
-    equipment_id, remaining = gobble("[A-Z]", args.upper())
-    # It's okay if equipment_id is None--this is within spec.
+class EquipmentBase(OperationBase):
 
-    # Extra stuff--reject with error
-    if remaining:
-        if equipment_id:
-            error = "Message OK until %s. Provide one equipment code and nothing else. " \
-                    "Please fix and send again." % (remaining[:3],)
-            raise TooManyArgsException(error)
+    def _take_at_most_one_equipment_id(self, args):
+        equipment_id, remaining = gobble("[A-Z]", args.upper())
+        # It's okay if equipment_id is None--this is within spec.
+
+        # Extra stuff--reject with error
+        if remaining:
+            if equipment_id:
+                error = "Message OK until %s. Provide one equipment code and nothing else. " \
+                        "Please fix and send again." % (remaining[:3],)
+                raise TooManyArgsException(error)
+            else:
+                error = "Message OK until %s. Expected an equipment code. Please fix and " \
+                        "send again." % (remaining[:3],)
+                raise UnrecognizedTextException(error)
+            message.respond(response)
+
+        return equipment_id
+
+    def _respond_to_error(self, message, check_results, commit_results):
+        # Send appropriate response (including the highest-priority error returned in check or commit phases)
+        results = check_results + (commit_results if commit_results else [])
+        if _has_errors(results):
+            return str(_top_error(results))
         else:
-            error = "Message OK until %s. Expected an equipment code. Please fix and " \
-                    "send again." % (remaining[:3],)
-            raise UnrecognizedTextException(error)
-        message.respond(response)
+            return "Success. Thanks for your input!"
 
-    return equipment_id
-
-class EquipmentFailure(OperationBase):
-
-    @filter_by_opcode
-    def handle(self, message):
-        args = message.fields['operations']["NF"]
+    def _handle_any(self, message, opcode):
+        args = message.fields['operations'][opcode]
 
         try:
-            equipment_id = _take_at_most_one_equipment_id(args)
+            equipment_id = self._take_at_most_one_equipment_id(args)
         except (TooManyArgsException, UnrecognizedTextException) as e:
             message.respond(str(e))
             return
@@ -50,15 +57,17 @@ class EquipmentFailure(OperationBase):
         check_results, commit_results = self.send_signals(message=message,
                                                           equipment_id=equipment_id)
 
-        # Send appropriate response (including the highest-priority error returned in check or commit phases)
-        results = check_results + (commit_results if commit_results else [])
-        if _has_errors(results):
-            message.respond(str(_top_error(results)))
-        else:
-            message.respond("Success. Thanks for your input!")
+        error = self._respond_to_error(message, check_results, commit_results)
+        message.respond(str(error))
 
-class EquipmentRepaired(OperationBase):
+class EquipmentFailure(EquipmentBase):
 
     @filter_by_opcode
     def handle(self, message):
-        pass
+        self._handle_any(message, "NF")      
+
+class EquipmentRepaired(EquipmentBase):
+
+    @filter_by_opcode
+    def handle(self, message):
+        self._handle_any(message, "WO")
