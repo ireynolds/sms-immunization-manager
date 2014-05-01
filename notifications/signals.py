@@ -1,16 +1,18 @@
 import logging
-from sim.operations import commit_signal
+from sim.operations import check_signal, commit_signal
 from stock.apps import *
 from equipment.apps import *
 
 logger = logging.getLogger("rapidsms")
 
-def fridge_failure_notification(message, **kwargs):
-    """
-    A notification stub
-    """
-    logger.debug("Fridge failure notification sent")
-    message.respond("Fridge failure notification sent")
+def equipment_failure_check(message, **kwargs):
+    equipment_id = kwargs['equipment_id']
+    if equipment_id not in [None, 'A', 'BC', 'D']:
+        return "Message OK until %s. Unrecognized equipment code. Please fix and send again." % (equipment_id,)
+
+def equipment_failure_commit(message, **kwargs):
+    # TODO: Send notification
+    logger.debug("Equipment failure notification sent")
 
 def stock_out_notification(message, **kwargs):
     """
@@ -20,5 +22,8 @@ def stock_out_notification(message, **kwargs):
     message.respond("Stock out notification sent")
 
 
-commit_signal.connect(fridge_failure_notification, sender=FridgeFailure)
+
+check_signal.connect(equipment_failure_check, sender=EquipmentFailure)
+commit_signal.connect(equipment_failure_commit, sender=EquipmentFailure)
+
 commit_signal.connect(stock_out_notification, sender=StockOut)

@@ -249,7 +249,7 @@ import equipment.apps as _equipment_apps
 RAPIDSMS_APP_BASES = (
     _stock_apps.StockLevel,
     _stock_apps.StockOut,
-    _equipment_apps.FridgeFailure,
+    _equipment_apps.EquipmentFailure,
 )
 
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
@@ -264,5 +264,5 @@ for app in RAPIDSMS_APP_BASES:
 SIM_OPERATION_CODES = {
     "SL": _stock_apps.StockLevel,
     "SE": _stock_apps.StockOut,
-    "FF": _equipment_apps.FridgeFailure,
+    "NF": _equipment_apps.EquipmentFailure,
 }

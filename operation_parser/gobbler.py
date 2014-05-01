@@ -48,7 +48,7 @@ def gobble_all(pattern, string):
     matches = []
     while True:
         # Look for a match on pattern
-        match, remainder = gobble(pattern, string)
+        (match, remainder) = gobble(pattern, string)
         if not match:
             break
 
@@ -64,11 +64,11 @@ def strip_delimiters(string):
     stripped from the start and end of the string.
     """
     # Strip off the front
-    _, string = _gobble(DELIMS, string)
+    (_, string) = _gobble(DELIMS, string)
 
     # Reverse and strip off the front (back, really)
     string = string[::-1]
-    _, string = _gobble(DELIMS, string)
+    (_, string) = _gobble(DELIMS, string)
 
     # Reverse again to put in correct order and return
     return string[::-1]
