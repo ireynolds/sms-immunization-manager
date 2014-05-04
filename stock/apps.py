@@ -27,30 +27,30 @@ class StockLevel(OperationBase):
             message.respond("Please try again. We understood everything until: %s" % remaining)
             return None
 
+        # levels = map(lambda l: gobbler.gobble(STOCK_CODE, l), levels)
+        # stock_levels = dict(map(lambda (code, level): (code, int(level)), levels))
+
         # create a dictionary: stock code -> stock level
-        stock_levels = map(lambda l: gobbler.gobble(STOCK_CODE, l), levels)
-        stock_levels = dict(map(lambda (code, level): (code, int(level)), stock_levels))
+        levels = [ gobbler.gobble(STOCK_CODE, l) for l in levels ]
+        stock_levels = { first: int(second) for first, second in levels }
 
         check_results, commit_results = self.send_signals(message=message,
                                                           stock_levels=stock_levels)
         if commit_results == None:
             # there were errors in the check phase, commit never attempted
-            # TODO: Select the error with the highest priority and respond
-            message.respond("Error with message. %s" % repr(check_results))
-        # else:
-        #     # sort all the errors that were found
-        #     onlyErrors = filter(lambda r: r != None, commit_results)
-        #     errors = sorted(onlyErrors, key=lambda e: e.severity, reverse=True)
+            # TODO: attach the errors to the message
 
-        #     if len(errors) > 0:
-        #         # respond with the error of the greatest severity
-        #         message.respond(errors[0].text)
+            return None
 
-        #     else:
-        #         # respond with a success
+        if not all(r is None for r in check_results):
+            # check for errors from the commit phase
+            # TODO: attach the errors to the message
 
-        #         #TODO: i18n for this success message
-        #         message.respond("Thank you for your report.")
+            return None
+
+        # Implies that there were no errors found
+        # TODO: attach a success messgae
+        return None
 
 class StockOut(OperationBase):
     """
@@ -80,7 +80,16 @@ class StockOut(OperationBase):
 
         if commit_results == None:
             # there were errors in the check phase, commit never attempted
-            # TODO: Select the error with the highest priority and respond
-            message.respond("Error with message. %s" % repr(check_results))
-        else:
-            message.respond("Thanks for your report.")
+            # TODO: attach the errors to the message
+
+            return None
+
+        if not all(r is None for r in check_results):
+            # check for errors from the commit phase
+            # TODO: attach the errors to the message
+
+            return None
+
+        # Implies that there were no errors found
+        # TODO: attach a success messgae
+        return None

@@ -42,203 +42,110 @@ class StockLevelTest(TestCase):
     """
     All tests involving a the StockLevel app.
     """
-    def test_single_char_stock_code(self):
-        """
-        Tests the parsing of a valid message containing a single character stock code.
-        """
-        self.stock_levels = {}
+    def send(self, fields, check=None, commit=None):
+        msg = MockMessage(fields)
 
-        def mock_listen(**kwargs):
-            self.stock_levels = kwargs['stock_levels']
+        ns = Namespace()
 
-        # Create an instance of StockLevel
-        sl = StockLevel(None)
+        # Called at most once
+        ns.check_args = None
+        ns.commit_args = None
 
-        # Create a test message
-        msg = MockMessage({ "operations": { "SL": "A1" }})
+        # Possibly called many times
+        ns.responses = []
 
-        # Register a test listner
-        check_signal.connect(mock_listen, sender=StockLevel)
+        @log_if_called('check')
+        def capture_check(**kwargs): ns.check_args = kwargs
+        check_signal.connect(capture_check, sender=StockLevel)
 
-        # Pass the test message to the handle method
-        sl.handle(msg)
+        @log_if_called('commit')
+        def capture_commit(**kwargs): ns.commit_args = kwargs
+        commit_signal.connect(capture_commit, sender=StockLevel)
 
-        # Verify the contents of the values passed with the signal
-        self.assertEqual(self.stock_levels["A"], 1)
+        @log_if_called('respond')
+        def capture_respond(response): ns.responses.append(response)
+        msg.respond = capture_respond
 
-    def test_multiple_char_stock_code(self):
-        """
-        Tests the parsing of a valid message containing a two character stock code.
-        """
-        self.stock_levels = {}
+        if check: check_signal.connect(check, sender=StockLevel)
+        if commit: commit_signal.connect(commit, sender=StockLevel)
 
-        def mock_listen(**kwargs):
-            self.stock_levels = kwargs['stock_levels']
+        so = StockLevel(None)
+        so.handle(msg)
 
-        # Create an instance of StockLevel
-        sl = StockLevel(None)
+        return ns
 
-        # Create a test message
-        msg = MockMessage({ "operations": { "SL": "AB1" }})
+    def setUp(self):
+        global called_fns
+        called_fns = set()
 
-        # Register a test listner
-        check_signal.connect(mock_listen, sender=StockLevel)
+    def assertCalled(self, *names):
+        for name in names:
+            self.assertIn(name, called_fns)
 
-        # Pass the test message to the handle method
-        sl.handle(msg)
+    def assertNotCalled(self, *names):
+        for name in names:
+            self.assertNotIn(name, called_fns)
 
-        # Verify the contents of the values passed with the signal
-        self.assertEqual(self.stock_levels["AB"], 1)
+    def test_handle_simple(self):
+        ns = self.send({ "operations": { "SL": "A1" }})
+        self.assertCalled('check', 'commit')
 
-    def test_multiple_char_stock_code(self):
-        """
-        Tests the parsing of a valid message containing a three character stock code.
-        """
-        self.stock_levels = {}
+        # It is assumed in all other tests that check_args and commit_args have
+        # the same keys and (mostly) the same values.
 
-        def mock_listen(**kwargs):
-            self.stock_levels = kwargs['stock_levels']
+        self.assertIn('message', ns.check_args)
+        self.assertIn('stock_levels', ns.check_args)
 
-        # Create an instance of StockLevel
-        sl = StockLevel(None)
+        self.assertIn('message', ns.commit_args)
+        self.assertIn('stock_levels', ns.commit_args)
 
-        # Create a test message
-        msg = MockMessage({ "operations": { "SL": "ABC12" }})
 
-        # Register a test listner
-        check_signal.connect(mock_listen, sender=StockLevel)
+    def test_valid_single_char_stock_code(self):
+        ns = self.send({ "operations": { "SL": "A1" }})
+        self.assertCalled('check', 'commit')
 
-        # Pass the test message to the handle method
-        sl.handle(msg)
+        self.assertEqual(ns.commit_args['stock_levels']["A"], 1)
 
-        # Verify the contents of the values passed with the signal
-        self.assertEqual(self.stock_levels["ABC"], 12)
+    def test_valid_multiple_char_stock_code(self):
+        ns = self.send({ "operations": { "SL": "AB1" }})
+        self.assertCalled('check', 'commit')
 
-    def test_multiple_stock_codes(self):
-        """
-        Tests the parsing of a valid message containing mutliple stock codes
-        """
-        self.stock_levels = {}
+        self.assertEqual(ns.commit_args['stock_levels']["AB"], 1)
 
-        def mock_listen(**kwargs):
-            self.stock_levels = kwargs['stock_levels']
+    def test_valid_multiple_char_stock_code(self):
+        ns = self.send({ "operations": { "SL": "ABC12" }})
+        self.assertCalled('check', 'commit')
 
-        # Create an instance of StockLevel
-        sl = StockLevel(None)
+        self.assertEqual(ns.commit_args['stock_levels']["ABC"], 12)
 
-        # Create a test message
-        msg = MockMessage({ "operations": { "SL": "ABC12E3fG6" }})
+    def test_valid_multiple_stock_codes(self):
+        ns = self.send({ "operations": { "SL": "ABC12E3fG63H4" }})
+        self.assertCalled('check', 'commit')
 
-        # Register a test listner
-        check_signal.connect(mock_listen, sender=StockLevel)
+        self.assertEqual(ns.commit_args['stock_levels']["ABC"], 12)
+        self.assertEqual(ns.commit_args['stock_levels']["E"], 3)
+        self.assertEqual(ns.commit_args['stock_levels']["fG"], 63)
+        self.assertEqual(ns.commit_args['stock_levels']["H"], 4)
 
-        # Pass the test message to the handle method
-        sl.handle(msg)
+    def test_valid_multiple_stock_codes_spaces(self):
+        ns = self.send({ "operations": { "SL": "ABC12 E3 fG6" }})
+        self.assertCalled('check', 'commit')
 
-        # Verify the contents of the values passed with the signal
-        self.assertEqual(self.stock_levels["ABC"], 12)
-        self.assertEqual(self.stock_levels["E"], 3)
-        self.assertEqual(self.stock_levels["fG"], 6)
-
-    def test_multiple_stock_codes_spaces(self):
-        """
-        Tests the parsing of a valid message containing multiple stock codes seperated by spaces.
-        """
-        self.stock_levels = {}
-
-        def mock_listen(**kwargs):
-            self.stock_levels = kwargs['stock_levels']
-
-        # Create an instance of StockLevel
-        sl = StockLevel(None)
-
-        # Create a test message
-        msg = MockMessage({ "operations": { "SL": "ABC12 E3 fG6" }})
-
-        # Register a test listner
-        check_signal.connect(mock_listen, sender=StockLevel)
-
-        # Pass the test message to the handle method
-        sl.handle(msg)
-
-        # Verify the contents of the values passed with the signal
-        self.assertEqual(self.stock_levels["ABC"], 12)
-        self.assertEqual(self.stock_levels["E"], 3)
-        self.assertEqual(self.stock_levels["fG"], 6)
+        self.assertEqual(ns.commit_args['stock_levels']["ABC"], 12)
+        self.assertEqual(ns.commit_args['stock_levels']["E"], 3)
+        self.assertEqual(ns.commit_args['stock_levels']["fG"], 6)
 
     def test_missing_stock_code(self):
-        """
-        Tests the parsing of an invalid message missing a stock code.
-        """
-        self.stock_levels = {}
-
-        def mock_listen(**kwargs):
-            self.stock_levels = kwargs['stock_levels']
-
-        # Create an instance of StockLevel
-        sl = StockLevel(None)
-
-        # Create a test message
-        msg = MockMessage({ "operations": { "SL": "6" }})
-
-        # Register a test listner
-        check_signal.connect(mock_listen, sender=StockLevel)
-
-        # Pass the test message to the handle method
-        sl.handle(msg)
-
-        # Verify the error message response
-        self.assertEqual(self.stock_levels, {})
-        self.assertEqual(msg.response, "Please try again. We understood everything until: 6")
+        ns = self.send({ "operations": { "SL": "42" }})
+        self.assertNotCalled('check', 'commit')
 
     def test_missing_stock_level(self):
-        """
-        Tests the parsing of an invalid message missing a stock level.
-        """
-        self.stock_levels = {}
-
-        def mock_listen(**kwargs):
-            self.stock_levels = kwargs['stock_levels']
-
-        # Create an instance of StockLevel
-        sl = StockLevel(None)
-
-        # Create a test message
-        msg = MockMessage({ "operations": { "SL": "A6B" }})
-
-        # Register a test listner
-        check_signal.connect(mock_listen, sender=StockLevel)
-
-        # Pass the test message to the handle method
-        sl.handle(msg)
-
-        # Verify the error message response
-        self.assertEqual(self.stock_levels, {})
-        self.assertEqual(msg.response, "Please try again. We understood everything until: B")
+        ns = self.send({ "operations": { "SL": "A6B" }})
+        self.assertNotCalled('check', 'commit')
 
     def test_error_from_commit(self):
-        """
-        Tests the handling of an error returned from the commit phase.
-        """
-        self.stock_levels = {}
-
-        def mock_listen(**kwargs):
-            return "ERROR"
-
-        # Create an instance of StockLevel
-        sl = StockLevel(None)
-
-        # Create a test message
-        msg = MockMessage({ "operations": { "SL": "A6B4CD99" }})
-
-        # Register a test listner
-        check_signal.connect(mock_listen, sender=StockLevel)
-
-        # Pass the test message to the handle method
-        sl.handle(msg)
-
-        # Verify there is an error message response
-        self.assertNotEqual(msg.response, None)
+        # TODO:
+        pass
 
 
 class StockOutTest(TestCase):
@@ -247,7 +154,6 @@ class StockOutTest(TestCase):
     """
     def send(self, fields, check=None, commit=None):
         msg = MockMessage(fields)
-
         ns = Namespace()
 
         # Called at most once
@@ -291,7 +197,7 @@ class StockOutTest(TestCase):
 
     def test_handle_simple(self):
         ns = self.send({ "operations": { "SE": "A" }})
-        self.assertCalled('check', 'commit', 'respond')
+        self.assertCalled('check', 'commit')
 
         # It is assumed in all other tests that check_args and commit_args have
         # the same keys and (mostly) the same values.
@@ -302,29 +208,26 @@ class StockOutTest(TestCase):
         self.assertIn('message', ns.commit_args)
         self.assertIn('stock_code', ns.commit_args)
 
-        self.assertEqual(1, len(ns.responses))
-
     def test_handle_one_valid_arg(self):
         ns = self.send({ "operations": { "SE": "A" }})
-        self.assertCalled('check', 'commit', 'respond')
+        self.assertCalled('check', 'commit')
 
-        self.assertEqual("A", ns.commit_args['stock_code'])
-
-        self.assertEqual(1, len(ns.responses))
-        self.assertIn("Thanks for your report.", ns.responses[0])
+        self.assertEqual(ns.commit_args['stock_code'], "A")
 
     def test_with_no_arg(self):
         ns = self.send({ "operations": { "SE": "" }})
         self.assertNotCalled('check', 'commit')
-        self.assertCalled('respond')
 
-        self.assertEqual(1, len(ns.responses))
         self.assertIn("Error with message. We understood everything until:", ns.responses[0])
 
     def test_valid_followed_by_junk(self):
         ns = self.send({ "operations": { "SE": "AW 049045" }})
         self.assertNotCalled('check', 'commit')
-        self.assertCalled('respond')
 
-        self.assertEqual(1, len(ns.responses))
+        self.assertIn("Error with message. We understood everything until:", ns.responses[0])
+
+    def test_with_no_arg_followed_by_junk(self):
+        ns = self.send({ "operations": { "SE": "93489384" }})
+        self.assertNotCalled('check', 'commit')
+
         self.assertIn("Error with message. We understood everything until:", ns.responses[0])
