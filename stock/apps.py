@@ -15,7 +15,7 @@ def select_errors(check_results, commit_results):
         # TODO: attach the errors to the message
         return [(receiver, return_value) for (receiver, return_value) in check_results if return_value != None]
 
-    if not all(r is None for r in commit_results):
+    if any(commit_results):
         # check for errors from the commit phase
         # TODO: attach the errors to the message
         return [(receiver, return_value) for (receiver, return_value) in commit_results if return_value != None]
@@ -49,7 +49,7 @@ class StockLevel(OperationBase):
 
         # create a dictionary: stock code -> stock level
         levels = [ gobbler.gobble(STOCK_CODE, l) for l in levels ]
-        stock_levels = { first: int(second) for first, second in levels }
+        stock_levels = { stock_code: int(stock_level) for stock_code, stock_level in levels }
 
         check_results, commit_results = self.send_signals(message=message,
                                                           stock_levels=stock_levels)
