@@ -11,36 +11,55 @@ from apps import EquipmentFailure
 import operation_parser.app
 from sim.operations import commit_signal, check_signal
 
-class MockMessage: 
-    """
-    A useful class that satisfies the basic interface of a RapidSMS Message.
-    """
-    def __init__(self, text):
-        self.text = text
-        self.fields = {}
+class APITest(TestCase):
 
-called_fns = None
+    ## Internal utility classes
 
-class log_if_called:
-    def __init__(self, name):
-        self.name = name
+    class Namespace:
+        pass
 
-    def __call__(self, func):
-        def log_if_called_decorated(*args, **kwargs):
-            called_fns.add(self.name)
-            func(*args, **kwargs)
-        return log_if_called_decorated
+    class MockMessage: 
+        """
+        A useful class that satisfies the basic interface of a RapidSMS Message.
+        """
+        def __init__(self, text):
+            self.text = text
+            self.fields = {}
 
-class Namespace: 
-    '''Just an empty container.'''
-    pass
+    ## Support for asserting that signal handlers were called
 
-class EquipmentFailureTest(TestCase):
+    def __init__(self, arg):
+        TestCase.__init__(self, arg)
+        self.called_fns = None
+
+    def setUp(self):
+        self.called_fns = set()
+
+    def assertCalled(self, *names):
+        for name in names:
+            self.assertIn(name, self.called_fns)
+
+    def assertNotCalled(self, *names):
+        for name in names:
+            self.assertNotIn(name, self.called_fns)
+
+    class log_if_called:
+        def __init__(self, name, result_set):
+            self.name = name
+            self.set = result_set
+
+        def __call__(self, func):
+            def log_if_called_decorated(*args, **kwargs):
+                self.set.add(self.name)
+                func(*args, **kwargs)
+            return log_if_called_decorated
+
+    ## Useful test methods
 
     def send(self, text, check=None, commit=None):
-        msg = MockMessage(text)
+        msg = APITest.MockMessage(text)
 
-        ns = Namespace()
+        ns = APITest.Namespace()
         
         # Called at most once
         ns.check_args = None
@@ -49,15 +68,15 @@ class EquipmentFailureTest(TestCase):
         # Possibly called many times
         ns.responses = []
 
-        @log_if_called('check')
+        @self.log_if_called('check', self.called_fns)
         def capture_check(**kwargs): ns.check_args = kwargs
         check_signal.connect(capture_check, sender=EquipmentFailure, weak=False)
             
-        @log_if_called('commit')
+        @self.log_if_called('commit', self.called_fns)
         def capture_commit(**kwargs): ns.commit_args = kwargs
         commit_signal.connect(capture_commit, sender=EquipmentFailure, weak=False)
             
-        @log_if_called('respond')
+        @self.log_if_called('respond', self.called_fns)
         def capture_respond(response): ns.responses.append(response)
         msg.respond = capture_respond
 
@@ -77,17 +96,8 @@ class EquipmentFailureTest(TestCase):
 
         return ns
 
-    def setUp(self):
-        global called_fns
-        called_fns = set()
 
-    def assertCalled(self, *names):
-        for name in names:
-            self.assertIn(name, called_fns)
-
-    def assertNotCalled(self, *names):
-        for name in names:
-            self.assertNotIn(name, called_fns)
+class EquipmentFailureTest(APITest):
 
     def test_handle_simple(self):
         ns = self.send("NF A")

@@ -265,4 +265,5 @@ SIM_OPERATION_CODES = {
     "SL": _stock_apps.StockLevel,
     "SE": _stock_apps.StockOut,
     "NF": _equipment_apps.EquipmentFailure,
+    "WO": _equipment_apps.EquipmentRepaired,
 }
