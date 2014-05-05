@@ -114,6 +114,15 @@ class StockLevelTest(TestCase):
         so.handle(msg)
         ns.errors = msg.errors
 
+        # disconnect the signal listners
+        check_signal.disconnect(capture_check_X, sender=StockLevel)
+        check_signal.disconnect(capture_check_Y, sender=StockLevel)
+        check_signal.disconnect(capture_check_Z, sender=StockLevel)
+
+        commit_signal.disconnect(capture_commit_Q, sender=StockLevel)
+        commit_signal.disconnect(capture_commit_R, sender=StockLevel)
+        commit_signal.disconnect(capture_commit_S, sender=StockLevel)
+
         return ns
 
     def setUp(self):
@@ -303,6 +312,14 @@ class StockOutTest(TestCase):
         so = StockOut(None)
         so.handle(msg)
         ns.errors = msg.errors
+
+        check_signal.disconnect(capture_check_X, sender=StockOut)
+        check_signal.disconnect(capture_check_Y, sender=StockOut)
+        check_signal.disconnect(capture_check_Z, sender=StockOut)
+
+        commit_signal.disconnect(capture_commit_Q, sender=StockOut)
+        commit_signal.disconnect(capture_commit_R, sender=StockOut)
+        commit_signal.disconnect(capture_commit_S, sender=StockOut)
 
         return ns
 
