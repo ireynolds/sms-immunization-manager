@@ -21,10 +21,6 @@ class MockMessage:
         self.text = text
         self.fields = {}
 
-    def respond(self, response):
-        #TODO: something else
-        self.response = response
-
 called_fns = None
 
 class log_if_called:
@@ -54,9 +50,7 @@ class StockLevelTest(TestCase):
         ns.check_args = None
         ns.commit_args = None
 
-        # Possibly called many times
-        ns.responses = []
-
+        # check phase listners
         @log_if_called('check')
         def capture_check_X(**kwargs):
             ns.check_args = kwargs
@@ -75,10 +69,12 @@ class StockLevelTest(TestCase):
             if 'Z' in kwargs['stock_levels']:
                 return "Z ERROR %d" % randint(0, 9999)
 
+        # connect the check phase listners
         check_signal.connect(capture_check_X, sender=StockLevel)
         check_signal.connect(capture_check_Y, sender=StockLevel)
         check_signal.connect(capture_check_Z, sender=StockLevel)
 
+        # commit phase listners
         @log_if_called('commit')
         def capture_commit_Q(**kwargs):
             ns.commit_args = kwargs
@@ -97,13 +93,10 @@ class StockLevelTest(TestCase):
             if 'S' in kwargs['stock_levels']:
                 return "S ERROR"
 
+        # connect the commit phase listners
         commit_signal.connect(capture_commit_Q, sender=StockLevel)
         commit_signal.connect(capture_commit_R, sender=StockLevel)
         commit_signal.connect(capture_commit_S, sender=StockLevel)
-
-        @log_if_called('respond')
-        def capture_respond(response): ns.responses.append(response)
-        msg.respond = capture_respond
 
         # parse the message
         op = operation_parser.app.OperationParser(None)
@@ -258,6 +251,7 @@ class StockOutTest(TestCase):
         ns.check_args = None
         ns.commit_args = None
 
+        # check phase listners
         @log_if_called('check')
         def capture_check_X(**kwargs):
             ns.check_args = kwargs
@@ -276,10 +270,12 @@ class StockOutTest(TestCase):
             if 'Z' in kwargs['stock_code']:
                 return "Z ERROR %d" % randint(0, 9999)
 
+        # connect the check phase listners
         check_signal.connect(capture_check_X, sender=StockOut)
         check_signal.connect(capture_check_Y, sender=StockOut)
         check_signal.connect(capture_check_Z, sender=StockOut)
 
+        # commit phase listners
         @log_if_called('commit')
         def capture_commit_Q(**kwargs):
             ns.commit_args = kwargs
@@ -298,21 +294,21 @@ class StockOutTest(TestCase):
             if 'S' in kwargs['stock_code']:
                 return "S ERROR %d" % randint(0, 9999)
 
+        # connect the commit phase listners
         commit_signal.connect(capture_commit_Q, sender=StockOut)
         commit_signal.connect(capture_commit_R, sender=StockOut)
         commit_signal.connect(capture_commit_S, sender=StockOut)
 
-        @log_if_called('respond')
-        def capture_respond(response): ns.responses.append(response)
-        msg.respond = capture_respond
-
+        # parse the message
         op = operation_parser.app.OperationParser(None)
         op.parse(msg)
 
+        # handle the message
         so = StockOut(None)
         so.handle(msg)
         ns.errors = msg.errors
 
+        # disconnect the listners
         check_signal.disconnect(capture_check_X, sender=StockOut)
         check_signal.disconnect(capture_check_Y, sender=StockOut)
         check_signal.disconnect(capture_check_Z, sender=StockOut)
