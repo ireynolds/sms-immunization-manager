@@ -2,61 +2,30 @@ import re
 
 DELIMS = re.compile("[\\s;,]+")
 
+def gobble(pattern, string):
+    g = Gobbler(string)
+    match = g.gobble(pattern)
+    return (match, g.remainder)
+
+def gobble_all(pattern, string):
+    g = Gobbler(string)
+    matches = g.gobble_all(pattern)
+    return (matches, g.remainder)
+
 def _gobble(regex, string):
     """
     If zero or more characters at the beginning of string match the regular
-    expression pattern, returns (a, b) where a is the corresponding matched 
-    string and b is the remainder of the string. If there is no match, a is 
-    None.
+    expression pattern, returns (a, b) where a is the corresponding matched string
+    and b is the remainder of the string. If there is no match, a is None and
+    b is string.
     """
     match = regex.match(string)
-    if match:
-        match = match.group(0)
-        remainder = string[len(match):]
-        return (match, remainder)
-    else:
+    if not match:
         return (None, string)
 
-def gobble(pattern, string):
-    """
-    If zero or more characters at the beginning of string match the regular
-    expression pattern, returns (a, b) where a is the corresponding matched 
-    string and b is the remainder of the string. If there is no match, a is 
-    None.
-
-    Delimiter characters at the beginning of string are stripped before 
-    applying the pattern. The delimiter characters are:
-      * any whitespace character
-      * semicolon
-      * comma
-    """
-    # Strip off leading delimiters.
-    (delim_match, delim_remainder) = _gobble(DELIMS, string)
-    if delim_match:
-        string = delim_remainder
-
-    # Look for a match on pattern after the delimiters
-    regex = re.compile(pattern)
-    return _gobble(regex, string)
-
-def gobble_all(pattern, string):
-    """
-    Applies gobble repeatedly on the given string and pattern. Returns the 
-    pair (z, b), where z is the list of all string matches and b is the 
-    remainder of the string. If there are no matches, then z is None.
-    """
-    matches = []
-    while True:
-        # Look for a match on pattern
-        (match, remainder) = gobble(pattern, string)
-        if not match:
-            break
-
-        # Update the current string
-        string = remainder
-        matches.append(match)
-
-    return (matches, string) if matches else (None, string)
+    match = match.group(0)
+    remainder = string[len(match):]
+    return (match, remainder)
 
 def strip_delimiters(string):
     """
@@ -72,3 +41,49 @@ def strip_delimiters(string):
 
     # Reverse again to put in correct order and return
     return string[::-1]
+
+class Gobbler():
+
+    def __init__(self, string):
+        self.original = string
+        self.remainder = string
+
+    def gobble(self, pattern):
+        """
+        If zero or more characters at the beginning of string match the regular
+        expression pattern, returns the corresponding matched string. If there 
+        is no match, returns None.
+
+        Delimiter characters at the beginning of string are stripped before 
+        applying the pattern. The delimiter characters are:
+          * any whitespace character
+          * semicolon
+          * comma
+        """
+        # Strip off leading delimiters.
+        (_, remainder) = _gobble(DELIMS, self.remainder)
+        self.remainder = remainder
+        
+        # Look for a match on pattern after the delimiters
+        regex = re.compile(pattern)
+        (match, remainder) = _gobble(regex, self.remainder)
+
+        self.remainder = remainder
+        return match
+
+    def gobble_all(self, pattern):
+        """
+        Applies gobble repeatedly on the given string and pattern. Returns the 
+        list of all string matches. If there are no matches, then returns None.
+        """
+        matches = []
+        while True:
+            match = self.gobble(pattern)
+            if not match:
+                break
+            matches.append(match)
+        
+        if matches:
+            return matches
+        else:
+            return None 

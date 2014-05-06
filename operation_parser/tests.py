@@ -90,24 +90,28 @@ class GobblerTest(TestCase):
     ## Helpers        
 
     def assertGobbles(self, pattern, string, exp_match, exp_remainder):
-        act_match, act_remainder = gobbler.gobble(pattern, string)
+        g = gobbler.Gobbler(string)
+        act_match = g.gobble(pattern)
         self.assertEqual(exp_match, act_match)
-        self.assertEqual(exp_remainder, act_remainder)
+        self.assertEqual(exp_remainder, g.remainder)
 
     def assertGobblesAll(self, pattern, string, exp_matches, exp_remainder):
-        act_matches, act_remainder = gobbler.gobble_all(pattern, string)
+        g = gobbler.Gobbler(string)
+        act_matches = g.gobble_all(pattern)
         self.assertEqual(exp_matches, act_matches)
-        self.assertEqual(exp_remainder, act_remainder)
+        self.assertEqual(exp_remainder, g.remainder)
 
     def assertDoesNotGobble(self, pattern, string):
-        act_match, act_remainder = gobbler.gobble(pattern, string)
+        g = gobbler.Gobbler(string)
+        act_match = g.gobble(pattern)
         self.assertEqual(None, act_match)
-        self.assertEqual(string, act_remainder)        
+        self.assertEqual(string, g.remainder)        
 
     def assertDoesNotGobbleAny(self, pattern, string):
-        act_matches, act_remainder = gobbler.gobble_all(pattern, string)
+        g = gobbler.Gobbler(string)
+        act_matches = g.gobble_all(pattern)
         self.assertEqual(None, act_matches)
-        self.assertEqual(string, act_remainder)
+        self.assertEqual(string, g.remainder)
 
     ## Tests
 
@@ -175,7 +179,7 @@ class GobblerTest(TestCase):
 
     def test_gobble_all_multiple_matches_with_delimiters(self):
         self.assertGobblesAll("aa", ";aa\t\t;,,aa;  ;;b,\tbb",
-            ["aa", "aa"], ";  ;;b,\tbb")
+            ["aa", "aa"], "b,\tbb")
 
     # Test strip_delimiters
 

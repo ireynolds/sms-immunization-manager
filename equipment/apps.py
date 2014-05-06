@@ -20,18 +20,20 @@ class UnrecognizedTextException(Exception):
 class EquipmentBase(OperationBase):
 
     def _take_at_most_one_equipment_id(self, args):
-        equipment_id, remaining = gobble("[A-Z]", args.upper())
+        g = Gobbler(args.upper())
+        equipment_id = g.gobble("[A-Z]")
         # It's okay if equipment_id is None--this is within spec.
 
         # Extra stuff--reject with error
-        if remaining:
+        remainder = g.remainder
+        if remainder:
             if equipment_id:
                 error = "Message OK until %s. Provide one equipment code and nothing else. " \
-                        "Please fix and send again." % (remaining[:3],)
+                        "Please fix and send again." % (remainder[:3],)
                 raise TooManyArgsException(error)
             else:
                 error = "Message OK until %s. Expected an equipment code. Please fix and " \
-                        "send again." % (remaining[:3],)
+                        "send again." % (remainder[:3],)
                 raise UnrecognizedTextException(error)
             message.respond(response)
 
