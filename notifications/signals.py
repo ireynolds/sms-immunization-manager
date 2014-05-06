@@ -5,14 +5,40 @@ from equipment.apps import *
 
 logger = logging.getLogger("rapidsms")
 
+stubbed_equipment_ids = [None, 'A', 'BC', 'D']
+
+##
+## Equipment Failure
+##
+
 def equipment_failure_check(message, **kwargs):
     equipment_id = kwargs['equipment_id']
-    if equipment_id not in [None, 'A', 'BC', 'D']:
+    if equipment_id not in stubbed_equipment_ids:
         return "Message OK until %s. Unrecognized equipment code. Please fix and send again." % (equipment_id,)
+check_signal.connect(equipment_failure_check, sender=EquipmentFailure)
 
 def equipment_failure_commit(message, **kwargs):
     # TODO: Send notification
     logger.debug("Equipment failure notification sent")
+commit_signal.connect(equipment_failure_commit, sender=EquipmentFailure)
+
+##
+## Equipment Repaired
+##
+
+def equipment_repaired_check(message, **kwargs):
+    equipment_id = kwargs['equipment_id']
+    if equipment_id not in stubbed_equipment_ids:
+        return "Message OK until %s. Unrecognized equipment code. Please fix and send again." % (equipment_id,)
+check_signal.connect(equipment_repaired_check, sender=EquipmentRepaired)
+
+def equipment_repaired_commit(message, **kwargs):
+    pass
+commit_signal.connect(equipment_repaired_commit, sender=EquipmentRepaired)
+
+##
+## Stock Out
+##
 
 def stock_out_notification(message, **kwargs):
     """
@@ -20,9 +46,4 @@ def stock_out_notification(message, **kwargs):
     """
     logger.debug("Stock out notification sent")
     message.respond("Stock out notification sent")
-
-check_signal.connect(equipment_failure_check, sender=EquipmentFailure)
-commit_signal.connect(equipment_failure_commit, sender=EquipmentFailure)
-
-#commit_signal.connect(fridge_failure_notification, sender=FridgeFailure)
 #commit_signal.connect(stock_out_notification, sender=StockOut)
