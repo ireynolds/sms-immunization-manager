@@ -47,6 +47,10 @@ class Gobbler():
     def __init__(self, string):
         self.original = string
         self.remainder = string
+        self.index_of_previous = None
+
+    def index_of_previous(self):
+        return self.index_of_previous
 
     def gobble(self, pattern):
         """
@@ -62,14 +66,17 @@ class Gobbler():
         """
         # Strip off leading delimiters.
         (_, remainder) = _gobble(DELIMS, self.remainder)
-        self.remainder = remainder
         
         # Look for a match on pattern after the delimiters
         regex = re.compile(pattern)
-        (match, remainder) = _gobble(regex, self.remainder)
+        (match, remainder) = _gobble(regex, remainder)
 
-        self.remainder = remainder
-        return match
+        if match != None:
+            self.remainder = remainder
+            self.index_of_previous = len(self.original) - len(self.remainder) - len(match)
+            return match
+        else:
+            return None
 
     def gobble_all(self, pattern):
         """
