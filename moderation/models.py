@@ -6,7 +6,7 @@ from django.utils.encoding import force_text
 from django.utils.functional import lazy
 from django.utils import six
 
-def create_effect(is_successful, noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+def create_effect(priority, noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     Returns an un-saved MessageEffect with the given success state, name and description.
     noop_i18n_name contains the name of this effect as a format string returned from a noop i18n
@@ -17,25 +17,77 @@ def create_effect(is_successful, noop_i18n_name, name_context, noop_i18n_desc, d
     function or its shortcut functions below.
     """
     instance = MessageEffect()
-    instance.success = is_successful
+    instance.priority = priority
     instance.set_name(noop_i18n_name, name_context)
     instance.set_desc(noop_i18n_desc, desc_context)
     return instance
 
-def success(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+def debug_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
-    Returns an un-saved MessageEffect indicating a successful effect. See create_effect for a
-    description of this function's parameters.
-    """
-    return create_effect(True, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
+    Returns an un-saved MessageEffect with a debug priority. See create_effect for a description
+    of this function's parameters.
 
-def failure(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+    Debug effects are developer information of no relevance to users.
     """
-    Returns an un-saved MessageEffect indicating an unsuccessful effect. See create_effect for a
-    description of this function's parameters.
-    """
-    return create_effect(False, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
+    return create_effect(DEBUG, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
 
+def info_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+    """
+    Returns an un-saved MessageEffect with an info priority. See create_effect for a description
+    of this function's parameters.
+
+    Info effects document successes or other non-errors.
+    """
+    return create_effect(INFO, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
+
+def warn_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+    """
+    Returns an un-saved MessageEffect with a warning priority. See create_effect for a description
+    of this function's parameters.
+
+    Warning effects documents minor or non-user-actionable errors.
+    """
+    return create_effect(WARN, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
+
+def error_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+    """
+    Returns an un-saved MessageEffect with an error priority. See create_effect for a description
+    of this function's parameters.
+
+    Error effects document user-actionable errors. Their messages may be returned to users.
+    """
+    return create_effect(ERROR, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
+
+def urgent_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+    """
+    Returns an un-saved MessageEffect with an urgent priority. See create_effect for a description
+    of this function's parameters.
+
+    Urgent effects are critically important failures that must be seen and acted upon immediately.
+    Their messages are always returned to users. Use sparingly, if ever.
+    """
+    return create_effect(URGENT, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
+
+# Define priority levels for message effects. These are used when determining what information to
+# return to a user
+DEBUG = 'DEBUG'
+INFO = 'INFO'
+WARN = 'WARN'
+ERROR = 'ERROR'
+URGENT = 'URGENT'
+
+PRIORITY_CHOICES = (
+    (DEBUG, ugettext_lazy("Debug")),
+    (INFO, ugettext_lazy("Debug")),
+    (WARN, ugettext_lazy("Warning")),
+    (ERROR, ugettext_lazy("Error")),
+    (URGENT, ugettext_lazy("Urgent")),
+)
+
+PHASE_CHOICES = (
+    ("CHECK", ugettext_lazy('Check'))
+    ("COMMIT", ugettext_lazy('Commit'))
+)
 
 class MessageEffect(models.Model):
     """
@@ -50,11 +102,14 @@ class MessageEffect(models.Model):
     # The RapidSMS message that signaled this effect
     message = models.ForeignKey("messagelog.Message")
 
-    # If true, this effect was successful.
-    success = models.BooleanField()
+    # The phase in which this effect occurred
+    phase = models.CharField(max_length=10, choices=PHASE_CHOICES)
 
-    # If true, this effect was created in the check phase of a message
-    check_phase = models.BooleanField()
+    # The priority of this effect's outcome
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES)
+
+    # If True, this effect has been reviewed and dismissed by a moderator
+    moderator_dismissed = models.BooleanField(default="False")
 
     # The name of this effect, as an untranslated format string
     name_format = models.TextField()
@@ -75,6 +130,9 @@ class MessageEffect(models.Model):
         return outcome + ugettext(": %(name)s: %(desc)s") % context
 
     def _set_lazy_i18n(self, format_field, context_field, format, context):
+        """
+        Helper function for setting lazy i18n fields
+        """
         # Ensure that every replacement string in format is a key in context
         format % context
 
@@ -82,6 +140,9 @@ class MessageEffect(models.Model):
         setattr(self, context_field, json.dumps(context))
 
     def _get_lazy_i18n(self, format_field, context_field):
+        """
+        Helper function for getting lazy i18n fields
+        """
         # Define a lazy function for evaluating a string format (i.e. f % d)
         lazy_format_string = lazy(lambda f, d: force_text(f) % d, six.text_type)
 
