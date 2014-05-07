@@ -206,7 +206,7 @@ INSTALLED_APPS = (
     "south",
 
 ) + SIM_APPS + (
-
+    'moderation',
     'prototype',
     'reversion',
 
