@@ -1,4 +1,3 @@
-# Django settings for sim project.
 
 import os
 

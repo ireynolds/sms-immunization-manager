@@ -22,7 +22,7 @@ def create_effect(priority, noop_i18n_name, name_context, noop_i18n_desc, desc_c
     instance.set_desc(noop_i18n_desc, desc_context)
     return instance
 
-def debug_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+def debug(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     Returns an un-saved MessageEffect with a debug priority. See create_effect for a description
     of this function's parameters.
@@ -31,7 +31,7 @@ def debug_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     return create_effect(DEBUG, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
 
-def info_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+def info(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     Returns an un-saved MessageEffect with an info priority. See create_effect for a description
     of this function's parameters.
@@ -40,36 +40,54 @@ def info_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     return create_effect(INFO, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
 
-def warn_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+def warn(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     Returns an un-saved MessageEffect with a warning priority. See create_effect for a description
     of this function's parameters.
 
-    Warning effects documents minor or non-user-actionable errors.
+    Warning effects documents minor or non-user-actionable errors. Warnings typically are not
+    returned to users, and do not prevent later processing from taking place.
     """
     return create_effect(WARN, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
 
-def error_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+def error(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     Returns an un-saved MessageEffect with an error priority. See create_effect for a description
     of this function's parameters.
 
-    Error effects document user-actionable errors. Their messages may be returned to users.
+    Error effects document user-actionable errors. Their messages may be returned to users and
+    prevent later processing from taking place.
     """
     return create_effect(ERROR, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
 
-def urgent_effect(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+def urgent(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     Returns an un-saved MessageEffect with an urgent priority. See create_effect for a description
     of this function's parameters.
 
-    Urgent effects are critically important failures that must be seen and acted upon immediately.
-    Their messages are always returned to users. Use sparingly, if ever.
+    Urgent effects are critically important information that must be seen and acted upon
+    immediately. Their messages are always returned to users and do not halt further message
+    processing. Use sparingly, if ever.
     """
     return create_effect(URGENT, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
 
-# Define priority levels for message effects. These are used when determining what information to
-# return to a user
+def complete_effect(effect, message, stage, operation_index = None, opcode = ''):
+    """
+    Adds any remaining fields to effect not assigned by create_effect or its shortcut functions, and
+    saves the given effect model. Used by receivers of MessageEffects created with create_effect
+    or one of its shortcut functions above (e.g. a commit signal sender). Returns effect.
+
+    The message parameter is an instance of messagelog.Message, which can typically be accessed
+    via the msg.logger_msg field created by the messagelog app.
+    """
+    effect.message = message
+    effect.stage = stage
+    effect.operation_index = operation_index
+    effect.opcode = opcode
+    effect.save()
+    return effect
+
+# Define priority levels for message effects.
 DEBUG = 'DEBUG'
 INFO = 'INFO'
 WARN = 'WARN'
@@ -84,9 +102,15 @@ PRIORITY_CHOICES = (
     (URGENT, ugettext_lazy("Urgent")),
 )
 
-PHASE_CHOICES = (
-    ("CHECK", ugettext_lazy('Check'))
-    ("COMMIT", ugettext_lazy('Commit'))
+# Define the stage an effect can occur in.
+SYNTAX = 'SYNTAX'
+SEMANTIC = 'SEMANTIC'
+COMMIT = 'COMMIT'
+
+STAGE_CHOICES = (
+    (SYNTAX, ugettext_lazy("Syntax")),
+    (SEMANTIC, ugettext_lazy('Semantic')),
+    (COMMIT, ugettext_lazy('Commit')),
 )
 
 class MessageEffect(models.Model):
@@ -102,11 +126,17 @@ class MessageEffect(models.Model):
     # The RapidSMS message that signaled this effect
     message = models.ForeignKey("messagelog.Message")
 
-    # The phase in which this effect occurred
-    phase = models.CharField(max_length=10, choices=PHASE_CHOICES)
+    # The stage in which this effect occurred
+    stage = models.CharField(max_length=10, choices=STAGE_CHOICES)
 
     # The priority of this effect's outcome
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES)
+
+    # The 0-indexed position of this operation in the message, if applicable
+    operation_index = models.PositiveIntegerField(blank=True, null=True)
+
+    # The opcode of this operation, if applicable
+    opcode = models.CharField(max_length=2, blank=True)
 
     # If True, this effect has been reviewed and dismissed by a moderator
     moderator_dismissed = models.BooleanField(default="False")

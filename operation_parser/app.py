@@ -2,6 +2,8 @@ import logging
 from django.conf import settings
 from rapidsms.apps.base import AppBase
 import gobbler
+from moderation.models import *
+from django.utils.translation import ugettext_noop as _
 
 logger = logging.getLogger("rapidsms")
 
@@ -30,6 +32,7 @@ class OperationParser(AppBase):
     """
 
     def parse(self, message, opcodes=None):
+        # TODO: Replace this 
         if not opcodes:
             opcodes = settings.SIM_OPERATION_CODES.keys()
 
@@ -63,5 +66,14 @@ class OperationParser(AppBase):
 
             operations.append( (opcode, args) )
 
-        message.fields['operations'] = dict(operations)
+        # Add fields to the message
+        message.fields['operations'] = operations
+
+        result_fmtstr = _("Parser detected operations: %(ops)s")
+        result_context = {"ops": repr(operations)}
+
+        effect = info(_("Parsed Operation Codes"), {}, result_fmtstr, result_context)
+        complete_effect(effect, message.logged_msg, SYNTAX)
+        message.fields['effects'] = [effect]
+
         logger.debug("Parser detected operations: %s" % repr(operations))
