@@ -9,21 +9,6 @@ NOT_ALPHA_NUM = "[^A-z0-9]*"
 STOCK_LEVEL_OP_CODE = "SL"
 STOCK_OUT_OP_CODE = "SE"
 
-def select_errors(check_results, commit_results):
-    if commit_results == None:
-        # there were errors in the check phase, commit never attempted
-        # TODO: attach the errors to the message
-        return [(receiver, return_value) for (receiver, return_value) in check_results if return_value != None]
-
-    if any(commit_results):
-        # check for errors from the commit phase
-        # TODO: attach the errors to the message
-        return [(receiver, return_value) for (receiver, return_value) in commit_results if return_value != None]
-
-    # Implies that there were no errors found
-    # TODO: attach a success messgae
-    return None
-
 class StockLevel(OperationBase):
     """
     Parses stock codes and inventory levels from the provided message and sends
@@ -53,9 +38,8 @@ class StockLevel(OperationBase):
 
         check_results, commit_results = self.send_signals(message=message,
                                                           stock_levels=stock_levels)
-        message.errors = select_errors(check_results, commit_results)
-        if message.errors == None:
-            message.respond = "Thank you."
+        # collect all errors
+        message.errors = self.select_errors(check_results, commit_results)
 
 class StockOut(OperationBase):
     """
@@ -87,4 +71,5 @@ class StockOut(OperationBase):
         check_results, commit_results = self.send_signals(message=message,
                                                           stock_code=stock_code)
 
-        message.errors = select_errors(check_results, commit_results)
+        # collect all errors
+        message.errors = self.select_errors(check_results, commit_results)

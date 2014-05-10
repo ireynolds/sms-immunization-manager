@@ -40,6 +40,25 @@ class OperationBase(AppBase):
         commit_results = commit_signal.send_robust(sender=self.__class__, message=message, **kwargs)
         return (check_results, commit_results)
 
+    def select_errors(self, check_results, commit_results):
+        """
+        Takes the lists of errors from the check and commit phases and repackages them into
+        a single list of errors with no None values. If there were no errors from either phase
+        returns None.
+        """
+        if commit_results == None:
+            # there were errors in the check phase, commit never attempted
+            # TODO: attach the errors to the message
+            return [(receiver, return_value) for (receiver, return_value) in check_results if return_value != None]
+
+        if any(commit_results):
+            # check for errors from the commit phase
+            # TODO: attach the errors to the message
+            return [(receiver, return_value) for (receiver, return_value) in commit_results if return_value != None]
+
+        # Implies that there were no errors found
+        return None
+
 
 # Signals for the check and commit operation phases. The sender of these signals will always be the
 # class of the OperationBase subclass that is signaling. Every signal contains a message parameter,

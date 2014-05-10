@@ -18,7 +18,7 @@ class APITest(TestCase):
     class Namespace:
         pass
 
-    class MockMessage: 
+    class MockMessage:
         """
         A useful class that satisfies the basic interface of a RapidSMS Message.
         """
@@ -61,7 +61,7 @@ class APITest(TestCase):
         sender = self.__class__.sender
 
         ns = APITest.Namespace()
-        
+
         # Called at most once
         ns.check_args = None
         ns.commit_args = None
@@ -72,11 +72,11 @@ class APITest(TestCase):
         @self.log_if_called('check', self.called_fns)
         def capture_check(**kwargs): ns.check_args = kwargs
         check_signal.connect(capture_check, sender=sender, weak=False)
-            
+
         @self.log_if_called('commit', self.called_fns)
         def capture_commit(**kwargs): ns.commit_args = kwargs
         commit_signal.connect(capture_commit, sender=sender, weak=False)
-            
+
         @self.log_if_called('respond', self.called_fns)
         def capture_respond(response): ns.responses.append(response)
         msg.respond = capture_respond
@@ -99,14 +99,14 @@ class APITest(TestCase):
 
 
 class EquipmentFailureTest(APITest):
-    
+
     sender = EquipmentFailure
 
     def test_handle_simple(self):
         ns = self.send("NF A")
         self.assertCalled('check', 'commit', 'respond')
 
-        # It is assumed in all other tests that check_args and commit_args have 
+        # It is assumed in all other tests that check_args and commit_args have
         # the same keys and (mostly) the same values.
 
         self.assertIn('message', ns.check_args)
@@ -119,12 +119,12 @@ class EquipmentFailureTest(APITest):
 
     def test_handle_one_valid_arg(self):
         ns = self.send("NF A")
-        
+
         self.assertCalled('check', 'commit', 'respond')
 
         self.assertEqual("A", ns.commit_args['equipment_id'])
 
-        self.assertEqual(1, len(ns.responses))        
+        self.assertEqual(1, len(ns.responses))
         self.assertIn('Success', ns.responses[0])
 
     def test_with_no_arg(self):
@@ -133,7 +133,7 @@ class EquipmentFailureTest(APITest):
 
         self.assertEqual(None, ns.check_args['equipment_id'])
 
-        self.assertEqual(1, len(ns.responses))        
+        self.assertEqual(1, len(ns.responses))
         self.assertIn('Success', ns.responses[0])
 
     def test_with_two_valid_args(self):
@@ -143,7 +143,7 @@ class EquipmentFailureTest(APITest):
 
         self.assertEqual(1, len(ns.responses))
         self.assertIn("OK until", ns.responses[0])
-    
+
     def test_one_invalid_arg(self):
         ns = self.send('NF Q')
         self.assertNotCalled('commit')
@@ -168,7 +168,7 @@ class EquipmentRepairedTest(APITest):
         ns = self.send("WO A")
         self.assertCalled('check', 'commit', 'respond')
 
-        # It is assumed in all other tests that check_args and commit_args have 
+        # It is assumed in all other tests that check_args and commit_args have
         # the same keys and (mostly) the same values.
 
         self.assertIn('message', ns.check_args)
@@ -181,12 +181,12 @@ class EquipmentRepairedTest(APITest):
 
     def test_handle_one_valid_arg(self):
         ns = self.send("WO A")
-        
+
         self.assertCalled('check', 'commit', 'respond')
 
         self.assertEqual("A", ns.commit_args['equipment_id'])
 
-        self.assertEqual(1, len(ns.responses))        
+        self.assertEqual(1, len(ns.responses))
         self.assertIn('Success', ns.responses[0])
 
     def test_with_no_arg(self):
@@ -195,7 +195,7 @@ class EquipmentRepairedTest(APITest):
 
         self.assertEqual(None, ns.check_args['equipment_id'])
 
-        self.assertEqual(1, len(ns.responses))        
+        self.assertEqual(1, len(ns.responses))
         self.assertIn('Success', ns.responses[0])
 
     def test_with_two_valid_args(self):
@@ -205,7 +205,7 @@ class EquipmentRepairedTest(APITest):
 
         self.assertEqual(1, len(ns.responses))
         self.assertIn("OK until", ns.responses[0])
-    
+
     def test_one_invalid_arg(self):
         ns = self.send('WO Q')
         self.assertNotCalled('commit')
@@ -221,3 +221,47 @@ class EquipmentRepairedTest(APITest):
 
         self.assertEqual(1, len(ns.responses))
         self.assertIn("OK until", ns.responses[0])
+
+class FridgeTemperatureTest(APITest):
+
+    sender = FridgeTemperature
+
+    def test_parse_args_simple(self):
+        ns = self.send("FT A 0 0")
+        self.assertCalled('check', 'commit')
+
+        # It is assumed in all other tests that check_args and commit_args have
+        # the same keys and (mostly) the same values.
+
+        self.assertIn('message', ns.check_args)
+        self.assertIn('fridge_events', ns.check_args)
+
+        self.assertIn('message', ns.commit_args)
+        self.assertIn('fridge_events', ns.commit_args)
+
+    def test_parse_args_one_valid(self):
+        ns = self.send("FT A 0 0")
+
+    def test_parse_args_no_fridge_id_two_events_valid (self):
+        ns = self.send("FT 0 0")
+
+    def test_parse_args_no_fridge_id_one_event_valid (self):
+        ns = self.send("FT 0")
+
+    def test_parse_args_no_fridge_id_one_event_valid (self):
+        ns = self.send("FT 0")
+
+    def test_parse_args_two_valid(self):
+        ns = self.send("FT A 0 0 B 1 2")
+
+    def test_parse_args_two_valid(self):
+        ns = self.send("FT A 0 0 B 1 2")
+
+    def test_parse_args_multiple_valid(self):
+        ns = self.send("FT A 0 0 B 1 2 C 3 4 D 9 9")
+
+    def test_parse_args_two_mix_valid(self):
+        ns = self.send("FT A 0 0 B 0 ")
+
+    def test_parse_args_multiple_mix_valid(self):
+        ns = self.send("FT A 0 B 0 1 C 3 4 D 0")
