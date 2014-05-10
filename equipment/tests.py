@@ -12,12 +12,6 @@ import operation_parser.app
 from sim.operations import commit_signal, semantic_signal
 from django.dispatch.dispatcher import receiver
 
-from rapidsms.tests.harness import RapidTest
-
-class BasicTest(RapidTest):
-    def test_simple(self):
-        self.receive("so a", self.lookup_connections('4257886710')[0])
-
 class APITest(TestCase):
 
     ## Internal utility classes

@@ -186,7 +186,8 @@ SIM_APPS = (
     'registration',
     'permissions',
     'dhis2',
-    'notifications'
+    'notifications',
+    'utils'
 )
 
 INSTALLED_APPS = (
@@ -249,6 +250,7 @@ RAPIDSMS_APP_BASES = (
     _stock_apps.StockLevel,
     _stock_apps.StockOut,
     _equipment_apps.EquipmentFailure,
+    _equipment_apps.EquipmentRepaired,
 )
 
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
