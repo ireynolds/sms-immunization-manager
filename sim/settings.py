@@ -203,6 +203,7 @@ INSTALLED_APPS = (
     "django_tables2",
     "selectable",
     "south",
+    "rapidsms.contrib.messagelog",
 
 ) + SIM_APPS + (
     'moderation',
@@ -214,7 +215,6 @@ INSTALLED_APPS = (
     "rapidsms.backends.database",
     "rapidsms.contrib.handlers",
     "rapidsms.contrib.httptester",
-    "rapidsms.contrib.messagelog",
     "rapidsms.contrib.messaging",
     #"rapidsms.contrib.registration",
     #"rapidsms.contrib.echo",

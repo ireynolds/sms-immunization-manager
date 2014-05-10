@@ -34,7 +34,7 @@ class OperationBase(AppBase):
         # Examine each operation in the message to determine if it should be parsed
         for index in xrange(len(message.fields["operations"])):
             opcode, argstring = message.fields["operations"][index]
-            if opcode in self.get_opcode():
+            if opcode in self.get_opcodes():
                 effects, kwargs = self.parse_arguments(argstring, message)
                 message.fields["operation_arguments"][index] = kwargs
 
