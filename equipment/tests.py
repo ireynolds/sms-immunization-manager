@@ -9,7 +9,7 @@ from django.test import TestCase
 
 from apps import EquipmentRepaired, EquipmentFailure
 import operation_parser.app
-from sim.operations import commit_signal, check_signal
+from sim.operations import commit_signal, semantic_signal
 from django.dispatch.dispatcher import receiver
 
 class APITest(TestCase):
@@ -70,7 +70,7 @@ class APITest(TestCase):
         # Possibly called many times
         ns.responses = []
 
-        @receiver(check_signal, sender=sender, weak=False)
+        @receiver(semantic_signal, sender=sender, weak=False)
         @self.log_if_called('check', self.called_fns)
         def capture_check(**kwargs): 
             ns.check_args = kwargs
@@ -85,7 +85,7 @@ class APITest(TestCase):
             ns.responses.append(response)
         msg.respond = capture_respond
 
-        if check: check_signal.connect(check, sender=sender, weak=False)
+        if check: semantic_signal.connect(check, sender=sender, weak=False)
         if commit: commit_signal.connect(commit, sender=sender, weak=False)
 
         op = operation_parser.app.OperationParser(None)
@@ -94,8 +94,8 @@ class APITest(TestCase):
         ff = sender(None)
         ff.handle(msg)
 
-        check_signal.disconnect(capture_check)
-        if check: check_signal.disconnect(check)
+        semantic_signal.disconnect(capture_check)
+        if check: semantic_signal.disconnect(check)
         commit_signal.disconnect(capture_commit)
         if commit: commit_signal.disconnect(commit)
 

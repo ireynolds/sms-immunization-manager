@@ -1,5 +1,5 @@
 import logging
-from sim.operations import check_signal, commit_signal
+from sim.operations import semantic_signal, commit_signal
 from stock.apps import *
 from equipment.apps import *
 from django.dispatch.dispatcher import receiver
@@ -12,7 +12,7 @@ stubbed_equipment_ids = [None, 'A', 'BC', 'D']
 ## Equipment Failure
 ##
 
-@receiver(check_signal, sender=EquipmentFailure)
+@receiver(semantic_signal, sender=EquipmentFailure)
 def equipment_failure_check(message, **kwargs):
     equipment_id = kwargs['equipment_id']
     if equipment_id not in stubbed_equipment_ids:
@@ -27,7 +27,7 @@ def equipment_failure_commit(message, **kwargs):
 ## Equipment Repaired
 ##
 
-@receiver(check_signal, sender=EquipmentRepaired)
+@receiver(semantic_signal, sender=EquipmentRepaired)
 def equipment_repaired_check(message, **kwargs):
     equipment_id = kwargs['equipment_id']
     if equipment_id not in stubbed_equipment_ids:

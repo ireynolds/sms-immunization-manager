@@ -1,5 +1,4 @@
-from sim.operations import OperationBase, filter_by_opcode
-
+from sim.operations import OperationBase
 from operation_parser.gobbler import *
 
 def _top_error(results):
@@ -64,12 +63,10 @@ class EquipmentBase(OperationBase):
 
 class EquipmentFailure(EquipmentBase):
 
-    @filter_by_opcode
     def handle(self, message):
         self._handle_any(message, "NF")      
 
 class EquipmentRepaired(EquipmentBase):
 
-    @filter_by_opcode
     def handle(self, message):
         self._handle_any(message, "WO")

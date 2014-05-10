@@ -32,7 +32,7 @@ class OperationBase(AppBase):
         effects.
         """
         # Examine each operation in the message to determine if it should be parsed
-        for index in xrange(message.fields["operations"]):
+        for index in xrange(len(message.fields["operations"])):
             opcode, argstring = message.fields["operations"][index]
             if opcode in self.get_opcode():
                 effects, kwargs = self.parse_arguments(argstring, message)
@@ -43,7 +43,7 @@ class OperationBase(AppBase):
                 for e in effects:
                     complete_effect(e, message.logger_msg, SYNTAX, index, opcode)
                     halt = halt or message.priority in HALTING_PRIORITIES
-                message.fields["effects"].extend(effects)
+                message.fields["operation_effects"].extend(effects)
 
                 if not halt:
                     # If no parsing effects were halting, send the semantic signal
@@ -135,5 +135,5 @@ class OperationBase(AppBase):
 # arguments to both signals. Receivers of these signals must return a list containing at least one
 # MessageEffect instance created using moderation.models.create_effect or one of its shortcut
 # functions.
-semantics_signal  = django.dispatch.Signal(providing_args=["message"])
+semantic_signal  = django.dispatch.Signal(providing_args=["message"])
 commit_signal = django.dispatch.Signal(providing_args=["message"])

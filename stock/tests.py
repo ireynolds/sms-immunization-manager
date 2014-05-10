@@ -8,7 +8,7 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 from stock.apps import StockLevel, StockOut
 import operation_parser.app
-from sim.operations import check_signal, commit_signal
+from sim.operations import semantic_signal, commit_signal
 from random import randint
 
 class MockMessage:
@@ -70,9 +70,9 @@ class StockLevelTest(TestCase):
                 return "Z ERROR %d" % randint(0, 9999)
 
         # connect the check phase listners
-        check_signal.connect(capture_check_X, sender=StockLevel)
-        check_signal.connect(capture_check_Y, sender=StockLevel)
-        check_signal.connect(capture_check_Z, sender=StockLevel)
+        semantic_signal.connect(capture_check_X, sender=StockLevel)
+        semantic_signal.connect(capture_check_Y, sender=StockLevel)
+        semantic_signal.connect(capture_check_Z, sender=StockLevel)
 
         # commit phase listners
         @log_if_called('commit')
@@ -108,9 +108,9 @@ class StockLevelTest(TestCase):
         ns.errors = msg.errors
 
         # disconnect the signal listners
-        check_signal.disconnect(capture_check_X, sender=StockLevel)
-        check_signal.disconnect(capture_check_Y, sender=StockLevel)
-        check_signal.disconnect(capture_check_Z, sender=StockLevel)
+        semantic_signal.disconnect(capture_check_X, sender=StockLevel)
+        semantic_signal.disconnect(capture_check_Y, sender=StockLevel)
+        semantic_signal.disconnect(capture_check_Z, sender=StockLevel)
 
         commit_signal.disconnect(capture_commit_Q, sender=StockLevel)
         commit_signal.disconnect(capture_commit_R, sender=StockLevel)
@@ -271,9 +271,9 @@ class StockOutTest(TestCase):
                 return "Z ERROR %d" % randint(0, 9999)
 
         # connect the check phase listners
-        check_signal.connect(capture_check_X, sender=StockOut)
-        check_signal.connect(capture_check_Y, sender=StockOut)
-        check_signal.connect(capture_check_Z, sender=StockOut)
+        semantic_signal.connect(capture_check_X, sender=StockOut)
+        semantic_signal.connect(capture_check_Y, sender=StockOut)
+        semantic_signal.connect(capture_check_Z, sender=StockOut)
 
         # commit phase listners
         @log_if_called('commit')
@@ -309,9 +309,9 @@ class StockOutTest(TestCase):
         ns.errors = msg.errors
 
         # disconnect the listners
-        check_signal.disconnect(capture_check_X, sender=StockOut)
-        check_signal.disconnect(capture_check_Y, sender=StockOut)
-        check_signal.disconnect(capture_check_Z, sender=StockOut)
+        semantic_signal.disconnect(capture_check_X, sender=StockOut)
+        semantic_signal.disconnect(capture_check_Y, sender=StockOut)
+        semantic_signal.disconnect(capture_check_Z, sender=StockOut)
 
         commit_signal.disconnect(capture_commit_Q, sender=StockOut)
         commit_signal.disconnect(capture_commit_R, sender=StockOut)
