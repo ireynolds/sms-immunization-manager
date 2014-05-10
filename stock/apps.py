@@ -1,5 +1,5 @@
 import django.dispatch
-from sim.operations import OperationBase
+from utils.operations import OperationBase
 from operation_parser import gobbler
 
 # Regular Expressions for parsing the stock code and level

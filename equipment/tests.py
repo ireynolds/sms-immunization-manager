@@ -9,7 +9,7 @@ from django.test import TestCase
 
 from apps import EquipmentRepaired, EquipmentFailure
 import operation_parser.app
-from sim.operations import commit_signal, semantic_signal
+from utils.operations import commit_signal, semantic_signal
 from django.dispatch.dispatcher import receiver
 
 class APITest(TestCase):

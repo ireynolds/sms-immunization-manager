@@ -8,7 +8,7 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 from stock.apps import StockLevel, StockOut
 import operation_parser.app
-from sim.operations import semantic_signal, commit_signal
+from utils.operations import semantic_signal, commit_signal
 from random import randint
 
 class MockMessage:

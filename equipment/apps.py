@@ -1,4 +1,4 @@
-from sim.operations import OperationBase
+from utils.operations import OperationBase
 from operation_parser.gobbler import *
 
 def _top_error(results):
