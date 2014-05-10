@@ -16,41 +16,29 @@ def disambiguate_o0(string):
     """
     return string.replace("o", "0").replace("O", "0")
 
-def _find_opcodes(text, opcodes):
-    indices = []
-    for opcode in opcodes:
-        index = text.find(opcode)
-        if index != -1:
-            indices.append(index)
-    return indices
-
 class OperationParser(AppBase):
-    """
-    A RapidSMS app for parsing messages into multiple operations. Adds an 'operations' field to
-    each message in the parse phase. This field is a dictionary mapping operation codes to strings
-    containing the arguments for that operation.
-    """
 
-    def parse(self, message, opcodes=None):
-        # TODO: Replace this 
-        if not opcodes:
-            opcodes = settings.SIM_OPERATION_CODES.keys()
+    def _find_opcodes(self, text, opcodes):
+        indices = []
+        for opcode in opcodes:
+            index = text.find(opcode)
+            if index != -1:
+                indices.append(index)
+        return indices
 
-        text = message.text
-        text = gobbler.strip_delimiters(text)
-        text = text.upper()
+    def _get_operations(self, text, opcodes):
+        opcode_indices = self._find_opcodes(text, opcodes)
 
-        opcode_indices = _find_opcodes(text, opcodes)
+        ##########
 
-        #
         # HACK ATTACK!!!!!!
-        #
         # When the message does not lead with any opcode, that opcode is assumed
         # to be "FT". 
-        #
         if 0 not in opcode_indices:
             text = "FT" + text
-            opcode_indices = _find_opcodes(text, opcodes)
+            opcode_indices = self._find_opcodes(text, opcodes)
+
+        ##########
 
         starts = sorted(opcode_indices)
         ends = starts[1:] + [len(text)]
@@ -59,21 +47,30 @@ class OperationParser(AppBase):
         operations = []
         for start, end in bounds:
             operation = text[start:end]
-            opcode = operation[:2]
 
+            opcode = operation[:2]
             args = gobbler.strip_delimiters(operation[2:])
             args = disambiguate_o0(args)
 
             operations.append( (opcode, args) )
 
-        # Add fields to the message
-        message.fields['operations'] = operations
+        return operations
 
+    def _get_complete_effects(self, operations, message):
         result_fmtstr = _("Parser detected operations: %(ops)s")
         result_context = {"ops": repr(operations)}
-
         effect = info(_("Parsed Operation Codes"), {}, result_fmtstr, result_context)
-        complete_effect(effect, message.logged_msg, SYNTAX)
+        return complete_effect(effect, message.logger_msg, SYNTAX)
+
+    def parse(self, message, opcodes=None):
+        if not opcodes:
+            opcodes = settings.SIM_OPERATION_CODES.keys()
+
+        text = gobbler.strip_delimiters(message.text).upper()
+        operations = self._get_operations(text, opcodes)        
+        effect = self._get_complete_effects(operations, message)
+       
+        message.fields['operations'] = operations
         message.fields['effects'] = [effect]
 
         logger.debug("Parser detected operations: %s" % repr(operations))
