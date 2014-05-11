@@ -1,10 +1,11 @@
-from sim.operations import OperationBase, filter_by_opcode
-
-from operation_parser.gobbler import *
+from sim.operations import OperationBase
+from operation_parser import gobbler
+from moderation.models import *
+from django.utils.translation import ugettext_noop as _
 
 SINGLE_ALPHA = "[A-Z]"
 ONE_DIGIT = "[0-9]"
-TWO_DIGITS = "[0-9]{2}"
+TWO_DIGITS = "[0-9]\W*[0-9]"
 FRIDGE_TEMP_OP_CODE = "FT"
 
 def _top_error(results):
@@ -25,18 +26,20 @@ class UnrecognizedTextException(Exception):
 class EquipmentBase(OperationBase):
 
     def _take_at_most_one_equipment_id(self, args):
-        equipment_id, remaining = gobble("[A-Z]", args.upper())
+        g = Gobbler(args.upper())
+        equipment_id = g.gobble("[A-Z]")
         # It's okay if equipment_id is None--this is within spec.
 
         # Extra stuff--reject with error
-        if remaining:
+        remainder = g.remainder
+        if remainder:
             if equipment_id:
                 error = "Message OK until %s. Provide one equipment code and nothing else. " \
-                        "Please fix and send again." % (remaining[:3],)
+                        "Please fix and send again." % (remainder[:3],)
                 raise TooManyArgsException(error)
             else:
                 error = "Message OK until %s. Expected an equipment code. Please fix and " \
-                        "send again." % (remaining[:3],)
+                        "send again." % (remainder[:3],)
                 raise UnrecognizedTextException(error)
             message.respond(response)
 
@@ -67,96 +70,123 @@ class EquipmentBase(OperationBase):
 
 class EquipmentFailure(EquipmentBase):
 
-    @filter_by_opcode
     def handle(self, message):
         self._handle_any(message, "NF")
 
 class EquipmentRepaired(EquipmentBase):
 
-    @filter_by_opcode
     def handle(self, message):
         self._handle_any(message, "WO")
 
 class FridgeTemperature(OperationBase):
 
-    def _parse_events(args):
-        events, remaining = gobbler.gobble(TWO_DIGITS, args)
+    def _parse_events(self, args):
+        """
+        Used internally to help parse the arguments for an FT message.
+        Attempts to parse the number of events from the argument string.
 
-        if events:
-            num_high = int(events[0])
-            num_low  = int(events[1])
+        To support the current deployment in Laos this will try to parse a
+        sigle zero or two event numbers.
 
-            # found high and low numbers without a fridge id
-            return (num_high, num_low)
+        Returns a three element tuple containing:
+          1) a parsing error or None if there are no errors
+          2) a two element tuple containging the number of High and Low events
+             or None if there was a parsing error
+          3) the remaining characters from the original argument string
+        """
+        num_high, remaining = gobbler.gobble(ONE_DIGIT, args)
 
-        # look for degenerate case, missing fridge id and one 0
-        events, remaining = gobbler.gobble(ONE_DIGIT, args)
+        if num_high:
+            num_high = int(num_high)
+            num_low, remaining = gobbler.gobble(ONE_DIGIT, remaining)
+            if num_low:
+                num_low = int(num_low)
+                # found high and low numbers
+                return None, (num_high, num_low), remaining
 
-        if events:
-            num_high = int(events)
             if num_high == 0:
-                # found high without fridgeid or low
-                return (0, 0)
+                # found single zero
+                return None, (0, 0), remaining
 
-            else:
-                error = "OK until: %s. Expected a number of low temperature events. " \
-                            "Please fix and send again." % remaining
-                raise UnrecognizedTextException(error)
+            # did not find the expected low digit
+            result_fmtstr = _("OK until: %(remaining_chars)s. Expected a number of low temperature events. " \
+                                "Please fix and send again.")
+            result_context = { "remaining_chars": remaining }
 
-        # didn't find any event numbers
-        return None
+            parse_error = error(_("Error Parsing FT Arguments"), {}, result_fmtstr, result_context)
+            return parse_error, None, remaining
 
-    def _parse_args(args):
+        # did not find any digits
+        return None, None, remaining
+
+    def parse_arguments(self, arg_string, message):
+        """
+        Parses arguments during the RapidSMS parse phase. Expects messages in
+        the form: FT <Alpha Tag ID> <# of High Temp Events> <# of Low Temp Events>
+
+        To work with current Laos deployment, will also accept a single 0 in the
+        place of two zeros. This is intended to save the trouble of typing 00.
+
+        To work with current Laos deployment, will also accept the lack of a
+        fridge tag if there is only one set of temperature events. This is
+        intented to be used when there is only one fridge at the facility.
+        """
         # look for degenerate case, missing fridge id
-        events = parse_events(args)
+        parse_error, events, remaining = self._parse_events(arg_string)
+        if parse_error:
+            return [parse_error], {}
 
-        if events:
+        if events and not remaining:
             # found events for a single fridge with no id
-            return { None: events }
+            result_fmtstr = _("Parsed: High Events: %(num_high)s Low Events: %(num_low)s." )
+            result_context = { "num_high": events[0], "num_low": events[1] }
+
+            effect = info(_("Parsed FT Arguments"), {}, result_fmtstr, result_context)
+            return [effect], { 'fridge_events': { None: events } }
 
         fridge_events = dict()
 
         # look for a fridge id and events
         while remaining:
             fridge_id, remaining = gobbler.gobble(SINGLE_ALPHA, remaining)
+
             if fridge_id:
                 if fridge_id in fridge_events:
                     # found a fridge id that was already in the message
-                    error = "OK until: %s. Duplicate Fridge ID. " \
-                                "Please fix and send again." % remaining
-                    raise UnrecognizedTextException(error)
+                    result_fmtstr = _("OK until: %(remaining_chars)s. Duplicate Fridge ID. " \
+                                        "Please fix and send again.")
+                    result_context = { "remaining_chars": remaining }
 
-                events = parse_events(remaining)
+                    effect = error(_("Error Parsing FT Arguments"), {}, result_fmtstr, result_context)
+                    return [effect], {}
+
+                effects, events, remaining = self._parse_events(remaining)
+
+                if effects:
+                    return [effects], {}
+
                 if events:
                     # found the event numbers
                     fridge_events[fridge_id] = events
                 else:
-                    error = "OK until: %s. Expected a number of high and low temperate events. " \
-                                "Please fix and send again." % remaining
-                    raise UnrecognizedTextException(error)
+                    result_fmtstr = _("OK until: %(remaining_chars)s. Expected a number of high and low temperate events. " \
+                                        "Please fix and send again.")
+                    result_context = { "remaining_chars": remaining }
+
+                    effect = error(_("Error Parsing FT Arguments"), {}, result_fmtstr, result_context)
+                    return [effect], {}
             else:
                 # didn't find a fridge id
-                error = "OK until: %s. Expected a Fridge ID. " \
-                            "Please fix and send again." % remaining
-                raise UnrecognizedTextException(error)
+                result_fmtstr = _("OK until: %(remaining_chars)s. Expected a fridge tag. " \
+                                        "Please fix and send again.")
+                result_context = { "remaining_chars": remaining }
+
+                effect = error(_("Error Parsing FT Arguments"), {}, result_fmtstr, result_context)
+                return [effect], {}
 
         # parsed all the args into fridge ids and numbers of events
-        return fridge_events
+        result_fmtstr = _("Parsed Fridge Events: %(fridge_events)s.")
+        result_context = { "fridge_events": repr(fridge_events) }
 
-    @filter_by_opcode
-    def handle(self, message):
-        # parse args
-        args = message.fields['operations'][FRIDGE_TEMP_OP_CODE]
-
-        try:
-            fridge_events = parse_args(args)
-        except (UnrecognizedTextException) as e:
-            # TODO needs to support i18n and error format
-            message.errors = str(e)
-            return
-
-        # send signals
-        check_results, commit_results = self.send_signals(message=message,
-                                                          fridge_events=fridge_events)
-        # collect errors
-        message.errors = self.select_errors(check_results, commit_results)
+        effect = info(_("Parsed FT Arguments"), {}, result_fmtstr, result_context)
+        return [effect], { 'fridge_events': fridge_events }

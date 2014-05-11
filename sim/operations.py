@@ -1,14 +1,78 @@
-import logging
+import traceback
 import django.dispatch
 from django.conf import settings
+from django.utils.translation import ugettext_noop as _
 from rapidsms.apps.base import AppBase
+from moderation.models import *
 
-logger = logging.getLogger("rapidsms")
+# Define which priorities halt message processing
+HALTING_PRIORITIES = set([ERROR])
 
 class OperationBase(AppBase):
     """
-    A RapidSMS app that implements an operation code.
+    A RapidSMS app that implements an operation code. Subclasses must implement parse_operation.
     """
+
+    def parse_arguments(self, arg_string, message):
+        """
+        Parses the given message into a Python representation of its syntactical meaning. Returns
+        a 2-tuple containing a list of MessageEffects representing the results of the parsing, and a
+        Python dictionary with keyword arguments to be sent to semantic and commit signal receivers
+        (in addition to a 'message' argument that is automatically sent).
+
+        Must be implemented by subclasses of OperationBase.
+        """
+        raise NotImplementedError("parse_message must be implemented by OperationBase subclasses")
+
+    def parse(self, message):
+        """
+        Implements RapidSMS' parse phase. Adds a field 'operation_arguments' to message containing
+        the parsed syntax of the operation, and a field 'operation_effects' which logs the effects
+        of message processing. If parsing is successful, sends the semantic signal and logs its
+        effects.
+        """
+        # Examine each operation in the message to determine if it should be parsed
+        for index in xrange(len(message.fields["operations"])):
+            opcode, argstring = message.fields["operations"][index]
+            if opcode in self.get_opcode():
+                effects, kwargs = self.parse_arguments(argstring, message)
+                message.fields["operation_arguments"][index] = kwargs
+
+                # Complete any effects from parsing arguments
+                halt = False
+                for e in effects:
+                    complete_effect(e, message.logger_msg, SYNTAX, index, opcode)
+                    halt = halt or message.priority in HALTING_PRIORITIES
+                message.fields["operation_effects"].extend(effects)
+
+                if not halt:
+                    # If no parsing effects were halting, send the semantic signal
+                    responses = semantic_signal.send_robust(sender=self.__class__,
+                                                            message=message,
+                                                            **kwargs)
+                    self._handle_signal_responses(responses, SEMANTIC, message, index, opcode)
+
+    def handle(self, message):
+        """
+        Implements RapidSMS' handle phase. If no halting errors have occured in previous phases,
+        sends the commit signal and logs the results. Always returns False to allow other RapidSMS
+        apps an opportunity to handle the message.
+        """
+        if self._halt(message):
+            return False
+
+        # Examine each operation in the message to determine if it should be handled
+        for index in xrange(message.fields["operations"]):
+            opcode, argstring = message.fields["operations"][index]
+            kwargs = message.fields["operation_arguments"][index]
+
+            if opcode in self.get_opcode():
+                responses = commit_signal.send_robust(sender=self.__class__,
+                                                      message=message,
+                                                      **kwargs)
+                self._handle_signal_responses(responses, COMMIT, message, index, opcode)
+        
+        return False
 
     def get_opcodes(self):
         """
@@ -18,71 +82,58 @@ class OperationBase(AppBase):
         for opcode, appbase in settings.SIM_OPERATION_CODES.iteritems():
             if appbase == self.__class__:
                 result.add(opcode)
-
         return result
 
-    def send_signals(self, message, **kwargs):
+    def _halt(self, message):
         """
-        Sends this operation's signals with the given parameters. Only sends the commit signal if
-        every check signal succeeds (returns None). Returns a 2-tuple containing the results of the
-        check and commit signals respectively. Each element of the returned tuple is a list of
-        tuples containing a signal receiver and the value that receiver returned. If the commit
-        signal was not sent the second element of the returned tuple is None.
+        Returns whether processing of the given message should be halted on account of an error in
+        a previous stage.
         """
-        logger.debug("StockOut: %s" % repr(self.__class__))
-        logger.debug("StockOut id: %d" % id(self.__class__))
-        check_results = check_signal.send_robust(sender=self.__class__, message=message, **kwargs)
+        for effect in message.fields["effects"]:
+            if effect.priority in HALTING_PRIORITIES:
+                return True
+        return False
 
-        for receiver, return_value in check_results:
-            if return_value != None:
-                return (check_results, None)
-
-        commit_results = commit_signal.send_robust(sender=self.__class__, message=message, **kwargs)
-        return (check_results, commit_results)
-
-    def select_errors(self, check_results, commit_results):
+    def _handle_signal_responses(signal_responses, stage, message, index, opcode):
         """
-        Takes the lists of errors from the check and commit phases and repackages them into
-        a single list of errors with no None values. If there were no errors from either phase
-        returns None.
+        Helper function to handle responses from signal receivers.
         """
-        if commit_results == None:
-            # there were errors in the check phase, commit never attempted
-            # TODO: attach the errors to the message
-            return [(receiver, return_value) for (receiver, return_value) in check_results if return_value != None]
+        for receiver, effects_or_exception in check_effects.iteritems():
+            for effect in self._check_for_exception(effects_or_exception, receiver):
+                complete_effect(e, message.logger_msg, stage, index, opcode)
+                message.fields["effects"].append(effect)
 
-        if any(commit_results):
-            # check for errors from the commit phase
-            # TODO: attach the errors to the message
-            return [(receiver, return_value) for (receiver, return_value) in commit_results if return_value != None]
+    def _check_for_exception(effects_or_exception, receiver):
+        """
+        Checks if the given signal result is an exception or an effect. If it is an exception,
+        returns a list of MessageEffects describing the exception. Otherwise, returns
+        effects_or_exception.
+        """
+        if not isinstance(effects_or_exception, Exception):
+            # No exception was raised, return the list of effects
+            return effects_or_exception
 
-        # Implies that there were no errors found
-        return None
+        # Create a developer-visible (debug) effect documenting the exception's traceback
+        exception = effects_or_exception
+        name = _("Signal receiver '%(receiver)s' raised exception")
+        name_context = {'receiver': repr(receiver)}
+        desc = _("Traceback:\n%(traceback)s")
+        desc_context = {'traceback': traceback.format_exc(exception)}
+        debug_effect = debug(name, name_context, desc, desc_context)
+
+        # Create a user-visible effect documenting that an internal error occured
+        name = _("Internal error")
+        desc = _("An internal error occured when processing your request")
+        error_effect = error(name, {}, desc, {})
+
+        return [debug_effect, error_effect]
 
 
-# Signals for the check and commit operation phases. The sender of these signals will always be the
-# class of the OperationBase subclass that is signaling. Every signal contains a message parameter,
+# Signals for the semantic and commit stages. The sender of these signals will always be the class
+# of the OperationBase subclass that is signaling. Every signal contains a message parameter,
 # however additional keyword arguments may be passed by senders. Senders must pass the same
-# arguments to check_signal and commit_signal.
-check_signal  = django.dispatch.Signal(providing_args=["message"])
+# arguments to both signals. Receivers of these signals must return a list containing at least one
+# MessageEffect instance created using moderation.models.create_effect or one of its shortcut
+# functions.
+semantic_signal  = django.dispatch.Signal(providing_args=["message"])
 commit_signal = django.dispatch.Signal(providing_args=["message"])
-
-def filter_by_opcode(handle_func):
-    """
-    A decorator which surrounds the handle function of an OperationBase subclass. Filters out
-    messages that do not contain an operation assigned to that OperationBase.
-    """
-    def decorated(func_self, msg):
-        if 'operations' not in msg.fields:
-            # This message has not been parsed, do nothing
-            return False
-
-        if len(set(msg.fields['operations'].keys()) & func_self.get_opcodes()) == 0:
-            # This message does contain a matching opcode
-            print "\n missing operations @@@@@@@@@@@@@@@@@@@@@\n"
-            return False
-
-        # Otherwise, this message contains a matching opcode
-        return handle_func(func_self, msg)
-
-    return decorated

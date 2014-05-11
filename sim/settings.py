@@ -1,4 +1,3 @@
-# Django settings for sim project.
 
 import os
 
@@ -206,7 +205,7 @@ INSTALLED_APPS = (
     "south",
 
 ) + SIM_APPS + (
-
+    'moderation',
     'prototype',
     'reversion',
 

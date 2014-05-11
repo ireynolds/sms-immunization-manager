@@ -89,93 +89,103 @@ class GobblerTest(TestCase):
 
     ## Helpers        
 
-    def assertGobbles(self, pattern, string, exp_match, exp_remainder):
-        act_match, act_remainder = gobbler.gobble(pattern, string)
+    def assertGobbles(self, pattern, string, exp_match, exp_remainder, exp_index):
+        g = gobbler.Gobbler(string)
+        act_match = g.gobble(pattern)
         self.assertEqual(exp_match, act_match)
-        self.assertEqual(exp_remainder, act_remainder)
+        self.assertEqual(exp_remainder, g.remainder)
+        self.assertEqual(exp_index, g.index_of_previous)
 
-    def assertGobblesAll(self, pattern, string, exp_matches, exp_remainder):
-        act_matches, act_remainder = gobbler.gobble_all(pattern, string)
+    def assertGobblesAll(self, pattern, string, exp_matches, exp_remainder, exp_index):
+        g = gobbler.Gobbler(string)
+        act_matches = g.gobble_all(pattern)
         self.assertEqual(exp_matches, act_matches)
-        self.assertEqual(exp_remainder, act_remainder)
+        self.assertEqual(exp_remainder, g.remainder)
+        self.assertEqual(exp_index, g.index_of_previous)
 
-    def assertDoesNotGobble(self, pattern, string):
-        act_match, act_remainder = gobbler.gobble(pattern, string)
+    def assertDoesNotGobble(self, pattern, string, exp_index):
+        g = gobbler.Gobbler(string)
+        act_match = g.gobble(pattern)
         self.assertEqual(None, act_match)
-        self.assertEqual(string, act_remainder)        
+        self.assertEqual(string, g.remainder)
+        self.assertEqual(exp_index, g.index_of_previous)
 
-    def assertDoesNotGobbleAny(self, pattern, string):
-        act_matches, act_remainder = gobbler.gobble_all(pattern, string)
+    def assertDoesNotGobbleAny(self, pattern, string, exp_index):
+        g = gobbler.Gobbler(string)
+        act_matches = g.gobble_all(pattern)
         self.assertEqual(None, act_matches)
-        self.assertEqual(string, act_remainder)
+        self.assertEqual(string, g.remainder)
+        self.assertEqual(exp_index, g.index_of_previous)
 
     ## Tests
 
     # Test gobble
 
     def test_gobble_no_match(self):
-        self.assertDoesNotGobble("a", "bbb")
+        self.assertDoesNotGobble("a", "bbb",
+            None)
 
     def test_gobble_match_all(self):
         self.assertGobbles("aa", "aa", 
-            "aa", "")
+            "aa", "", 0)
 
     def test_gobble_match_part(self):
         self.assertGobbles("ab", "abcd", 
-            "ab", "cd")
+            "ab", "cd", 0)
 
     def test_gobble_match_one_of_repeating(self):
         self.assertGobbles("ab", "ababab", 
-            "ab", "abab")
+            "ab", "abab", 0)
 
     def test_gobble_match_with_preceding_whitespace_mix(self):
         self.assertGobbles("aa", " \taabb", 
-            "aa", "bb")
+            "aa", "bb", 2)
 
     def test_gobble_match_with_preceding_semicolons(self):
         self.assertGobbles("aa", ";;;aabb", 
-            "aa", "bb")
+            "aa", "bb", 3)
 
     def test_gobble_match_with_preceding_commas(self):
         self.assertGobbles("aa", ",,,,aabb",
-            "aa", "bb")
+            "aa", "bb", 4)
 
     def test_gobble_match_with_preceding_delimiter_mix(self):
         self.assertGobbles("aa", ",;\t  ;,,,\taabb",
-            "aa", "bb")
+            "aa", "bb", 10)
 
     def test_gobble_on_empty_string_zero_length_match(self):
         self.assertGobbles(".*", "", 
-            "", "")
+            "", "", 0)
 
     def test_gobble_leaves_leading_delimiters(self):
         self.assertGobbles("a", "a;b",
-            "a", ";b")
+            "a", ";b", 0)
 
     # Test gobble_all
 
     def test_gobble_all_no_matches(self):
-        self.assertDoesNotGobbleAny("aa", "bbbbbb")
+        self.assertDoesNotGobbleAny("aa", "bbbbbb",
+            None)
 
     def test_gobble_all_one_matches_part(self):
         self.assertGobblesAll("aa", "aabb",
-            ["aa"], "bb")
+            ["aa"], "bb", 0)
 
     def test_gobble_all_one_matches_all(self):
         self.assertGobblesAll("aa", "aa",
-            ["aa"], "")
+            ["aa"], "", 0)
 
     def test_gobble_all_two_matches_part(self):
         self.assertGobblesAll("aa", "aaaabb",
-            ["aa", "aa"], "bb")
+            ["aa", "aa"], "bb", 2)
 
     def test_gobble_all_two_matches_all(self):
         self.assertGobblesAll("aa", "aaaaaa", 
-            ["aa", "aa", "aa"], "")
+            ["aa", "aa", "aa"], "", 4)
 
     def test_gobble_all_multiple_matches_with_delimiters(self):
         self.assertGobblesAll("aa", ";aa\t\t;,,aa;  ;;b,\tbb",
-            ["aa", "aa"], ";  ;;b,\tbb")
+            ["aa", "aa"], ";  ;;b,\tbb", 8)
 
     # Test strip_delimiters
 
