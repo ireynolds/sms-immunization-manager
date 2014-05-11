@@ -48,7 +48,7 @@ class MockApp(OperationBase):
 
 class MockRouter(BlockingRouter):
     def __init__(self, *args, **kwargs):
-        kwargs['apps'] = (MockApp,)
+        kwargs['apps'] = settings.APPS_BEFORE_SIM + (MockApp,) + settings.APPS_AFTER_SIM
         BlockingRouter.__init__(self, *args, **kwargs)
 
 class Namespace:

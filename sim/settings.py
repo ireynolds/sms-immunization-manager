@@ -179,18 +179,7 @@ LOGGING = {
     }
 }
 
-SIM_APPS = (
-    'operation_parser',
-    'stock',
-    'equipment',
-    'registration',
-    'permissions',
-    'dhis2',
-    'notifications',
-    'utils'
-)
-
-INSTALLED_APPS = (
+APPS_BEFORE_SIM = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -204,9 +193,21 @@ INSTALLED_APPS = (
     "django_tables2",
     "selectable",
     "south",
-    "rapidsms.contrib.messagelog",
+    "rapidsms.contrib.messagelog"
+)
 
-) + SIM_APPS + (
+SIM_APPS = (
+    'operation_parser',
+    'stock',
+    'equipment',
+    'registration',
+    'permissions',
+    'dhis2',
+    'notifications',
+    'utils'
+)
+
+APPS_AFTER_SIM = (
     'moderation',
     'prototype',
     'reversion',
@@ -221,6 +222,8 @@ INSTALLED_APPS = (
     #"rapidsms.contrib.echo",
     #"rapidsms.contrib.default",  # Must be last
 )
+
+INSTALLED_APPS = APPS_BEFORE_SIM + SIM_APPS + APPS_AFTER_SIM
 
 INSTALLED_BACKENDS = {
     "message_tester": {
