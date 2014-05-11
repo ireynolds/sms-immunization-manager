@@ -136,23 +136,23 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
         
     def test_calls_semantics(self):
         '''Tests that the semantics check is called on a single operation.'''
-        with MockSubscriber(semantic_signal, MockAppZZ) as sub:
+        with MockSubscriber(semantic_signal, MockAppZZ) as sem:
             self.receive("zz")
             
-            self.assertSignalCalled(1, sub)
+            self.assertSignalCalled(1, sem)
 
-            _, kwargs = sub.calls[0]
+            _, kwargs = sem.calls[0]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
                 sorted(kwargs.keys()))
 
     def test_calls_commit(self):
-        with MockSubscriber(commit_signal, MockAppZZ) as sub:
+        with MockSubscriber(commit_signal, MockAppZZ) as com:
             self.receive("zz")
             
-            self.assertSignalCalled(1, sub)
+            self.assertSignalCalled(1, com)
 
-            _, kwargs = sub.calls[0]
+            _, kwargs = com.calls[0]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
                 sorted(kwargs.keys()))
@@ -169,49 +169,49 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
             self.assertIn('opcode', args)
 
     def test_calls_semantics_for_multiple(self):
-        with MockSubscriber(semantic_signal, MockAppZZ) as sub1, \
-             MockSubscriber(semantic_signal, MockAppQQ) as sub2:
+        with MockSubscriber(semantic_signal, MockAppZZ) as sem_zz, \
+             MockSubscriber(semantic_signal, MockAppQQ) as sem_qq:
             
             self.receive("zzqqzz")
 
-            self.assertSignalCalled(2, sub1)
-            self.assertSignalCalled(1, sub2)
+            self.assertSignalCalled(2, sem_zz)
+            self.assertSignalCalled(1, sem_qq)
 
-            _, kwargs = sub1.calls[0]
+            _, kwargs = sem_zz.calls[0]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
                 sorted(kwargs.keys()))
 
-            _, kwargs = sub1.calls[1]
+            _, kwargs = sem_zz.calls[1]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
                 sorted(kwargs.keys()))
 
-            _, kwargs = sub2.calls[0]
+            _, kwargs = sem_qq.calls[0]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
                 sorted(kwargs.keys()))
 
     def test_calls_commit_for_multiple(self):
-        with MockSubscriber(commit_signal, MockAppZZ) as sub1, \
-             MockSubscriber(commit_signal, MockAppQQ) as sub2:
+        with MockSubscriber(commit_signal, MockAppZZ) as com_zz, \
+             MockSubscriber(commit_signal, MockAppQQ) as com_qq:
             
             self.receive("zzqqzz")
 
-            self.assertSignalCalled(2, sub1)
-            self.assertSignalCalled(1, sub2)
+            self.assertSignalCalled(2, com_zz)
+            self.assertSignalCalled(1, com_qq)
 
-            _, kwargs = sub1.calls[0]
+            _, kwargs = com_zz.calls[0]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
                 sorted(kwargs.keys()))
 
-            _, kwargs = sub1.calls[1]
+            _, kwargs = com_zz.calls[1]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
                 sorted(kwargs.keys()))
 
-            _, kwargs = sub2.calls[0]
+            _, kwargs = com_qq.calls[0]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
                 sorted(kwargs.keys()))
