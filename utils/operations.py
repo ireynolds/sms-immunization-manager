@@ -41,24 +41,30 @@ class OperationBase(AppBase):
         # Examine each operation in the message to determine if it should be parsed
         for index in xrange(len(message.fields["operations"])):
             opcode, argstring = message.fields["operations"][index] 
-            if opcode in self.get_opcodes():
-                effects, kwargs = self.parse_arguments(opcode, argstring, message)
-                message.fields["operation_arguments"][index] = kwargs
 
-                # Complete any effects from parsing arguments
-                halt = False
-                for e in effects:
-                    complete_effect(e, message.logger_msg, SYNTAX, index, opcode)
-                    halt = halt or e.priority in HALTING_PRIORITIES
-                message.fields["operation_effects"].extend(effects)
+            # Skip opcodes that don't apply to us
+            if opcode not in self.get_opcodes():
+                continue
 
-                if not halt:
-                    # If no parsing effects were halting, send the semantic signal
-                    responses = semantic_signal.send_robust(sender=self.__class__,
-                                                            message=message,
-                                                            opcode=opcode,
-                                                            **kwargs)
-                    self._handle_signal_responses(responses, SEMANTIC, message, index, opcode)
+            # Parse the arguments
+            effects, kwargs = self.parse_arguments(opcode, argstring, message)
+            message.fields["operation_arguments"][index] = kwargs
+
+            # Complete any effects from parsing arguments
+            for effect in effects:
+                complete_effect(effect, message.logger_msg, SYNTAX, index, opcode)
+            message.fields["operation_effects"].extend(effects)
+
+            # Do not run semantic checks if the syntax checks failed
+            if self._should_halt(effects):
+                continue
+
+            # If no parsing effects were halting, send the semantic signal
+            responses = semantic_signal.send_robust(sender=self.__class__,
+                                                    message=message,
+                                                    opcode=opcode,
+                                                    **kwargs)
+            self._handle_signal_responses(responses, SEMANTIC, message, index, opcode)
 
     def handle(self, message):
         """
@@ -66,7 +72,7 @@ class OperationBase(AppBase):
         sends the commit signal and logs the results. Always returns False to allow other RapidSMS
         apps an opportunity to handle the message.
         """
-        if self._halt(message):
+        if self._should_halt(message.fields["operation_effects"]):
             return False
 
         # Examine each operation in the message to determine if it should be handled
@@ -93,12 +99,12 @@ class OperationBase(AppBase):
                 result.add(opcode)
         return result
 
-    def _halt(self, message):
+    def _should_halt(self, effects):
         """
         Returns whether processing of the given message should be halted on account of an error in
         a previous stage.
         """
-        for effect in message.fields["effects"]:
+        for effect in effects:
             if effect.priority in HALTING_PRIORITIES:
                 return True
         return False
@@ -110,7 +116,7 @@ class OperationBase(AppBase):
         for receiver, effects_or_exception in signal_responses:
             for effect in self._check_for_exception(effects_or_exception, receiver):
                 complete_effect(effect, message.logger_msg, stage, index, opcode)
-                message.fields["effects"].append(effect)
+                message.fields["operation_effects"].append(effect)
 
     def _check_for_exception(self, effects_or_exception, receiver):
         """

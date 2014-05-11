@@ -7,6 +7,7 @@ from rapidsms.tests.harness.router import CustomRouterMixin
 from rapidsms.router.blocking import BlockingRouter
 from operation_parser.app import OperationParser
 from rapidsms.apps.base import AppBase
+from django.dispatch.dispatcher import _make_id
 
 args = [_("Test name"), {}, _("Test description."), {}]
 INFO_EFFECT = lambda: info(*args)
@@ -25,13 +26,11 @@ class MockApp(OperationBase):
         OperationBase.__init__(self, *args, **kwargs)
         CALLED_APPS[self.classname()] = []
 
-        self.return_values = kwargs.get("return_values")
-
     def parse_arguments(self, opcode, argstring, message):
         if self.return_values == None:
             return_value = ( [INFO_EFFECT()], { 'equipment_id': 'A' } )
         else:
-            return_value = return_values[len(CALLED_APPS[self.classname()])]
+            return_value = self.__class__.return_values[len(CALLED_APPS[self.classname()])]
 
         results = {
             'opcode': opcode,
@@ -41,11 +40,11 @@ class MockApp(OperationBase):
 
         return return_value
 
-class MockApp1(MockApp):
-    pass
+class MockAppZZ(MockApp):
+    return_values = None
 
-class MockApp2(MockApp):
-    pass
+class MockAppQQ(MockApp):
+    return_values = None
 
 class MockSubscriber:
 
@@ -63,7 +62,7 @@ class MockSubscriber:
         return self
 
     def __exit__(self, type, value, tb):
-        self.signal.disconnect(self)
+        self.signal.disconnect(self, self.app)
 
     def __call__(self, *args, **kwargs):
         self.calls.append( (args, kwargs) )
@@ -105,30 +104,39 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
 
     def tearDown(self):
         MockRouter.unregister_apps()
+        MockAppZZ.return_values = None
+        MockAppQQ.return_values = None
 
     def setUp(self):
         global CALLED_APPS
         CALLED_APPS = {}
 
-        MockRouter.register_app("ZZ", MockApp1)
-        MockRouter.register_app("QQ", MockApp2)
+        MockRouter.register_app("ZZ", MockAppZZ)
+        MockRouter.register_app("QQ", MockAppQQ)
 
     def assertParseCalled(self, times, app):
-        self.assertEqual(times, len(CALLED_APPS[app]))
+        self.assertEqual(times, len(CALLED_APPS[app.__name__]))
 
     def assertSignalCalled(self, times, subscriber):
         self.assertEqual(times, len(subscriber.calls))
+
+    def test_connect_and_disconnect(self):
+        n_subs = len(commit_signal.receivers)
+        self.assertEqual(n_subs, len(commit_signal.receivers))
+        with MockSubscriber(commit_signal, MockAppZZ) as sub:
+            self.assertEqual(n_subs + 1, len(commit_signal.receivers))
+        self.assertEqual(n_subs, len(commit_signal.receivers))
 
     def test_calls_syntax(self):
         '''Tests that the syntax check is called on a single operation.'''
         self.receive("zz")
 
-        zz, = CALLED_APPS['MockApp1']
-        self.assertParseCalled(1, "MockApp1")
+        zz, = CALLED_APPS['MockAppZZ']
+        self.assertParseCalled(1, MockAppZZ)
         
     def test_calls_semantics(self):
         '''Tests that the semantics check is called on a single operation.'''
-        with MockSubscriber(semantic_signal, MockApp1) as sub:
+        with MockSubscriber(semantic_signal, MockAppZZ) as sub:
             self.receive("zz")
             
             self.assertSignalCalled(1, sub)
@@ -139,9 +147,11 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
                 sorted(kwargs.keys()))
 
     def test_calls_commit(self):
-        with MockSubscriber(commit_signal, MockApp1) as sub:
+        with MockSubscriber(commit_signal, MockAppZZ) as sub:
             self.receive("zz")
             
+            self.assertSignalCalled(1, sub)
+
             _, kwargs = sub.calls[0]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
@@ -151,16 +161,16 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
     def test_calls_syntax_for_multiple(self):
         self.receive("zzqqzz")
 
-        self.assertParseCalled(2, "MockApp1")
-        self.assertParseCalled(1, "MockApp2")
+        self.assertParseCalled(2, MockAppZZ)
+        self.assertParseCalled(1, MockAppQQ)
 
-        for args in CALLED_APPS['MockApp1'] + CALLED_APPS['MockApp2']:
+        for args in CALLED_APPS['MockAppZZ'] + CALLED_APPS['MockAppQQ']:
             self.assertIn('argstring', args)
             self.assertIn('opcode', args)
 
     def test_calls_semantics_for_multiple(self):
-        with MockSubscriber(semantic_signal, MockApp1) as sub1, \
-             MockSubscriber(semantic_signal, MockApp2) as sub2:
+        with MockSubscriber(semantic_signal, MockAppZZ) as sub1, \
+             MockSubscriber(semantic_signal, MockAppQQ) as sub2:
             
             self.receive("zzqqzz")
 
@@ -183,8 +193,8 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
                 sorted(kwargs.keys()))
 
     def test_calls_commit_for_multiple(self):
-        with MockSubscriber(commit_signal, MockApp1) as sub1, \
-             MockSubscriber(commit_signal, MockApp2) as sub2:
+        with MockSubscriber(commit_signal, MockAppZZ) as sub1, \
+             MockSubscriber(commit_signal, MockAppQQ) as sub2:
             
             self.receive("zzqqzz")
 
@@ -205,3 +215,51 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
                 sorted(kwargs.keys()))
+
+    def test_bad_syntax(self):
+        with MockSubscriber(semantic_signal, MockAppZZ) as sem_zz, \
+             MockSubscriber(semantic_signal, MockAppQQ) as sem_qq, \
+             MockSubscriber(commit_signal, MockAppZZ) as com_zz, \
+             MockSubscriber(commit_signal, MockAppQQ) as com_qq:
+
+            MockAppQQ.return_values = [([ERROR_EFFECT()], {})]
+
+            self.receive("zzqq12")
+
+            self.assertParseCalled(1, MockAppZZ)
+            self.assertSignalCalled(1, sem_zz)
+            self.assertSignalCalled(0, com_zz)
+
+            self.assertParseCalled(1, MockAppQQ)
+            self.assertSignalCalled(0, sem_qq)
+            self.assertSignalCalled(0, com_qq)
+
+    def test_bad_semantics(self):
+        with MockSubscriber(semantic_signal, MockAppZZ) as sem_zz, \
+             MockSubscriber(semantic_signal, MockAppQQ) as sem_qq, \
+             MockSubscriber(commit_signal, MockAppZZ) as com_zz, \
+             MockSubscriber(commit_signal, MockAppQQ) as com_qq:
+
+            sem_zz.return_value = [ERROR_EFFECT()]
+
+            self.receive("zzqq a")
+
+            self.assertParseCalled(1, MockAppZZ)
+            self.assertSignalCalled(1, sem_zz)
+            self.assertSignalCalled(0, com_zz)
+
+            self.assertParseCalled(1, MockAppQQ)
+            self.assertSignalCalled(1, sem_qq)
+            self.assertSignalCalled(0, com_qq)
+
+    def test_exception_semantic_check_halts(self):
+        with MockSubscriber(semantic_signal, MockAppZZ) as sem_zz, \
+             MockSubscriber(commit_signal, MockAppZZ) as com_zz:
+
+            sem_zz.return_value = Exception()
+
+            self.receive("zz")
+
+            self.assertParseCalled(1, MockAppZZ)
+            self.assertSignalCalled(1, sem_zz)
+            self.assertSignalCalled(0, com_zz)

@@ -152,12 +152,8 @@ class MessageEffect(models.Model):
     desc_context = models.TextField()
 
     def __unicode__(self):
-        if self.success:
-            outcome = ugettext("Success")
-        else:
-            outcome = ugettext("Failure")
         context = {"name": unicode(self.get_name()), "desc": unicode(self.get_desc())}
-        return outcome + ugettext(": %(name)s: %(desc)s") % context
+        return ugettext(self.priority) + ugettext(" :: %(name)s: %(desc)s") % context
 
     def _set_lazy_i18n(self, format_field, context_field, format, context):
         """
