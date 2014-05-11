@@ -20,10 +20,15 @@ class OperationParser(AppBase):
 
     def _find_opcodes(self, text, opcodes):
         indices = []
-        for opcode in opcodes:
-            index = text.find(opcode)
-            if index != -1:
+        for opcode in opcodes:            
+            index = 0
+            while True:
+                index = text.find(opcode, index)
+                if index == -1:
+                    break
                 indices.append(index)
+                index += 2
+
         return indices
 
     def _get_operations(self, text, opcodes):
