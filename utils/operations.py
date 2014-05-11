@@ -13,7 +13,7 @@ class OperationBase(AppBase):
     A RapidSMS app that implements an operation code. Subclasses must implement parse_operation.
     """
 
-    def parse_arguments(self, arg_string, message):
+    def parse_arguments(self, opcode, arg_string, message):
         """
         Parses the given message into a Python representation of its syntactical meaning. Returns
         a 2-tuple containing a list of MessageEffects representing the results of the parsing, and a
@@ -49,6 +49,7 @@ class OperationBase(AppBase):
                     # If no parsing effects were halting, send the semantic signal
                     responses = semantic_signal.send_robust(sender=self.__class__,
                                                             message=message,
+                                                            opcode=opcode
                                                             **kwargs)
                     self._handle_signal_responses(responses, SEMANTIC, message, index, opcode)
 
@@ -69,6 +70,7 @@ class OperationBase(AppBase):
             if opcode in self.get_opcode():
                 responses = commit_signal.send_robust(sender=self.__class__,
                                                       message=message,
+                                                      opcode=opcode
                                                       **kwargs)
                 self._handle_signal_responses(responses, COMMIT, message, index, opcode)
         
