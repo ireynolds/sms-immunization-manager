@@ -14,27 +14,6 @@ ERROR_EFFECT = lambda: error(*args)
 WARN_EFFECT = lambda: warn(*args)
 URGENT_EFFECT = lambda: urgent(*args)
 
-# class MockApp(OperationBase):
-
-#     return_effects = None
-#     return_kwargs = None
-
-#     called = None
-#     called_with_opcode = None
-#     called_with_argstring = None
-
-#     def parse_arguments(self, opcode, argstring, message):
-#         MockApp.called = True
-#         MockApp.called_with_opcode = opcode
-#         MockApp.called_with_argstring = argstring
-
-#         return_value = (
-#             MockApp.return_effects if MockApp.return_effects else [INFO_EFFECT()],
-#             MockApp.return_kwargs if MockApp.return_kwargs else { 'equipment_id': 'A' }
-#         )
-
-#         return return_value
-
 CALLED_APPS = {}
 
 class MockApp(OperationBase):
@@ -74,10 +53,8 @@ class MockSubscriber:
         self.return_value = None
         self.side_effects = None
 
-        self.called = False
-        self.called_with_args = None
-        self.called_with_kwargs = None
-
+        self.calls = []
+        
         self.signal = signal
         self.app = app
 
@@ -89,9 +66,7 @@ class MockSubscriber:
         self.signal.disconnect(self)
 
     def __call__(self, *args, **kwargs):
-        self.called = True
-        self.called_with_args = args
-        self.called_with_kwargs = kwargs
+        self.calls.append( (args, kwargs) )
 
         if self.return_value:
             return_value = self.return_value
@@ -138,40 +113,46 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
         MockRouter.register_app("ZZ", MockApp1)
         MockRouter.register_app("QQ", MockApp2)
 
-    def assertCalled(self, times, app):
+    def assertParseCalled(self, times, app):
         self.assertEqual(times, len(CALLED_APPS[app]))
+
+    def assertSignalCalled(self, times, subscriber):
+        self.assertEqual(times, len(subscriber.calls))
 
     def test_calls_syntax(self):
         '''Tests that the syntax check is called on a single operation.'''
         self.receive("zz")
 
         zz, = CALLED_APPS['MockApp1']
-        self.assertCalled(1, "MockApp1")
+        self.assertParseCalled(1, "MockApp1")
         
     def test_calls_semantics(self):
         '''Tests that the semantics check is called on a single operation.'''
         with MockSubscriber(semantic_signal, MockApp1) as sub:
             self.receive("zz")
             
-            self.assertTrue(sub.called)
+            self.assertSignalCalled(1, sub)
+
+            _, kwargs = sub.calls[0]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
-                sorted(sub.called_with_kwargs.keys()))
+                sorted(kwargs.keys()))
 
     def test_calls_commit(self):
         with MockSubscriber(commit_signal, MockApp1) as sub:
             self.receive("zz")
             
-            self.assertTrue(sub.called)
+            _, kwargs = sub.calls[0]
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
-                sorted(sub.called_with_kwargs.keys()))
+                sorted(kwargs.keys()))
+
 
     def test_calls_syntax_for_multiple(self):
         self.receive("zzqqzz")
 
-        self.assertCalled(2, "MockApp1")
-        self.assertCalled(1, "MockApp2")
+        self.assertParseCalled(2, "MockApp1")
+        self.assertParseCalled(1, "MockApp2")
 
         for args in CALLED_APPS['MockApp1'] + CALLED_APPS['MockApp2']:
             self.assertIn('argstring', args)
@@ -183,8 +164,23 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
             
             self.receive("zzqqzz")
 
-            self.assertTrue(sub1.called)
-            self.assertTrue(sub2.called)
+            self.assertSignalCalled(2, sub1)
+            self.assertSignalCalled(1, sub2)
+
+            _, kwargs = sub1.calls[0]
+            self.assertEqual(
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(kwargs.keys()))
+
+            _, kwargs = sub1.calls[1]
+            self.assertEqual(
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(kwargs.keys()))
+
+            _, kwargs = sub2.calls[0]
+            self.assertEqual(
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(kwargs.keys()))
 
     def test_calls_commit_for_multiple(self):
         with MockSubscriber(commit_signal, MockApp1) as sub1, \
@@ -192,5 +188,20 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
             
             self.receive("zzqqzz")
 
-            self.assertTrue(sub1.called)
-            self.assertTrue(sub2.called)
+            self.assertSignalCalled(2, sub1)
+            self.assertSignalCalled(1, sub2)
+
+            _, kwargs = sub1.calls[0]
+            self.assertEqual(
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(kwargs.keys()))
+
+            _, kwargs = sub1.calls[1]
+            self.assertEqual(
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(kwargs.keys()))
+
+            _, kwargs = sub2.calls[0]
+            self.assertEqual(
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(kwargs.keys()))
