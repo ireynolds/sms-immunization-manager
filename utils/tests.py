@@ -1,6 +1,6 @@
 import mock
 from django.test import TestCase
-from operations import OperationBase, semantic_signal
+from operations import OperationBase, semantic_signal, commit_signal
 from moderation.models import *
 from django.utils.translation import ugettext_noop as _
 from rapidsms.tests.harness.router import CustomRouterMixin
@@ -37,35 +37,39 @@ class TestApp(OperationBase):
 
 settings.SIM_OPERATION_CODES['ZZ'] = TestApp
 
-class MockSemanticsSubscriber:
+class MockSubscriber:
 
-    return_value = None
-    side_effects = None
+    def __init__(self, signal):
+        self.return_value = None
+        self.side_effects = None
 
-    called = None
-    called_with_args = None
-    called_with_kwargs = None
+        self.called = None
+        self.called_with_args = None
+        self.called_with_kwargs = None
+
+        self.signal = signal
 
     def __enter__(self):
-        semantic_signal.connect(self, sender=TestApp, weak=False)
+        self.signal.connect(self, sender=TestApp, weak=False)
         return self
 
     def __exit__(self, type, value, tb):
-        semantic_signal.disconnect(self)
+        self.signal.disconnect(self)
 
     def __call__(self, *args, **kwargs):
-        MockSemanticsSubscriber.called = True
-        MockSemanticsSubscriber.called_with_args = args
-        MockSemanticsSubscriber.called_with_kwargs = kwargs
+        self.called = True
+        self.called_with_args = args
+        self.called_with_kwargs = kwargs
 
-        if MockSemanticsSubscriber.return_value:
-            return_value = MockSemanticsSubscriber.return_value
+        if self.return_value:
+            return_value = self.return_value
         else:
             return_value = [INFO_EFFECT()]
 
         return return_value
 
 class MockRouter(BlockingRouter):
+
     REGISTERED_APPS = []
 
     @classmethod
@@ -81,6 +85,7 @@ class MockRouter(BlockingRouter):
         BlockingRouter.__init__(self, *args, **kwargs)
         
 class OperationBaseTest(CustomRouterMixin, TestCase):
+
     router_class = "utils.tests.MockRouter"
 
     def receive(self, text):
@@ -102,13 +107,23 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
 
     def test_calls_semantics(self):
         '''Tests that the semantics check is called on a single operation.'''
-        with MockSemanticsSubscriber() as sub:
+        with MockSubscriber(semantic_signal) as sub:
             self.receive("zz a")
 
-            self.assertTrue(MockSemanticsSubscriber.called)
-            kwargs = MockSemanticsSubscriber.called_with_kwargs
+            self.assertTrue(sub.called)
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
-                sorted(kwargs.keys()))
-            self.assertEqual('A', kwargs['equipment_id'])
-            self.assertEqual('ZZ', kwargs['opcode'])
+                sorted(sub.called_with_kwargs.keys()))
+            self.assertEqual('A', sub.called_with_kwargs['equipment_id'])
+            self.assertEqual('ZZ', sub.called_with_kwargs['opcode'])
+
+    def test_calls_commits(self):
+        with MockSubscriber(commit_signal) as sub:
+            self.receive("zz a")
+
+            self.assertTrue(sub.called)
+            self.assertEqual(
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(sub.called_with_kwargs.keys()))
+            self.assertEqual('A', sub.called_with_kwargs['equipment_id'])
+            self.assertEqual('ZZ', sub.called_with_kwargs['opcode'])
