@@ -109,10 +109,10 @@ class OperationBase(AppBase):
         """
         for receiver, effects_or_exception in signal_responses:
             for effect in self._check_for_exception(effects_or_exception, receiver):
-                complete_effect(e, message.logger_msg, stage, index, opcode)
+                complete_effect(effect, message.logger_msg, stage, index, opcode)
                 message.fields["effects"].append(effect)
 
-    def _check_for_exception(effects_or_exception, receiver):
+    def _check_for_exception(self, effects_or_exception, receiver):
         """
         Checks if the given signal result is an exception or an effect. If it is an exception,
         returns a list of MessageEffects describing the exception. Otherwise, returns
