@@ -69,7 +69,7 @@ class OperationParser(AppBase):
         text = gobbler.strip_delimiters(message.text).upper()
         operations = self._get_operations(text, opcodes)        
         effect = self._get_complete_effects(operations, message)
-       
+
         message.fields['operations'] = operations
         message.fields['effects'] = [effect]
 

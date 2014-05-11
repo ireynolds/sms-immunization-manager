@@ -31,25 +31,32 @@ class OperationBase(AppBase):
         of message processing. If parsing is successful, sends the semantic signal and logs its
         effects.
         """
+
+        if "operation_arguments" not in message.fields:
+            message.fields["operation_arguments"] = [None] * len(message.fields["operations"])
+
+        if "operation_effects" not in message.fields:
+            message.fields["operation_effects"] = []
+
         # Examine each operation in the message to determine if it should be parsed
         for index in xrange(len(message.fields["operations"])):
             opcode, argstring = message.fields["operations"][index]
             if opcode in self.get_opcodes():
-                effects, kwargs = self.parse_arguments(argstring, message)
+                effects, kwargs = self.parse_arguments(opcode, argstring, message)
                 message.fields["operation_arguments"][index] = kwargs
 
                 # Complete any effects from parsing arguments
                 halt = False
                 for e in effects:
                     complete_effect(e, message.logger_msg, SYNTAX, index, opcode)
-                    halt = halt or message.priority in HALTING_PRIORITIES
+                    halt = halt or e.priority in HALTING_PRIORITIES
                 message.fields["operation_effects"].extend(effects)
 
                 if not halt:
                     # If no parsing effects were halting, send the semantic signal
                     responses = semantic_signal.send_robust(sender=self.__class__,
                                                             message=message,
-                                                            opcode=opcode
+                                                            opcode=opcode,
                                                             **kwargs)
                     self._handle_signal_responses(responses, SEMANTIC, message, index, opcode)
 
@@ -63,14 +70,14 @@ class OperationBase(AppBase):
             return False
 
         # Examine each operation in the message to determine if it should be handled
-        for index in xrange(message.fields["operations"]):
+        for index in xrange(len(message.fields["operations"])):
             opcode, argstring = message.fields["operations"][index]
             kwargs = message.fields["operation_arguments"][index]
 
-            if opcode in self.get_opcode():
+            if opcode in self.get_opcodes():
                 responses = commit_signal.send_robust(sender=self.__class__,
                                                       message=message,
-                                                      opcode=opcode
+                                                      opcode=opcode,
                                                       **kwargs)
                 self._handle_signal_responses(responses, COMMIT, message, index, opcode)
         
@@ -96,11 +103,11 @@ class OperationBase(AppBase):
                 return True
         return False
 
-    def _handle_signal_responses(signal_responses, stage, message, index, opcode):
+    def _handle_signal_responses(self, signal_responses, stage, message, index, opcode):
         """
         Helper function to handle responses from signal receivers.
         """
-        for receiver, effects_or_exception in check_effects.iteritems():
+        for receiver, effects_or_exception in signal_responses:
             for effect in self._check_for_exception(effects_or_exception, receiver):
                 complete_effect(e, message.logger_msg, stage, index, opcode)
                 message.fields["effects"].append(effect)
