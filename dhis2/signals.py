@@ -1,5 +1,5 @@
 import logging
-from sim.operations import commit_signal
+from utils.operations import commit_signal
 from stock.apps import *
 
 logger = logging.getLogger("rapidsms")

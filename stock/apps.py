@@ -1,5 +1,5 @@
 import django.dispatch
-from sim.operations import OperationBase, filter_by_opcode
+from utils.operations import OperationBase
 from operation_parser import gobbler
 
 # Regular Expressions for parsing the stock code and level
@@ -29,7 +29,6 @@ class StockLevel(OperationBase):
     Parses stock codes and inventory levels from the provided message and sends
     the check and commit signals to the registered listners.
     """
-    @filter_by_opcode
     def handle(self, message):
         # parse a list of stock code followed by level
         text = message.fields['operations'][STOCK_LEVEL_OP_CODE]
@@ -63,7 +62,6 @@ class StockOut(OperationBase):
     the check and commit signals to the registered listners.
     """
 
-    @filter_by_opcode
     def handle(self, message):
 
         text = message.fields['operations'][STOCK_OUT_OP_CODE]
