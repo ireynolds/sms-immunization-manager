@@ -109,11 +109,13 @@ class FridgeTemperature(OperationBase):
                 return None, (0, 0), remaining
 
             # did not find the expected low digit
-            result_fmtstr = _("OK until: %(remaining_chars)s. Expected a number of low temperature events. " \
+            result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. " \
                                 "Please fix and send again.")
-            result_context = { "remaining_chars": remaining }
+            result_context = { "op_code": FRIDGE_TEMP_OP_CODE, "arg_string": args }
+            desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+            desc_context = { "op_code": FRIDGE_TEMP_OP_CODE }
 
-            parse_error = error(_("Error Parsing FT Arguments"), {}, result_fmtstr, result_context)
+            parse_error = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
             return parse_error, None, remaining
 
         # did not find any digits
@@ -138,10 +140,12 @@ class FridgeTemperature(OperationBase):
 
         if events and not remaining:
             # found events for a single fridge with no id
+            desc_fmtstr = _("Parsed %(op_code)s Arguments")
+            desc_context = { "op_code": FRIDGE_TEMP_OP_CODE }
             result_fmtstr = _("Parsed: High Events: %(num_high)s Low Events: %(num_low)s." )
             result_context = { "num_high": events[0], "num_low": events[1] }
 
-            effect = info(_("Parsed FT Arguments"), {}, result_fmtstr, result_context)
+            effect = info(desc_fmtstr, desc_context, result_fmtstr, result_context)
             return [effect], { 'fridge_events': { None: events } }
 
         fridge_events = dict()
@@ -153,11 +157,13 @@ class FridgeTemperature(OperationBase):
             if fridge_id:
                 if fridge_id in fridge_events:
                     # found a fridge id that was already in the message
-                    result_fmtstr = _("OK until: %(remaining_chars)s. Duplicate Fridge ID. " \
+                    desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+                    desc_context = { "op_code": FRIDGE_TEMP_OP_CODE }
+                    result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. Duplicate Fridge ID. " \
                                         "Please fix and send again.")
-                    result_context = { "remaining_chars": remaining }
+                    result_context = { "op_code": FRIDGE_TEMP_OP_CODE, "arg_string": args_string }
 
-                    effect = error(_("Error Parsing FT Arguments"), {}, result_fmtstr, result_context)
+                    effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
                     return [effect], {}
 
                 effects, events, remaining = self._parse_events(remaining)
@@ -169,24 +175,30 @@ class FridgeTemperature(OperationBase):
                     # found the event numbers
                     fridge_events[fridge_id] = events
                 else:
-                    result_fmtstr = _("OK until: %(remaining_chars)s. Expected a number of high and low temperate events. " \
+                    desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+                    desc_context = { "op_code": FRIDGE_TEMP_OP_CODE }
+                    result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. " \
                                         "Please fix and send again.")
-                    result_context = { "remaining_chars": remaining }
+                    result_context = { "op_code": FRIDGE_TEMP_OP_CODE, "arg_string": arg_string }
 
-                    effect = error(_("Error Parsing FT Arguments"), {}, result_fmtstr, result_context)
+                    effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
                     return [effect], {}
             else:
                 # didn't find a fridge id
-                result_fmtstr = _("OK until: %(remaining_chars)s. Expected a fridge tag. " \
-                                        "Please fix and send again.")
-                result_context = { "remaining_chars": remaining }
+                desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+                desc_context = { "op_code": FRIDGE_TEMP_OP_CODE }
+                result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. Expected a fridge tag. " \
+                                    "Please fix and send again.")
+                result_context = { "op_code": FRIDGE_TEMP_OP_CODE, "arg_string": arg_string }
 
-                effect = error(_("Error Parsing FT Arguments"), {}, result_fmtstr, result_context)
+                effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
                 return [effect], {}
 
         # parsed all the args into fridge ids and numbers of events
+        desc_fmtstr = _("Parsed %(op_code)s Arguments")
+        desc_context = { "op_code": FRIDGE_TEMP_OP_CODE }
         result_fmtstr = _("Parsed Fridge Events: %(fridge_events)s.")
         result_context = { "fridge_events": repr(fridge_events) }
 
-        effect = info(_("Parsed FT Arguments"), {}, result_fmtstr, result_context)
+        effect = info(desc_fmtstr, desc_context, result_fmtstr, result_context)
         return [effect], { 'fridge_events': fridge_events }

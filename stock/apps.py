@@ -25,20 +25,24 @@ class StockLevel(OperationBase):
 
         if len(remaining) > 0:
             # there are still characters remaining, meaning there was a parsing failure
-            result_fmtstr = _("OK until: %(remaining_chars)s. " \
+            result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. " \
                                 "Please fix and send again.")
-            result_context = { "remaining_chars": remaining }
+            result_context = { "op_code": STOCK_LEVEL_OP_CODE, "arg_string": arg_string }
+            desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+            desc_context = { "op_code": STOCK_LEVEL_OP_CODE }
 
-            effect = error(_("Error Parsing " + STOCK_LEVEL_OP_CODE + " Arguments"), {}, result_fmtstr, result_context)
+            effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
             return [effect], {}
 
         if levels == None:
             # did not find any stock code and level combos
-            result_fmtstr = _("OK until: %(remaining_chars)s. Did not find any stock levels." \
+            result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. Did not find any stock levels." \
                                 "Please fix and send again.")
-            result_context = { "remaining_chars": remaining }
+            result_context = { "op_code": STOCK_LEVEL_OP_CODE, "arg_string": arg_string }
+            desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+            desc_context = { "op_code": STOCK_LEVEL_OP_CODE }
 
-            effect = error(_("Error Parsing " + STOCK_LEVEL_OP_CODE + " Arguments"), {}, result_fmtstr, result_context)
+            effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
             return [effect], {}
 
         # create a dictionary: stock code -> stock level
@@ -48,21 +52,25 @@ class StockLevel(OperationBase):
         for stock_code, stock_level in levels:
             if stock_code in stock_levels:
                 # there was a duplicate stock code in the message
-                result_fmtstr = _("%(dup_stock_code)s Appeared in the message more than once." \
+                result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. %(dup_stock_code)s appeared more than once." \
                                 "Please fix and send again.")
-                result_context = { "dup_stock_code": stock_code }
+                result_context = { "op_code": STOCK_LEVEL_OP_CODE, "arg_string": arg_string, "dup_stock_code": stock_code }
+                desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+                desc_context = { "op_code": STOCK_LEVEL_OP_CODE }
 
-                effect = error(_("Error Parsing " + STOCK_LEVEL_OP_CODE + " Arguments"), {}, result_fmtstr, result_context)
+                effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
                 return [effect], {}
 
             # add to the inventory report
             stock_levels[stock_code] = int(stock_level)
 
         # parsing was successful.
-        result_fmtstr = _("Parsed Stock Levels: %(stock_levels)s.")
+        result_fmtstr = _("Parsed Stock Levels: %(stock_levels)s")
         result_context = { "stock_levels": repr(stock_levels) }
+        desc_fmtstr = _("Parsed %(op_code)s Arguments")
+        desc_context = { "op_code": STOCK_LEVEL_OP_CODE }
 
-        effect = info(_("Parsed " + STOCK_LEVEL_OP_CODE + " Arguments"), {}, result_fmtstr, result_context)
+        effect = info(desc_fmtstr, desc_context, result_fmtstr, result_context)
         return [effect], { 'stock_levels': stock_levels }
 
 class StockOut(OperationBase):
@@ -77,21 +85,25 @@ class StockOut(OperationBase):
 
         if len(remaining) > 0:
             # there are still characters remaining, meaning there was a parsing failure
-            result_fmtstr = _("OK until: %(remaining_chars)s. " \
+            result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. " \
                                 "Please fix and send again.")
-            result_context = { "remaining_chars": remaining }
+            result_context = { "op_code": STOCK_OUT_OP_CODE, "arg_string": arg_string }
+            desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+            desc_context = { "op_code": STOCK_OUT_OP_CODE }
 
-            effect = error(_("Error Parsing " + STOCK_OUT_OP_CODE + " Arguments"), {}, result_fmtstr, result_context)
+            effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
             return [effect], {}
 
         if codes == None:
             # could not parse any useful information
             # there are still characters remaining, meaning there was a parsing failure
-            result_fmtstr = _("No stock code found. " \
+            result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. No stock code found. " \
                                 "Please fix and send again.")
-            result_context = { "remaining_chars": remaining }
+            result_context = { "op_code": STOCK_OUT_OP_CODE, "arg_string": arg_string }
+            desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+            desc_context = { "op_code": STOCK_OUT_OP_CODE }
 
-            effect = error(_("Error Parsing " + STOCK_OUT_OP_CODE + " Arguments"), {}, result_fmtstr, result_context)
+            effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
             return [effect], {}
 
         # codes is a one element list containing the stock code
@@ -100,6 +112,8 @@ class StockOut(OperationBase):
         # parsing was successful.
         result_fmtstr = _("Parsed Stock Out: %(stock_out_code)s.")
         result_context = { "stock_out_code": stock_code }
+        desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
+        desc_context = { "op_code": STOCK_OUT_OP_CODE }
 
-        effect = info(_("Parsed " + STOCK_OUT_OP_CODE + " Arguments"), {}, result_fmtstr, result_context)
+        effect = info(desc_fmtstr, desc_context, result_fmtstr, result_context)
         return [effect], { 'stock_out_code': stock_code }
