@@ -1,6 +1,6 @@
+from django.conf import settings
 from rapidsms.models import Contact
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
 import reversion
 
 class HierarchyNode(models.Model):    
@@ -42,53 +42,34 @@ class Facility(models.Model):
     def __unicode__(self):
         return self.name
 
-class Role(models.Model):
-    #TODO Data Reporter vs. Health Worker
-    DATA_REPORTER_ROLE = "DataReporter"
-    ADMIN_ROLE = "Admin"
-    ROLE_CHOICES = (
-            (DATA_REPORTER_ROLE, _("Data Reporter")),
-            (ADMIN_ROLE, _("Administrator"))
-            )
-
-    ROLE_OP_CHOICES = (
-        (DATA_REPORTER_ROLE, "HE"),
-        (ADMIN_ROLE, "HE, RG")
-        )
-
-    # The name of this role
-    name = models.CharField(max_length=100, 
-                            choices=ROLE_CHOICES, 
-                            default=DATA_REPORTER_ROLE)
-
-    # A description of this role
-    description = models.TextField(blank=True)
-
-    #TODO: Requires a json list of strings instead?
-    # The opcodes for operations that this role is allowed to carry out
-    op_codes = models.CharField(max_length=100, 
-                                choices=ROLE_OP_CHOICES, 
-                                default=DATA_REPORTER_ROLE)
-
-    def save(self, *args, **kwargs):
-        # ensures that opcodes match assigned role
-        self.op_codes = self.name
-        super(Role, self).save(*args, **kwargs)
-
-#getattr(models.get_model("registration", "Role"), "name"))
-
-    def __unicode__(self):
-        return self.get_name_display()
 
 class SimContact(Contact):
     """
     A user who interacts with the SMS immunization manager
     """
-    # The role and permitted operations for this user
-    role = models.ForeignKey(Role)
-
     # The facility where this user works
     facility = models.ForeignKey(Facility)
+
+    # The name of this role
+    role_name = models.CharField(max_length=100, 
+                            choices=settings.ROLE_CHOICES, 
+                            default=settings.DATA_REPORTER_ROLE)
+
+    # A description of this role
+    role_description = models.TextField(blank=True)
+
+    # The opcodes for operations that this role is allowed to carry out
+    op_codes = models.CharField(max_length=100, 
+                                choices=settings.ROLE_OP_CHOICES, 
+                                default=settings.DATA_REPORTER_ROLE)
+
+    def save(self, *args, **kwargs):
+        # ensures that opcodes match assigned role
+        self.op_codes = self.role_name
+        super(Role, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return "%s (%s)" % (self.name, self.get_role_name_display())
  
 
 # Register models for versioning
