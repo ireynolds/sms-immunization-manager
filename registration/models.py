@@ -66,7 +66,7 @@ class SimContact(Contact):
     def save(self, *args, **kwargs):
         # ensures that opcodes match assigned role
         self.op_codes = self.role_name
-        super(Role, self).save(*args, **kwargs)
+        super(SimContact, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return "%s (%s)" % (self.name, self.get_role_name_display())
@@ -75,5 +75,4 @@ class SimContact(Contact):
 # Register models for versioning
 reversion.register(HierarchyNode)
 reversion.register(Facility)
-reversion.register(Role)
 reversion.register(SimContact)
