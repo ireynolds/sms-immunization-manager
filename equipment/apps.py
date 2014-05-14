@@ -4,21 +4,42 @@ from moderation.models import error_parse, ok_parse
 from django.utils.translation import ugettext_noop as _
 
 class EquipmentBase(OperationBase):
+    '''
+    A base class for Equipment SMS APIs that defines useful methods for
+    handling the parse stage of those operations.
+    '''
 
     def _ok(self, opcode, args):
+        '''Return a MessageEffect that indicates success.'''
         return ok_parse(opcode, 
             "Parsed: equipment_id is %(equipment_id)s.", args)
 
     def _error_extra_chars(self, opcode, arg_string):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments having extra chars after the equipment_id.
+        '''
         return error_parse(opcode, arg_string, reason="Chars after equipment ID not allowed.")
 
     def _error_unrecognized_chars(self, opcode, arg_string):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments containing unrecognized characters in the argument string
+        instead of an equipment_id.
+        '''
         return error_parse(opcode, arg_string, reason="Should start with equipment ID.")
 
     def _error_no_equipment_id(self, opcode, arg_string):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments being empty.
+        '''
         return error_parse(opcode, arg_string, reason="Must provide an equipment ID.")
 
     def parse_arguments(self, opcode, arg_string, message):
+        '''
+        Implements OperationBase.parse_arguments.
+        '''
         args = {}
         effects = []
         
@@ -42,7 +63,9 @@ class EquipmentBase(OperationBase):
         return (effects, args)  
 
 class EquipmentFailure(EquipmentBase):
+    '''Implements the EquipmentFailure SMS API.'''
     pass
 
 class EquipmentRepaired(EquipmentBase):
+    '''Implements the EquipmentRepaired SMS API.'''
     pass

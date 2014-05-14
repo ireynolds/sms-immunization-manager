@@ -12,11 +12,10 @@ import gobbler
 
 class MockMessage: 
     """
-    A useful class that satisfies the interface of a RapidSMS
-    Message on which OperationParser depends.
+    A useful class that satisfies only the interface of a RapidSMS
+    IncomingMessage on which OperationParser depends.
     """
     def __init__(self, text):
-        # Satisfy the interface upon which OperationParser.parse depends
         self.text = text
         self.fields = {}
 
@@ -28,6 +27,10 @@ class AppTest(TestCase):
     ## Helpers
 
     def parse(self, text):
+        '''
+        Run the given text through the parser and return the list of 
+        (opcode, argument) pairs.
+        '''
         # No connection -- leave it as None
         op = app.OperationParser(None)
         msg = MockMessage(text)
@@ -35,6 +38,10 @@ class AppTest(TestCase):
         return msg.fields['operations']
 
     def check(self, text, *expected_ops):
+        '''
+        Verify the parser identifies the given expected operations
+        from the given text. Order is significant.
+        '''
         expected_ops = expected_ops
         actual_ops = self.parse(text)
         self.assertEqual(expected_ops, actual_ops)
@@ -99,12 +106,16 @@ class AppTest(TestCase):
 
 class GobblerTest(TestCase):
     """
-    Tests for gobbler.
+    Tests for gobbler.Gobbler.
     """
 
     ## Helpers        
 
     def assertGobbles(self, pattern, string, exp_match, exp_remainder, exp_index):
+        '''
+        Assert that the pattern, applied once to the string by the Gobbler (gobble), returns 
+        the expected match from the expected index and leaves the expected remainder.
+        '''
         g = gobbler.Gobbler(string)
         act_match = g.gobble(pattern)
         self.assertEqual(exp_match, act_match)
@@ -112,6 +123,11 @@ class GobblerTest(TestCase):
         self.assertEqual(exp_index, g.index_of_previous)
 
     def assertGobblesAll(self, pattern, string, exp_matches, exp_remainder, exp_index):
+        '''
+        Assert that the pattern, applied as many times as possible to the string by 
+        the Gobbler (gobble_all), returns the expected matches (with the last from the 
+        expected index) and leaves the expected remainder.
+        '''
         g = gobbler.Gobbler(string)
         act_matches = g.gobble_all(pattern)
         self.assertEqual(exp_matches, act_matches)
@@ -119,6 +135,10 @@ class GobblerTest(TestCase):
         self.assertEqual(exp_index, g.index_of_previous)
 
     def assertDoesNotGobble(self, pattern, string, exp_index):
+        '''
+        Assert that the pattern, applied to the string by the Gobbler (gobble), returns no 
+        match and leaves the given index_of_previous.
+        '''
         g = gobbler.Gobbler(string)
         act_match = g.gobble(pattern)
         self.assertEqual(None, act_match)
@@ -126,6 +146,10 @@ class GobblerTest(TestCase):
         self.assertEqual(exp_index, g.index_of_previous)
 
     def assertDoesNotGobbleAny(self, pattern, string, exp_index):
+        '''
+        Assert that the pattern, applied to the string by the Gobbler as many times
+        as possible (gobble_all), returns no matches and leaves the given index_of_previous.
+        '''
         g = gobbler.Gobbler(string)
         act_matches = g.gobble_all(pattern)
         self.assertEqual(None, act_matches)
