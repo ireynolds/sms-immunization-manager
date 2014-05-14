@@ -55,7 +55,6 @@ class OperationParser(AppBase):
 
             opcode = operation[:2]
             args = gobbler.strip_delimiters(operation[2:])
-            args = disambiguate_o0(args)
 
             operations.append( (opcode, args) )
 
@@ -71,7 +70,7 @@ class OperationParser(AppBase):
         if not opcodes:
             opcodes = settings.SIM_OPERATION_CODES.keys()
 
-        text = gobbler.strip_delimiters(message.text).upper()
+        text = disambiguate_o0(gobbler.strip_delimiters(message.text).upper())
         operations = self._get_operations(text, opcodes)        
         effect = self._get_complete_effects(operations, message)
 
