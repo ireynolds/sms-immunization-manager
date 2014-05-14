@@ -179,17 +179,7 @@ LOGGING = {
     }
 }
 
-SIM_APPS = (
-    'operation_parser',
-    'stock',
-    'equipment',
-    'registration',
-    'permissions',
-    'dhis2',
-    'notifications'
-)
-
-INSTALLED_APPS = (
+APPS_BEFORE_SIM = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -203,8 +193,21 @@ INSTALLED_APPS = (
     "django_tables2",
     "selectable",
     "south",
+    "rapidsms.contrib.messagelog"
+)
 
-) + SIM_APPS + (
+SIM_APPS = (
+    'operation_parser',
+    'stock',
+    'equipment',
+    'registration',
+    'permissions',
+    'dhis2',
+    'notifications',
+    'utils'
+)
+
+APPS_AFTER_SIM = (
     'moderation',
     'prototype',
     'reversion',
@@ -214,12 +217,13 @@ INSTALLED_APPS = (
     "rapidsms.backends.database",
     "rapidsms.contrib.handlers",
     "rapidsms.contrib.httptester",
-    "rapidsms.contrib.messagelog",
     "rapidsms.contrib.messaging",
     #"rapidsms.contrib.registration",
     #"rapidsms.contrib.echo",
     #"rapidsms.contrib.default",  # Must be last
 )
+
+INSTALLED_APPS = APPS_BEFORE_SIM + SIM_APPS + APPS_AFTER_SIM
 
 INSTALLED_BACKENDS = {
     "message_tester": {
@@ -249,6 +253,7 @@ RAPIDSMS_APP_BASES = (
     _stock_apps.StockLevel,
     _stock_apps.StockOut,
     _equipment_apps.EquipmentFailure,
+    _equipment_apps.EquipmentRepaired,
 )
 
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES

@@ -13,7 +13,7 @@ class OperationBase(AppBase):
     A RapidSMS app that implements an operation code. Subclasses must implement parse_operation.
     """
 
-    def parse_arguments(self, arg_string, message):
+    def parse_arguments(self, opcode, arg_string, message):
         """
         Parses the given message into a Python representation of its syntactical meaning. Returns
         a 2-tuple containing a list of MessageEffects representing the results of the parsing, and a
@@ -31,26 +31,40 @@ class OperationBase(AppBase):
         of message processing. If parsing is successful, sends the semantic signal and logs its
         effects.
         """
+
+        if "operation_arguments" not in message.fields:
+            message.fields["operation_arguments"] = [None] * len(message.fields["operations"])
+
+        if "operation_effects" not in message.fields:
+            message.fields["operation_effects"] = []
+
         # Examine each operation in the message to determine if it should be parsed
         for index in xrange(len(message.fields["operations"])):
-            opcode, argstring = message.fields["operations"][index]
-            if opcode in self.get_opcode():
-                effects, kwargs = self.parse_arguments(argstring, message)
-                message.fields["operation_arguments"][index] = kwargs
+            opcode, argstring = message.fields["operations"][index] 
 
-                # Complete any effects from parsing arguments
-                halt = False
-                for e in effects:
-                    complete_effect(e, message.logger_msg, SYNTAX, index, opcode)
-                    halt = halt or message.priority in HALTING_PRIORITIES
-                message.fields["operation_effects"].extend(effects)
+            # Skip opcodes that don't apply to us
+            if opcode not in self.get_opcodes():
+                continue
 
-                if not halt:
-                    # If no parsing effects were halting, send the semantic signal
-                    responses = semantic_signal.send_robust(sender=self.__class__,
-                                                            message=message,
-                                                            **kwargs)
-                    self._handle_signal_responses(responses, SEMANTIC, message, index, opcode)
+            # Parse the arguments
+            effects, kwargs = self.parse_arguments(opcode, argstring, message)
+            message.fields["operation_arguments"][index] = kwargs
+
+            # Complete any effects from parsing arguments
+            for effect in effects:
+                complete_effect(effect, message.logger_msg, SYNTAX, index, opcode)
+            message.fields["operation_effects"].extend(effects)
+
+            # Do not run semantic checks if the syntax checks failed
+            if self._should_halt(effects):
+                continue
+
+            # If no parsing effects were halting, send the semantic signal
+            responses = semantic_signal.send_robust(sender=self.__class__,
+                                                    message=message,
+                                                    opcode=opcode,
+                                                    **kwargs)
+            self._handle_signal_responses(responses, SEMANTIC, message, index, opcode)
 
     def handle(self, message):
         """
@@ -58,17 +72,18 @@ class OperationBase(AppBase):
         sends the commit signal and logs the results. Always returns False to allow other RapidSMS
         apps an opportunity to handle the message.
         """
-        if self._halt(message):
+        if self._should_halt(message.fields["operation_effects"]):
             return False
 
         # Examine each operation in the message to determine if it should be handled
-        for index in xrange(message.fields["operations"]):
+        for index in xrange(len(message.fields["operations"])):
             opcode, argstring = message.fields["operations"][index]
             kwargs = message.fields["operation_arguments"][index]
 
-            if opcode in self.get_opcode():
+            if opcode in self.get_opcodes():
                 responses = commit_signal.send_robust(sender=self.__class__,
                                                       message=message,
+                                                      opcode=opcode,
                                                       **kwargs)
                 self._handle_signal_responses(responses, COMMIT, message, index, opcode)
         
@@ -84,26 +99,26 @@ class OperationBase(AppBase):
                 result.add(opcode)
         return result
 
-    def _halt(self, message):
+    def _should_halt(self, effects):
         """
         Returns whether processing of the given message should be halted on account of an error in
         a previous stage.
         """
-        for effect in message.fields["effects"]:
+        for effect in effects:
             if effect.priority in HALTING_PRIORITIES:
                 return True
         return False
 
-    def _handle_signal_responses(signal_responses, stage, message, index, opcode):
+    def _handle_signal_responses(self, signal_responses, stage, message, index, opcode):
         """
         Helper function to handle responses from signal receivers.
         """
-        for receiver, effects_or_exception in check_effects.iteritems():
+        for receiver, effects_or_exception in signal_responses:
             for effect in self._check_for_exception(effects_or_exception, receiver):
-                complete_effect(e, message.logger_msg, stage, index, opcode)
-                message.fields["effects"].append(effect)
+                complete_effect(effect, message.logger_msg, stage, index, opcode)
+                message.fields["operation_effects"].append(effect)
 
-    def _check_for_exception(effects_or_exception, receiver):
+    def _check_for_exception(self, effects_or_exception, receiver):
         """
         Checks if the given signal result is an exception or an effect. If it is an exception,
         returns a list of MessageEffects describing the exception. Otherwise, returns

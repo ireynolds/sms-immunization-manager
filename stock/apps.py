@@ -1,5 +1,5 @@
 import django.dispatch
-from sim.operations import OperationBase
+from utils.operations import OperationBase
 from operation_parser import gobbler
 from moderation.models import *
 from django.utils.translation import ugettext_noop as _

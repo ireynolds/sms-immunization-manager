@@ -1,6 +1,6 @@
-from sim.operations import OperationBase
-from operation_parser import gobbler
-from moderation.models import *
+from utils.operations import OperationBase
+from operation_parser.gobbler import Gobbler, gobble, LABEL
+from moderation.models import error_parse, ok_parse, info, error
 from django.utils.translation import ugettext_noop as _
 
 SINGLE_ALPHA = "[A-Z]"
@@ -8,75 +8,49 @@ ONE_DIGIT = "[0-9]"
 TWO_DIGITS = "[0-9]\W*[0-9]"
 FRIDGE_TEMP_OP_CODE = "FT"
 
-def _top_error(results):
-    return _errors(results)[0][1]
-
-def _errors(results):
-    return filter(lambda e: e[1] != None, results)
-
-def _has_errors(results):
-    return len(_errors(results)) > 0
-
-class TooManyArgsException(Exception):
-    pass
-
-class UnrecognizedTextException(Exception):
-    pass
-
 class EquipmentBase(OperationBase):
 
-    def _take_at_most_one_equipment_id(self, args):
-        g = Gobbler(args.upper())
-        equipment_id = g.gobble("[A-Z]")
-        # It's okay if equipment_id is None--this is within spec.
+    def _ok(self, opcode, args):
+        return ok_parse(opcode,
+            "Parsed: equipment_id is %(equipment_id)s.", args)
 
-        # Extra stuff--reject with error
-        remainder = g.remainder
-        if remainder:
-            if equipment_id:
-                error = "Message OK until %s. Provide one equipment code and nothing else. " \
-                        "Please fix and send again." % (remainder[:3],)
-                raise TooManyArgsException(error)
+    def _error_extra_chars(self, opcode, arg_string):
+        return error_parse(opcode, arg_string, reason="Chars after equipment ID not allowed.")
+
+    def _error_unrecognized_chars(self, opcode, arg_string):
+        return error_parse(opcode, arg_string, reason="Should start with equipment ID.")
+
+    def _error_no_equipment_id(self, opcode, arg_string):
+        return error_parse(opcode, arg_string, reason="Must provide an equipment ID.")
+
+    def parse_arguments(self, opcode, arg_string, message):
+        args = {}
+        effects = []
+
+        g = Gobbler(arg_string.upper())
+
+        equipment_id = g.gobble(LABEL)
+        args['equipment_id'] = equipment_id
+
+        if equipment_id:
+            if g.remainder:
+                args, effect = None, self._error_extra_chars(opcode, arg_string)
             else:
-                error = "Message OK until %s. Expected an equipment code. Please fix and " \
-                        "send again." % (remainder[:3],)
-                raise UnrecognizedTextException(error)
-            message.respond(response)
-
-        return equipment_id
-
-    def _respond_to_error(self, message, check_results, commit_results):
-        # Send appropriate response (including the highest-priority error returned in check or commit phases)
-        results = check_results + (commit_results if commit_results else [])
-        if _has_errors(results):
-            return str(_top_error(results))
+                args, effect = args, self._ok(opcode, args)
         else:
-            return "Success. Thanks for your input!"
+            if g.remainder:
+                args, effect = None, self._error_unrecognized_chars(opcode, arg_string)
+            else:
+                args, effect = None, self._error_no_equipment_id(opcode, arg_string)
+        effects.append(effect)
 
-    def _handle_any(self, message, opcode):
-        args = message.fields['operations'][opcode]
-
-        try:
-            equipment_id = self._take_at_most_one_equipment_id(args)
-        except (TooManyArgsException, UnrecognizedTextException) as e:
-            message.respond(str(e))
-            return
-
-        check_results, commit_results = self.send_signals(message=message,
-                                                          equipment_id=equipment_id)
-
-        error = self._respond_to_error(message, check_results, commit_results)
-        message.respond(str(error))
+        return (effects, args)
 
 class EquipmentFailure(EquipmentBase):
-
-    def handle(self, message):
-        self._handle_any(message, "NF")
+    pass
 
 class EquipmentRepaired(EquipmentBase):
-
-    def handle(self, message):
-        self._handle_any(message, "WO")
+    pass
 
 class FridgeTemperature(OperationBase):
 
@@ -94,11 +68,11 @@ class FridgeTemperature(OperationBase):
              or None if there was a parsing error
           3) the remaining characters from the original argument string
         """
-        num_high, remaining = gobbler.gobble(ONE_DIGIT, args)
+        num_high, remaining = gobble(ONE_DIGIT, args)
 
         if num_high:
             num_high = int(num_high)
-            num_low, remaining = gobbler.gobble(ONE_DIGIT, remaining)
+            num_low, remaining = gobble(ONE_DIGIT, remaining)
             if num_low:
                 num_low = int(num_low)
                 # found high and low numbers
@@ -152,7 +126,7 @@ class FridgeTemperature(OperationBase):
 
         # look for a fridge id and events
         while remaining:
-            fridge_id, remaining = gobbler.gobble(SINGLE_ALPHA, remaining)
+            fridge_id, remaining = gobble(SINGLE_ALPHA, remaining)
 
             if fridge_id:
                 if fridge_id in fridge_events:

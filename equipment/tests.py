@@ -8,115 +8,83 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 
 from apps import EquipmentRepaired, EquipmentFailure, FridgeTemperature
-import operation_parser.app
-from sim.operations import commit_signal, semantic_signal
-from django.dispatch.dispatcher import receiver
+from moderation.models import ERROR, INFO
+from utils.tests import SIMTestCase
 
-class APITest(TestCase):
+class EquipmentTestMixin:
 
-    ## Internal utility classes
-
-    class Namespace:
+    def send_args(self, argstring):
         pass
 
-    class MockMessage:
-        """
-        A useful class that satisfies the basic interface of a RapidSMS Message.
-        """
-        def __init__(self, text):
-            self.text = text
-            self.fields = {}
+    def test_delims_before(self):
+        effects, args = self.send_args(" ;, A")
 
-    ## Support for asserting that signal handlers were called
+        self.assertNotEqual(None, args)
+        self.assertIn('equipment_id', args)
+        self.assertEqual('A', args['equipment_id'])
 
-    def __init__(self, arg):
-        TestCase.__init__(self, arg)
-        self.called_fns = None
+        self.assertEqual(1, len(effects))
+        self.assertInfoIn(effects)
 
-    def setUp(self):
-        self.called_fns = set()
+    def test_delims_after(self):
+        effects, args = self.send_args("A ;, ")
 
-    def assertCalled(self, *names):
-        for name in names:
-            self.assertIn(name, self.called_fns)
+        self.assertNotEqual(None, args)
+        self.assertIn('equipment_id', args)
+        self.assertEqual('A', args['equipment_id'])
 
-    def assertNotCalled(self, *names):
-        for name in names:
-            self.assertNotIn(name, self.called_fns)
+        self.assertEqual(1, len(effects))
+        self.assertInfoIn(effects)
 
-    class log_if_called:
-        def __init__(self, name, result_set):
-            self.name = name
-            self.set = result_set
+    def test_no_id(self):
+        effects, args = self.send_args("")
 
-        def __call__(self, func):
-            def log_if_called_decorated(*args, **kwargs):
-                self.set.add(self.name)
-                func(*args, **kwargs)
-            return log_if_called_decorated
+        self.assertEqual(None, args)
 
-    ## Useful test methods
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-    def send(self, text, check=None, commit=None):
-        msg = APITest.MockMessage(text)
-        sender = self.__class__.sender
+    def test_chars_after_id(self):
+        effects, args = self.send_args("A 1")
 
-        ns = APITest.Namespace()
+        self.assertEqual(None, args)
 
-        # Called at most once
-        ns.check_args = None
-        ns.commit_args = None
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-        # Possibly called many times
-        ns.responses = []
+    def test_invalid_chars_for_id(self):
+        effects, args = self.send_args("1")
 
-        @receiver(semantic_signal, sender=sender, weak=False)
-        @self.log_if_called('check', self.called_fns)
-        def capture_check(**kwargs):
-            ns.check_args = kwargs
+        self.assertEqual(None, args)
 
-        @receiver(commit_signal, sender=sender, weak=False)
-        @self.log_if_called('commit', self.called_fns)
-        def capture_commit(**kwargs):
-            ns.commit_args = kwargs
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-        @self.log_if_called('respond', self.called_fns)
-        def capture_respond(response):
-            ns.responses.append(response)
-        msg.respond = capture_respond
+    def test_chars_after_id_nodelims(self):
+        effects, args = self.send_args("A1")
 
-        if check: semantic_signal.connect(check, sender=sender, weak=False)
-        if commit: commit_signal.connect(commit, sender=sender, weak=False)
+        self.assertEqual(None, args)
 
-        op = operation_parser.app.OperationParser(None)
-        op.parse(msg)
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-        ff = sender(None)
-        ff.handle(msg)
+    def test_invalid_chars_for_id_nodelims(self):
+        effects, args = self.send_args("1")
 
-        semantic_signal.disconnect(capture_check)
-        if check: semantic_signal.disconnect(check)
-        commit_signal.disconnect(capture_commit)
-        if commit: commit_signal.disconnect(commit)
+        self.assertEqual(None, args)
 
-        return ns
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-    def parse(self, text):
-        msg = APITest.MockMessage(text)
-        sender = self.__class__.sender
+class EquipmentFailureTest(SIMTestCase, EquipmentTestMixin):
+    def send_args(self, argstring):
+        return EquipmentFailure(None).parse_arguments("NF", argstring, None)
 
-        op = operation_parser.app.OperationParser(None)
-        op.parse(msg)
+class EquipmentRepairedTest(SIMTestCase, EquipmentTestMixin):
+    def send_args(self, argstring):
+        return EquipmentRepaired(None).parse_arguments("WO", argstring, None)
 
-        app = sender(None)
-
-        # Examine each operation in the message to determine if it should be parsed
-        for index in xrange(len(message.fields["operations"])):
-            opcode, argstring = message.fields["operations"][index]
-            if opcode in app.get_opcode():
-                return self.parse_arguments(argstring, message)
-
-class FridgeTemperatureTest(APITest):
+class FridgeTemperatureTest(TestCase):
 
     def test_parse_args_valid_single_zero(self):
         ft = FridgeTemperature(None)

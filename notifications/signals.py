@@ -1,5 +1,5 @@
 import logging
-from sim.operations import semantic_signal, commit_signal
+from utils.operations import semantic_signal, commit_signal
 from stock.apps import *
 from equipment.apps import *
 from django.dispatch.dispatcher import receiver

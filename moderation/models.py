@@ -1,10 +1,40 @@
 import json
 from django.db import models
 from django.conf import settings
-from django.utils.translation import ugettext, ugettext_lazy
+from django.utils.translation import ugettext, ugettext_lazy, ugettext_noop
 from django.utils.encoding import force_text
 from django.utils.functional import lazy
 from django.utils import six
+
+##
+## The following helper methods for Parse stage 
+## success/failure define the convention for a response.
+##
+
+def error_parse(opcode, arg_string, reason=None):
+    name = "Error Parsing %(op_code)s Arguments"
+
+    desc_start = "Error in %(op_code)s: %(arg_string)s."
+    desc_end = "Please fix and send again."
+    if reason:
+        desc = "%s %s %s" % (desc_start, reason, desc_end)
+    else:
+        desc = "%s %s" % (desc_start, desc_end)
+
+    return error(
+        ugettext_noop(name), { 'op_code': opcode },
+        ugettext_noop(desc), { 'op_code': opcode, 'arg_string': arg_string }
+    )
+
+def ok_parse(opcode, desc_fmstr, desc_ctxt):
+    return info(
+        ugettext_noop("Parsed %(op_code)s Arguments"), { 'op_code': opcode },
+        ugettext_noop(desc_fmstr), desc_ctxt
+    )
+
+##
+## Wrappers for creating effects
+##
 
 def create_effect(priority, noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
@@ -152,12 +182,8 @@ class MessageEffect(models.Model):
     desc_context = models.TextField()
 
     def __unicode__(self):
-        if self.success:
-            outcome = ugettext("Success")
-        else:
-            outcome = ugettext("Failure")
         context = {"name": unicode(self.get_name()), "desc": unicode(self.get_desc())}
-        return outcome + ugettext(": %(name)s: %(desc)s") % context
+        return ugettext(self.priority) + ugettext(" :: %(name)s: %(desc)s") % context
 
     def _set_lazy_i18n(self, format_field, context_field, format, context):
         """
