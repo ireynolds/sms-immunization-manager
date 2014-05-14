@@ -11,8 +11,6 @@ from apps import EquipmentRepaired, EquipmentFailure
 from moderation.models import ERROR, INFO
 from utils.tests import SIMTestCase
 
-import mock
-
 class EquipmentTestMixin:
 
     def send_args(self, argstring):

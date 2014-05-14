@@ -1,4 +1,3 @@
-import mock
 from django.test import TestCase
 from operations import OperationBase, semantic_signal, commit_signal
 from moderation.models import *
