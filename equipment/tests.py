@@ -7,7 +7,7 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 
-from apps import EquipmentRepaired, EquipmentFailure
+from apps import EquipmentRepaired, EquipmentFailure, FridgeTemperature
 from moderation.models import ERROR, INFO
 from utils.tests import SIMTestCase
 
@@ -83,3 +83,108 @@ class EquipmentFailureTest(SIMTestCase, EquipmentTestMixin):
 class EquipmentRepairedTest(SIMTestCase, EquipmentTestMixin):
     def send_args(self, argstring):
         return EquipmentRepaired(None).parse_arguments("WO", argstring, None)
+
+class FridgeTemperatureTest(TestCase):
+
+    def test_parse_args_valid_single_zero(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("0", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+        self.assertEqual(kwargs['fridge_events'][None], (0, 0))
+
+    def test_parse_args_valid_two_events(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("1 2", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+        self.assertEqual(kwargs['fridge_events'][None], (1, 2))
+
+    def test_parse_args_valid_standard(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("A 1 0", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+        self.assertEqual(kwargs['fridge_events']['A'], (1, 0))
+
+    def test_parse_args_valid_multiple(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("A 1 0B21", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+        self.assertEqual(kwargs['fridge_events']['A'], (1, 0))
+        self.assertEqual(kwargs['fridge_events']['B'], (2, 1))
+
+    def test_parse_args_valid_multiple_mix(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("A 1 0B0C43", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+        self.assertEqual(kwargs['fridge_events']['A'], (1, 0))
+        self.assertEqual(kwargs['fridge_events']['B'], (0, 0))
+        self.assertEqual(kwargs['fridge_events']['C'], (4, 3))
+
+    def test_parse_args_multiple_mix_valid(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments(" A 0 B 0 1 C 3 4 D 0", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+        self.assertEqual(kwargs['fridge_events']['A'], (0, 0))
+        self.assertEqual(kwargs['fridge_events']['B'], (0, 1))
+        self.assertEqual(kwargs['fridge_events']['C'], (3, 4))
+        self.assertEqual(kwargs['fridge_events']['D'], (0, 0))
+
+    def test_parse_args_error_non_zero(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("1", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+    def test_parse_args_error_extra(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("134", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+    def test_parse_args_error_standard_missing_events(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("A", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+    def test_parse_args_error_standard_multiple_missing_events(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("A0 B", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+    def test_parse_args_error_standard_multiple_missing_event(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("A0 B1", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+    def test_parse_args_error_standard_extra_event(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("A134", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+    def test_parse_args_error_standard_extra_tag(self):
+        ft = FridgeTemperature(None)
+        effects, kwargs = ft.parse_arguments("AD13", None)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
