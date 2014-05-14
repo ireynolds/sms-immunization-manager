@@ -8,129 +8,78 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 
 from apps import EquipmentRepaired, EquipmentFailure
-import operation_parser.app
-from utils.operations import commit_signal, semantic_signal
+from moderation.models import ERROR, INFO
+from utils.tests import SIMTestCase
 
-class EquipmentFailureTest(APITest):
-    
-    sender = EquipmentFailure
+class EquipmentTestMixin:
 
-    def test_handle_simple(self):
-        ns = self.send("NF A")
-        self.assertCalled('check', 'commit', 'respond')
+    def send_args(self, argstring):
+        pass
 
-        # It is assumed in all other tests that check_args and commit_args have 
-        # the same keys and (mostly) the same values.
+    def test_delims_before(self):
+        effects, args = self.send_args(" ;, A")
 
-        self.assertIn('message', ns.check_args)
-        self.assertIn('equipment_id', ns.check_args)
+        self.assertNotEqual(None, args)
+        self.assertIn('equipment_id', args)
+        self.assertEqual('A', args['equipment_id'])
 
-        self.assertIn('message', ns.commit_args)
-        self.assertIn('equipment_id', ns.commit_args)
+        self.assertEqual(1, len(effects))
+        self.assertInfoIn(effects)
 
-        self.assertEqual(1, len(ns.responses))
+    def test_delims_after(self):
+        effects, args = self.send_args("A ;, ")
 
-    def test_handle_one_valid_arg(self):
-        ns = self.send("NF A")
-        
-        self.assertCalled('check', 'commit', 'respond')
+        self.assertNotEqual(None, args)
+        self.assertIn('equipment_id', args)
+        self.assertEqual('A', args['equipment_id'])
 
-        self.assertEqual("A", ns.commit_args['equipment_id'])
+        self.assertEqual(1, len(effects))
+        self.assertInfoIn(effects)
 
-        self.assertEqual(1, len(ns.responses))        
-        self.assertIn('Success', ns.responses[0])
+    def test_no_id(self):
+        effects, args = self.send_args("")
 
-    def test_with_no_arg(self):
-        ns = self.send("NF")
-        self.assertCalled('check', 'commit', 'respond')
+        self.assertEqual(None, args)
 
-        self.assertEqual(None, ns.check_args['equipment_id'])
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-        self.assertEqual(1, len(ns.responses))        
-        self.assertIn('Success', ns.responses[0])
+    def test_chars_after_id(self):
+        effects, args = self.send_args("A 1")
 
-    def test_with_two_valid_args(self):
-        ns = self.send("NF A B")
-        self.assertNotCalled('check', 'commit')
-        self.assertCalled('respond')
+        self.assertEqual(None, args)
 
-        self.assertEqual(1, len(ns.responses))
-        self.assertIn("OK until", ns.responses[0])
-    
-    def test_one_invalid_arg(self):
-        ns = self.send('NF Q')
-        self.assertNotCalled('commit')
-        self.assertCalled('check', 'respond')
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-        self.assertEqual(1, len(ns.responses))
-        self.assertIn("OK until", ns.responses[0])
+    def test_invalid_chars_for_id(self):
+        effects, args = self.send_args("1")
 
-    def test_valid_followed_by_junk(self):
-        ns = self.send('NF A001')
-        self.assertNotCalled('check', 'commit')
-        self.assertCalled('respond')
+        self.assertEqual(None, args)
 
-        self.assertEqual(1, len(ns.responses))
-        self.assertIn("OK until", ns.responses[0])
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-class EquipmentRepairedTest(APITest):
+    def test_chars_after_id_nodelims(self):
+        effects, args = self.send_args("A1")
 
-    sender = EquipmentRepaired
+        self.assertEqual(None, args)
 
-    def test_handle_simple(self):
-        ns = self.send("WO A")
-        self.assertCalled('check', 'commit', 'respond')
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-        # It is assumed in all other tests that check_args and commit_args have 
-        # the same keys and (mostly) the same values.
+    def test_invalid_chars_for_id_nodelims(self):
+        effects, args = self.send_args("1")
 
-        self.assertIn('message', ns.check_args)
-        self.assertIn('equipment_id', ns.check_args)
+        self.assertEqual(None, args)
 
-        self.assertIn('message', ns.commit_args)
-        self.assertIn('equipment_id', ns.commit_args)
+        self.assertEqual(1, len(effects))
+        self.assertErrorIn(effects)
 
-        self.assertEqual(1, len(ns.responses))
+class EquipmentFailureTest(SIMTestCase, EquipmentTestMixin):
+    def send_args(self, argstring):
+        return EquipmentFailure(None).parse_arguments("NF", argstring, None)
 
-    def test_handle_one_valid_arg(self):
-        ns = self.send("WO A")
-        
-        self.assertCalled('check', 'commit', 'respond')
-
-        self.assertEqual("A", ns.commit_args['equipment_id'])
-
-        self.assertEqual(1, len(ns.responses))        
-        self.assertIn('Success', ns.responses[0])
-
-    def test_with_no_arg(self):
-        ns = self.send("WO")
-        self.assertCalled('check', 'commit', 'respond')
-
-        self.assertEqual(None, ns.check_args['equipment_id'])
-
-        self.assertEqual(1, len(ns.responses))        
-        self.assertIn('Success', ns.responses[0])
-
-    def test_with_two_valid_args(self):
-        ns = self.send("WO A B")
-        self.assertNotCalled('check', 'commit')
-        self.assertCalled('respond')
-
-        self.assertEqual(1, len(ns.responses))
-        self.assertIn("OK until", ns.responses[0])
-    
-    def test_one_invalid_arg(self):
-        ns = self.send('WO Q')
-        self.assertNotCalled('commit')
-        self.assertCalled('check', 'respond')
-
-        self.assertEqual(1, len(ns.responses))
-        self.assertIn("OK until", ns.responses[0])
-
-    def test_valid_followed_by_junk(self):
-        ns = self.send('WO A001')
-        self.assertNotCalled('check', 'commit')
-        self.assertCalled('respond')
-
-        self.assertEqual(1, len(ns.responses))
-        self.assertIn("OK until", ns.responses[0])
+class EquipmentRepairedTest(SIMTestCase, EquipmentTestMixin):
+    def send_args(self, argstring):
+        return EquipmentRepaired(None).parse_arguments("WO", argstring, None)

@@ -1,5 +1,6 @@
-<link href="styles.css" rel="stylesheet"></link>
-[Home](homepage.html)
+styles: styles.css
+title: Home
+home: homepage.html
 
 # SMS Immunization Server (SIM) #
 
@@ -11,8 +12,14 @@ chain information manager for its data storage, is simple to deploy and maintain
 modify for your deployment (it's written in [Python](https://www.python.org/) and is based on the 
 well-documented [Django](https://www.djangoproject.com/) web framework).
 
-You can see more information about how to [become a user](user-docs.html) or 
-[help build SIM](dev-docs.html).
+Below is an overview of some of SIM's features. If you're interesting in learning more about 
+something in specific, you can 
+
+* Learn __[what SIM can do for you](use/index.html)__
+* Learn __[how to deploy SIM](deploy/index.html)__
+* Learn __[how to contribute to SIM's codebase](contribute/index.html)__
+
+See more at the [sitemap](sitemap.html).
 
 ## Data Reporting ##
 

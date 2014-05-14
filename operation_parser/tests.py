@@ -35,7 +35,7 @@ class AppTest(TestCase):
         return msg.fields['operations']
 
     def check(self, text, *expected_ops):
-        expected_ops = dict(expected_ops)
+        expected_ops = expected_ops
         actual_ops = self.parse(text)
         self.assertEqual(expected_ops, actual_ops)
 
@@ -74,6 +74,21 @@ class AppTest(TestCase):
             ("FT", "A50"),
             ("SL", "P12"),
             ("FF", "C"))
+
+    def test_strips_delims_from_args(self):
+        self.check(";;FT;;A;;10;;SL;;P;;100;;",
+            ("FT", "A;;10"),
+            ("SL", "P;;100"))
+
+    def test_multiple_of_same_opcode(self):
+        self.check("SEASEDSEP",
+            ("SE", "A"),
+            ("SE", "D"),
+            ("SE", "P"))
+
+    def test_no_opcode(self):
+        self.check("B10A22",
+            ("FT", "B10A22"))
 
     # Test disambiguate_o0
 

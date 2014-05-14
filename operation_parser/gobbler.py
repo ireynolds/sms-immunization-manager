@@ -2,6 +2,10 @@ import re
 
 DELIMS = re.compile("[\\s;,]+")
 
+LABEL = "[A-Z]"
+INTEGER = "\\d+"
+OPCODE = "[A-Z]{2}"
+
 def gobble(pattern, string):
     g = Gobbler(string)
     match = g.gobble(pattern)
@@ -46,7 +50,7 @@ class Gobbler():
 
     def __init__(self, string):
         self.original = string
-        self.remainder = string
+        self.remainder = strip_delimiters(string)
         self.index_of_previous = None
 
     def index_of_previous(self):
