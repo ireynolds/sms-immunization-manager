@@ -9,6 +9,27 @@ from operation_parser.app import OperationParser
 from rapidsms.apps.base import AppBase
 from django.dispatch.dispatcher import _make_id
 
+###
+### Utilities for testing code
+###
+
+class SIMTestCase(TestCase):
+    def assertErrorIn(self, effects):
+        self.assertPriorityIn(ERROR, effects)
+
+    def assertInfoIn(self, effects):
+        self.assertPriorityIn(INFO, effects)
+
+    def assertPriorityIn(self, priority, effects):
+        for effect in effects:
+            if effect.priority == priority:
+                return
+        return self.fail("No %s in %s" % (priority, repr(effects),))
+
+###
+### Tests for Utils code
+###
+
 args = [_("Test name"), {}, _("Test description."), {}]
 INFO_EFFECT = lambda: info(*args)
 ERROR_EFFECT = lambda: error(*args)
