@@ -1,5 +1,6 @@
-<link href="styles.css" rel="stylesheet"></link>
-[Home](homepage.html)
+styles: styles.css
+title: User Documentation
+home: homepage.html
 
 # Deployment #
 

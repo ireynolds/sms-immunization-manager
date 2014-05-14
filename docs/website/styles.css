@@ -24,7 +24,7 @@ pre {
   padding: 0.5em;
 }
 
-ul, ol {
+p+ul, p+ol {
   margin-top: -0.6em;
 }
 
