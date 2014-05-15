@@ -32,9 +32,11 @@ class OperationBase(AppBase):
         effects.
         """
 
+        # Add the operation_arguments and operation_effects fields if they do 
+        # not already exist.
         if "operation_arguments" not in message.fields:
+            # Make the field long enough that the later assign-at-index statements are valid.
             message.fields["operation_arguments"] = [None] * len(message.fields["operations"])
-
         if "operation_effects" not in message.fields:
             message.fields["operation_effects"] = []
 
