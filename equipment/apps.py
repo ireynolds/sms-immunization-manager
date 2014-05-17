@@ -24,7 +24,7 @@ class EquipmentBase(OperationBase):
         Return a MessageEffect that indicates a failure as a result of
         the arguments having extra chars after the equipment_id.
         '''
-        return error_parse(opcode, arg_string, reason="Chars after equipment ID not allowed.")
+        return error_parse(opcode, arg_string, reason="Text after equipment ID not allowed.")
 
     def _error_unrecognized_chars(self, opcode, arg_string):
         '''

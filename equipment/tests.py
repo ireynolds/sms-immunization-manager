@@ -14,6 +14,7 @@ from utils.tests import SIMTestCase
 class EquipmentTestMixin:
 
     def send_args(self, argstring):
+        '''Overridden in mixed-in classes.'''
         pass
 
     def test_delims_before(self):
