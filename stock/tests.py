@@ -7,7 +7,7 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 from stock.apps import StockLevel, StockOut
-from sim.operations import semantic_signal, commit_signal
+from utils.operations import semantic_signal, commit_signal
 from random import randint
 
 class StockLevelTest(TestCase):
