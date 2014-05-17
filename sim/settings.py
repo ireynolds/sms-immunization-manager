@@ -204,7 +204,8 @@ SIM_APPS = (
     'permissions',
     'dhis2',
     'notifications',
-    'utils'
+    'utils',
+    'info'
 )
 
 APPS_AFTER_SIM = (
@@ -249,11 +250,13 @@ RAPIDSMS_HANDLERS = (
 # the rest of settings.py?
 import stock.apps as _stock_apps
 import equipment.apps as _equipment_apps
+import info.apps as _info_apps
 RAPIDSMS_APP_BASES = (
     _stock_apps.StockLevel,
     _stock_apps.StockOut,
     _equipment_apps.EquipmentFailure,
     _equipment_apps.EquipmentRepaired,
+    _info_apps.Help,
 )
 
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
@@ -270,4 +273,5 @@ SIM_OPERATION_CODES = {
     "SE": _stock_apps.StockOut,
     "NF": _equipment_apps.EquipmentFailure,
     "WO": _equipment_apps.EquipmentRepaired,
+    "HE": _info_apps.Help,
 }
