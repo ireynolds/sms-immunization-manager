@@ -10,13 +10,18 @@ from stock.apps import StockLevel, StockOut
 from utils.operations import semantic_signal, commit_signal
 from random import randint
 
-class StockLevelTest(TestCase):
+class StockAppTest(TestCase):
+    def setUp(self):
+        sl = StockLevel(None)
+        self.OP_CODE = sl.get_opcodes().pop()
+
+class StockLevelTest(StockAppTest):
     """
     All tests involving a the StockLevel app.
     """
     def test_handle_simple(self):
         sl = StockLevel(None)
-        effects, kwargs = sl.parse_arguments("A1", None)
+        effects, kwargs = sl.parse_arguments(self.OP_CODE, "A1", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
@@ -24,7 +29,7 @@ class StockLevelTest(TestCase):
 
     def test_valid_single_char_stock_code(self):
         sl = StockLevel(None)
-        effects, kwargs = sl.parse_arguments("A 1", None)
+        effects, kwargs = sl.parse_arguments(self.OP_CODE, "A 1", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
@@ -32,7 +37,7 @@ class StockLevelTest(TestCase):
 
     def test_valid_multiple_char_stock_code(self):
         sl = StockLevel(None)
-        effects, kwargs = sl.parse_arguments("AB1", None)
+        effects, kwargs = sl.parse_arguments(self.OP_CODE, "AB1", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
@@ -40,7 +45,7 @@ class StockLevelTest(TestCase):
 
     def test_valid_multiple_char_stock_code(self):
         sl = StockLevel(None)
-        effects, kwargs = sl.parse_arguments("ABC 12", None)
+        effects, kwargs = sl.parse_arguments(self.OP_CODE, "ABC 12", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
@@ -48,7 +53,7 @@ class StockLevelTest(TestCase):
 
     def test_valid_multiple_stock_codes(self):
         sl = StockLevel(None)
-        effects, kwargs = sl.parse_arguments("ABC12E3FG63H4", None)
+        effects, kwargs = sl.parse_arguments(self.OP_CODE, "ABC12E3FG63H4", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
@@ -59,7 +64,7 @@ class StockLevelTest(TestCase):
 
     def test_valid_multiple_stock_codes_spaces(self):
         sl = StockLevel(None)
-        effects, kwargs = sl.parse_arguments("ABC12 E 3 FG 63H4", None)
+        effects, kwargs = sl.parse_arguments(self.OP_CODE, "ABC12 E 3 FG 63H4", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
@@ -70,25 +75,25 @@ class StockLevelTest(TestCase):
 
     def test_missing_stock_code(self):
         sl = StockLevel(None)
-        effects, kwargs = sl.parse_arguments("42", None)
+        effects, kwargs = sl.parse_arguments(self.OP_CODE, "42", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
 
     def test_missing_stock_level(self):
         sl = StockLevel(None)
-        effects, kwargs = sl.parse_arguments(" A  6 B", None)
+        effects, kwargs = sl.parse_arguments(self.OP_CODE, " A  6 B", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
 
-class StockOutTest(TestCase):
+class StockOutTest(StockAppTest):
     """
     All tests involving a the StockOut app.
     """
     def test_valid(self):
         se = StockOut(None)
-        effects, kwargs = se.parse_arguments("SE", " A", None)
+        effects, kwargs = se.parse_arguments(self.OP_CODE, " A", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
@@ -96,21 +101,21 @@ class StockOutTest(TestCase):
 
     def test_error_no_arg(self):
         se = StockOut(None)
-        effects, kwargs = se.parse_arguments("SE", "  ", None)
+        effects, kwargs = se.parse_arguments(self.OP_CODE, "  ", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
 
     def test_valid_followed_by_junk(self):
         se = StockOut(None)
-        effects, kwargs = se.parse_arguments("SE", "AW049045", None)
+        effects, kwargs = se.parse_arguments(self.OP_CODE, "AW049045", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
 
     def test_junk_only(self):
         se = StockOut(None)
-        effects, kwargs = se.parse_arguments("SE", "934><8,.984", None)
+        effects, kwargs = se.parse_arguments(self.OP_CODE, "934><8,.984", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
