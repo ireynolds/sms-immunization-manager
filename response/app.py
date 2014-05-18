@@ -16,5 +16,22 @@ class Responder(AppBase):
         acknowledgment of receipt. If one or more errors were detected response
         sent will describe the error of highest priority.
         """
-        print message.fields['operations']
-        print message.fields['effects']
+        print "+++++++++++++++++++++++++++++"
+        print "message.fields:"
+        print message.fields
+        print "+++++++++++++++++++++++++++++"
+
+
+        # check for 'effects' errors
+        # this means there was an error from the overall parser
+        for effect in message.fields['effects']:
+            if effect.type
+
+            #respond with the first one
+
+        # check for other errors
+        # this means there were errors in the parsing of each section
+
+            #respond with the first one
+
+        # if there are no errors, respond with a thanks!
