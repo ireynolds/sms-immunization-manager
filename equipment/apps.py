@@ -6,7 +6,6 @@ from django.utils.translation import ugettext_noop as _
 SINGLE_ALPHA = "[A-Z]"
 ONE_DIGIT = "[0-9]"
 TWO_DIGITS = "[0-9]\W*[0-9]"
-FRIDGE_TEMP_OP_CODE = "FT"
 
 class EquipmentBase(OperationBase):
     '''
