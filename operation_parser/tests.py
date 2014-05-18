@@ -24,10 +24,13 @@ class OperationParserTest(CustomRouterMixin, TestCase):
     router_class = "utils.tests.MockRouter"
 
     def setUp(self):
-        MockRouter.register_app("SL", BlankApp)
-        MockRouter.register_app("FF", BlankApp)
-        MockRouter.register_app("FT", BlankApp)
-        MockRouter.register_app("SE", BlankApp)
+        MockRouter.register_app("ZZ", BlankApp)
+        MockRouter.register_app("QQ", BlankApp)
+        MockRouter.register_app("XX", BlankApp)
+        MockRouter.register_app("WW", BlankApp)
+
+    def tearDown(self):
+        MockRouter.unregister_apps()
 
     ## Helpers
 
@@ -58,53 +61,44 @@ class OperationParserTest(CustomRouterMixin, TestCase):
     ## Test OperationParser
 
     def test_parse_one_opcode_no_args(self):
-        self.check("SL",
-            ("SL", ""))
+        self.check("ZZ",
+            ("ZZ", ""))
 
     def test_parse_one_opcode_strip_args(self):
-        self.check("SL P 100",
-            ("SL", "P 100"))
+        self.check("ZZ P 100",
+            ("ZZ", "P 100"))
 
     def test_parse_one_opcode_no_delimiters(self):
-        self.check("SLP500", 
-            ("SL", "P500"))
+        self.check("ZZP500", 
+            ("ZZ", "P500"))
 
     def test_parse_two_opcodes_with_args(self):
-        self.check("SLP500FFA",
-            ("SL", "P500"),
-            ("FF", "A"))
-
-    def test_parse_two_opcodes_first_assumed_ft(self):
-        self.check("A10B0SLD200P1770",
-            ("FT", "A10B0"),
-            ("SL", "D200P1770"))
+        self.check("ZZP500QQA",
+            ("ZZ", "P500"),
+            ("QQ", "A"))
 
     def test_parse_three_opcodes_with_args(self):
-        self.check("FT0SLP875FFB",
-            ("FT", "0"),
-            ("SL", "P875"),
-            ("FF", "B"))
+        self.check("xx0ZZP875QQB",
+            ("XX", "0"),
+            ("ZZ", "P875"),
+            ("QQ", "B"))
 
     def test_parse_two_opcodes_bad_casing(self):
-        self.check("fTA50SlP12ffC",
-            ("FT", "A50"),
-            ("SL", "P12"),
-            ("FF", "C"))
+        self.check("xxA50ZZP12QQC",
+            ("XX", "A50"),
+            ("ZZ", "P12"),
+            ("QQ", "C"))
 
     def test_strips_delims_from_args(self):
-        self.check(";;FT;;A;;10;;SL;;P;;100;;",
-            ("FT", "A;;10"),
-            ("SL", "P;;100"))
+        self.check(";;xx;;A;;10;;ZZ;;P;;100;;",
+            ("XX", "A;;10"),
+            ("ZZ", "P;;100"))
 
     def test_multiple_of_same_opcode(self):
-        self.check("SEASEDSEP",
-            ("SE", "A"),
-            ("SE", "D"),
-            ("SE", "P"))
-
-    def test_no_opcode(self):
-        self.check("B10A22",
-            ("FT", "B10A22"))
+        self.check("WWAWWDWWP",
+            ("WW", "A"),
+            ("WW", "D"),
+            ("WW", "P"))
 
     # Test disambiguate_o0
 

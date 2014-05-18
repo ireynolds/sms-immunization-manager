@@ -50,18 +50,7 @@ class OperationParser(AppBase):
         '''
 
         opcode_indices = self._find_opcodes(text, opcodes)
-
-        ##########
-
-        # HACK ATTACK!!!!!!
-        # When the message does not lead with any opcode, that opcode is assumed
-        # to be "FT". 
-        if 0 not in opcode_indices:
-            text = "FT" + text
-            opcode_indices = self._find_opcodes(text, opcodes)
-
-        ##########
-
+        
         starts = sorted(opcode_indices)
         ends = starts[1:] + [len(text)]
         bounds = zip(starts, ends)
