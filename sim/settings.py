@@ -204,7 +204,8 @@ SIM_APPS = (
     'permissions',
     'dhis2',
     'notifications',
-    'utils'
+    'utils',
+    'response'
 )
 
 APPS_AFTER_SIM = (
