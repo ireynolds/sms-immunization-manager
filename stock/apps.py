@@ -12,6 +12,7 @@ STOCK_LEVEL_OP_CODE = "SL"
 STOCK_OUT_OP_CODE = "SE"
 
 class StockLevel(OperationBase):
+    """Implements the StockLevel SMS API."""
 
     helptext = "For example, %(opcode)s P 2100 M 10. Reports 2100 doses of vaccine P, 10 of M, and 0 of any others."
 
@@ -76,48 +77,34 @@ class StockLevel(OperationBase):
         return [effect], { 'stock_levels': stock_levels }
 
 class StockOut(OperationBase):
-    """
-    Parses stock codes and inventory levels from the provided message and sends
-    the check and commit signals to the registered listeners.
-    """
+    """Implements the StockOut SMS API."""
 
     helptext = "For example, %(opcode)s P. In an emergency, reports that you are out of doses of vaccine P."
 
-    def parse_arguments(self, arg_string, message):
+    def parse_arguments(self, opcode, arg_string, message):
+        """
+        Parses a single stock code from the provided argument string.
+        Returns a 2-tuple containing a list of MessageEffects representing the
+        results of the parsing, and a Python dictionary mapping 'stock_out_code'
+        to the actual stock code found by the parsing.
+        """
 
         codes, remaining = gobbler.gobble(STOCK_CODE, arg_string)
 
         if len(remaining) > 0:
             # there are still characters remaining, meaning there was a parsing failure
-            result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. " \
-                                "Please fix and send again.")
-            result_context = { "op_code": STOCK_OUT_OP_CODE, "arg_string": arg_string }
-            desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
-            desc_context = { "op_code": STOCK_OUT_OP_CODE }
-
-            effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
+            effect = error_parse(opcode, arg_string, "Found extra characters after the stock code.")
             return [effect], {}
 
         if codes == None:
             # could not parse any useful information
-            # there are still characters remaining, meaning there was a parsing failure
-            result_fmtstr = _("Error in %(op_code)s: %(arg_string)s. No stock code found. " \
-                                "Please fix and send again.")
-            result_context = { "op_code": STOCK_OUT_OP_CODE, "arg_string": arg_string }
-            desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
-            desc_context = { "op_code": STOCK_OUT_OP_CODE }
-
-            effect = error(desc_fmtstr, desc_context, result_fmtstr, result_context)
+            effect = error_parse(opcode, arg_string, "No stock code found.")
             return [effect], {}
 
         # codes is a one element list containing the stock code
         stock_code = codes[0]
 
         # parsing was successful.
-        result_fmtstr = _("Parsed Stock Out: %(stock_out_code)s.")
-        result_context = { "stock_out_code": stock_code }
-        desc_fmtstr = _("Error Parsing %(op_code)s Arguments")
-        desc_context = { "op_code": STOCK_OUT_OP_CODE }
-
-        effect = info(desc_fmtstr, desc_context, result_fmtstr, result_context)
-        return [effect], { 'stock_out_code': stock_code }
+        parsed_args = { 'stock_out': stock_code }
+        effect = ok_parse(opcode, "Parsed: stock_out is %(stock_out)s.", parsed_args)
+        return [effect], parsed_args

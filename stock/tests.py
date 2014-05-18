@@ -88,29 +88,29 @@ class StockOutTest(TestCase):
     """
     def test_valid(self):
         se = StockOut(None)
-        effects, kwargs = se.parse_arguments(" A", None)
+        effects, kwargs = se.parse_arguments("SE", " A", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
-        self.assertEqual(kwargs['stock_out_code'], 'A')
+        self.assertEqual(kwargs['stock_out'], 'A')
 
     def test_error_no_arg(self):
         se = StockOut(None)
-        effects, kwargs = se.parse_arguments("  ", None)
+        effects, kwargs = se.parse_arguments("SE", "  ", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
 
     def test_valid_followed_by_junk(self):
         se = StockOut(None)
-        effects, kwargs = se.parse_arguments("AW049045", None)
+        effects, kwargs = se.parse_arguments("SE", "AW049045", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
 
     def test_junk_only(self):
         se = StockOut(None)
-        effects, kwargs = se.parse_arguments("934><8,.984", None)
+        effects, kwargs = se.parse_arguments("SE", "934><8,.984", None)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
