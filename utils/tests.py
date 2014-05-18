@@ -31,6 +31,13 @@ class SIMTestCase(TestCase):
         '''
         self.assertPriorityIn(INFO, effects)
 
+    def assertUrgentIn(self, effects):
+        '''
+        Asserts that effects contains at least on MessageEffect with 
+        priority URGENT.
+        '''
+        self.assertPriorityIn(URGENT, effects)
+
     def assertPriorityIn(self, priority, effects):
         '''
         Asserts that effects contains at least on MessageEffect with 
@@ -189,9 +196,9 @@ class MockRouter(BlockingRouter):
         Unregister all apps (that were registered using MockRouter.register_app) from 
         every instance of MockRouter.
         '''
-        MockRouter.REGISTERED_OPCODES = []
         for opcode in MockRouter.REGISTERED_OPCODES:
             del settings.SIM_OPERATION_CODES[opcode]
+        MockRouter.REGISTERED_OPCODES = []
 
     def __init__(self, *args, **kwargs):
         registered_apps = [settings.SIM_OPERATION_CODES[opcode] for opcode in MockRouter.REGISTERED_OPCODES]
@@ -221,12 +228,17 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
         global CALLED_APPS
         CALLED_APPS = {}
 
+        MockRouter.register_app("ZZ", MockAppZZ)
+        MockRouter.register_app("QQ", MockAppQQ)
+
+    def tearDown(self):
+        global CALLED_APPS
+        CALLED_APPS = {}
+
         MockAppZZ.return_values = None
         MockAppQQ.return_values = None
 
         MockRouter.unregister_apps()
-        MockRouter.register_app("ZZ", MockAppZZ)
-        MockRouter.register_app("QQ", MockAppQQ)
 
     def assertParseCalled(self, times, app):
         self.assertEqual(times, len(CALLED_APPS[app.__name__]))
