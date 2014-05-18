@@ -69,13 +69,17 @@ class EquipmentBase(OperationBase):
 
 class EquipmentFailure(EquipmentBase):
     '''Implements the EquipmentFailure SMS API.'''
-    pass
+
+    helptext = "For example, %(opcode)s A. Reports to managers that equipment A is broken."
 
 class EquipmentRepaired(EquipmentBase):
     '''Implements the EquipmentRepaired SMS API.'''
-    pass
+    
+    helptext = "For example, %(opcode)s A. Reports to managers that equipment A has been repaired."
 
 class FridgeTemperature(OperationBase):
+
+    helptext = "For example, %(opcode)s A 1 0. Reports that fridge A had 1 high- and 1 low-temperature event, and any other fridges had none of either."
 
     def _parse_events(self, args):
         """

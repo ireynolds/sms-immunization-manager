@@ -1,16 +1,20 @@
-from utils.operations import OperationBase
+from django.dispatch.dispatcher import receiver
+from utils.operations import OperationBase, semantic_signal, commit_signal
 from operation_parser.gobbler import Gobbler, OPCODE
-from moderation.models import error_parse, ok_parse
+from moderation.models import error_parse, ok_parse, urgent, error_semantics, ok_semantics
+from django.conf import settings
 
 class Help(OperationBase):
     '''
     Handles the HE operation.
     '''
 
+    helptext = "For example, %(opcode)s SL. Returns information about a given operation."
+
     def _ok(self, opcode, args):
         '''Return a MessageEffect that indicates success.'''
         return ok_parse(opcode, 
-            "Parsed: requested operation code is %(opcode)s.", args)
+            "Parsed: requested operation code is %(requested_opcode)s.", args)
 
     def _error_extra_chars(self, opcode, arg_string):
         '''
@@ -44,7 +48,7 @@ class Help(OperationBase):
         g = Gobbler(arg_string.upper())
 
         help_opcode = g.gobble(OPCODE)
-        args['opcode'] = help_opcode
+        args['requested_opcode'] = help_opcode
 
         if help_opcode:
             if g.remainder:
@@ -60,3 +64,21 @@ class Help(OperationBase):
 
         return (effects, args)
 
+@receiver(semantic_signal, sender=Help)
+def help_semantic(sender, message, opcode, requested_opcode, **named_args):
+    if requested_opcode not in settings.SIM_OPERATION_CODES.keys():
+        effect = error_semantics(opcode, 
+            "Requested help for unrecognized operation %(requested_opcode)s.", { 'requested_opcode': requested_opcode })
+    else:
+        effect = ok_semantics(opcode, 
+            "Requested help for operation %(requested_opcode)s.", { 'requested_opcode': requested_opcode })
+
+    return [effect]
+
+@receiver(commit_signal, sender=Help)
+def help_commit(sender, message, opcode, requested_opcode, **named_args):
+    effect = urgent(
+        "Information about %(opcode)s", { 'opcode': requested_opcode },
+        settings.SIM_OPERATION_CODES[requested_opcode].helptext, { 'opcode': requested_opcode }
+    )
+    return [effect]

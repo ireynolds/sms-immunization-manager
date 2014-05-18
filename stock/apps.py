@@ -13,6 +13,8 @@ STOCK_OUT_OP_CODE = "SE"
 
 class StockLevel(OperationBase):
 
+    helptext = "For example, %(opcode)s P 2100 M 10. Reports 2100 doses of vaccine P, 10 of M, and 0 of any others."
+
     def parse_arguments(self, arg_string, message):
         """
         Parses stock codes and inventory levels from the provided argument string.
@@ -78,6 +80,8 @@ class StockOut(OperationBase):
     Parses stock codes and inventory levels from the provided message and sends
     the check and commit signals to the registered listeners.
     """
+
+    helptext = "For example, %(opcode)s P. In an emergency, reports that you are out of doses of vaccine P."
 
     def parse_arguments(self, arg_string, message):
 

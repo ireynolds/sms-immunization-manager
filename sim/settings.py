@@ -257,6 +257,7 @@ RAPIDSMS_APP_BASES = (
     _equipment_apps.EquipmentFailure,
     _equipment_apps.EquipmentRepaired,
     _info_apps.Help,
+    _equipment_apps.FridgeTemperature,
 )
 
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
@@ -274,4 +275,5 @@ SIM_OPERATION_CODES = {
     "NF": _equipment_apps.EquipmentFailure,
     "WO": _equipment_apps.EquipmentRepaired,
     "HE": _info_apps.Help,
+    "FT": _equipment_apps.FridgeTemperature,
 }
