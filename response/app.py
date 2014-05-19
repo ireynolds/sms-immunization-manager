@@ -22,6 +22,10 @@ class Responder(AppBase):
         print "+++++++++++++++++++++++++++++"
 
 
+        # message effects will be in a list. sort by .operation_index (None sorted before zero) 
+        
+        # check for the group in the message fields. only send a response based on what group the message is in. 
+
         # check for 'effects' errors
         # this means there was an error from the overall parser
         for effect in message.fields['effects']:
