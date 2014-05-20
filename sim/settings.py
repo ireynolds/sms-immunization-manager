@@ -201,6 +201,7 @@ SIM_APPS = (
     'stock',
     'equipment',
     'registration',
+    'user_registration',
     'permissions',
     'dhis2',
     'notifications',
