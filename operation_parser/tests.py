@@ -50,6 +50,7 @@ class OperationParserTest(CustomRouterMixin, SIMTestCase):
         message = self.receive(text)
         actual_ops = message.fields['operations']
         self.assertEqual(list(expected_ops), actual_ops)
+        return message
 
     def check_error(self, text):
         '''
@@ -59,6 +60,7 @@ class OperationParserTest(CustomRouterMixin, SIMTestCase):
         message = self.receive(text)
         actual_effects = message.fields['operation_effects']
         self.assertErrorIn(actual_effects)
+        return message
 
     ## Test OperationParser
 
@@ -113,6 +115,15 @@ class OperationParserTest(CustomRouterMixin, SIMTestCase):
             ("ZZ", "A"),
             ("QQ", "B"),
             ("WW", "C"))
+
+    def test_adds_group_to_fields_not_contextual(self):
+        message = self.check_ok("WW A ZZ A",
+            ("WW", "A"),
+            ("ZZ", "A"))
+        self.assertEqual(settings.PERIODIC, message.fields['operation_group'])
+
+    def test_error_if_only_contextual(self):
+        self.check_error("WW A")
 
     # Test disambiguate_o0
 

@@ -77,6 +77,9 @@ class OperationParser(AppBase):
         # Remove contextual opcodes
         opcodes = [opcode for opcode, _ in operations if settings.SIM_OPCODE_GROUPS[opcode] != settings.CONTEXTUAL]
 
+        if len(opcodes) == 0:
+            return
+
         # Get the first opcode and its group
         opcode0 = opcodes[0]
         conflicting_opcode = None
@@ -93,7 +96,7 @@ class OperationParser(AppBase):
 
         # See if we found a conflicting opcode
         if not conflicting_opcode:
-            return None
+            return
 
         effect = error(
             "Error Verifying Operation Codes", 
@@ -116,7 +119,7 @@ class OperationParser(AppBase):
                 break
 
         if not duplicated_opcode:
-            return None
+            return
 
         effect = error(
             "Error Verifying Operation Codes", 
@@ -126,31 +129,58 @@ class OperationParser(AppBase):
         )
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
 
+    def _if_contains_only_contextual(self, operations, message):
+        non_contextual = None
+        for opcode, _ in operations:
+            if settings.SIM_OPCODE_GROUPS[opcode] != settings.CONTEXTUAL:
+                non_contextual = opcode
+                break
+
+        if non_contextual:
+            return
+
+        effect = error(
+            "Error Verifying Operation Codes", 
+                {},
+            "Error. Message must also submit or request data. Please fix and try again.", 
+                {}
+        )
+        return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
+
+    def _group(self, operations):
+        group = None
+        for opcode, _ in operations:
+            this_group = settings.SIM_OPCODE_GROUPS[opcode]
+            if this_group != settings.CONTEXTUAL:
+                group = this_group
+                break
+
+        return group
 
     def parse(self, message):
         '''
-        Implements the RapidSMS "parse" stage. Given a message (and, optionally, a 
-        list of valid opcodes), returns  a list of pairs of opcodes and their 
-        corresponding arguments in the order they appear in the message.
+        Implements the RapidSMS "parse" stage. Given a message, returns a list 
+        of pairs of opcodes and their corresponding arguments in the order they 
+        appear in the message.
 
         Also disambiguates between "o" and "0" by replacing all "o" with "0". Assumes 
         that opcodes are uppercase and converts the message text to uppercase.
 
         Returned arguments have had delimiters stripped from front and back.
         '''
-        opcodes = settings.SIM_OPERATION_CODES.keys()
-
         text = disambiguate_o0(gobbler.strip_delimiters(message.text).upper())
-        operations = self._get_operations(text, opcodes)
+        operations = self._get_operations(text, settings.SIM_OPERATION_CODES.keys())
 
         # Check for errors between all operations
         effects = []
         effects.append(self._if_contains_ops_from_multiple_groups(operations, message))
         effects.append(self._if_contains_disallowed_repeated_op(operations, message))
+        effects.append(self._if_contains_only_contextual(operations, message))
         effects = filter(None, effects)
         if len(effects) == 0:
             effects = [self._ok_effect(operations, message)]
 
+        message.fields['operation_group'] = self._group(operations)
         message.fields['operations'] = operations
         message.fields['operation_effects'] = effects
 
