@@ -244,6 +244,7 @@ RAPIDSMS_HANDLERS = (
 # ------------------------------------------------------------------------------
 # SIM-specific settings below
 # ------------------------------------------------------------------------------
+
 # A list of AppBase subclasses that should be used by RapidSMS' router, in
 # addition to those autodiscovered from INSTALLED_APPS.
 # TODO: Is it possible to make these references be strings, for consistency with
@@ -263,17 +264,41 @@ RAPIDSMS_APP_BASES = (
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
 from rapidsms.router.blocking import BlockingRouter
 RAPIDSMS_ROUTER = BlockingRouter()
-
 for app in RAPIDSMS_APP_BASES:
     RAPIDSMS_ROUTER.add_app(app)
 
 # Assign operation codes to AppBase handlers.
-# TODO: Perhaps assert that opcodes are only characters.
 SIM_OPERATION_CODES = {
+    "FT": _equipment_apps.FridgeTemperature,
     "SL": _stock_apps.StockLevel,
     "SE": _stock_apps.StockOut,
     "NF": _equipment_apps.EquipmentFailure,
     "WO": _equipment_apps.EquipmentRepaired,
     "HE": _info_apps.Help,
-    "FT": _equipment_apps.FridgeTemperature,
 }
+
+PERIODIC = "PERIODIC"
+SPONTANEOUS = "SPONTANEOUS"
+ADMINISTRATION = "ADMINISTRATION"
+INFORMATION = "INFORMATION"
+CONTEXTUAL = "CONTEXTUAL"
+
+SIM_OPCODE_GROUPS = {
+    "FT": PERIODIC,
+    "SL": PERIODIC,
+    "SE": SPONTANEOUS,
+    "WO": SPONTANEOUS,
+    "NF": SPONTANEOUS,
+    "RG": ADMINISTRATION,
+    "PL": ADMINISTRATION,
+    "HE": INFORMATION,
+    "FC": CONTEXTUAL,
+}
+
+SIM_OPCODE_MAY_NOT_DUPLICATE = set([
+    "FT",
+    "SL",
+    "PL",
+    "HE",
+    "FC"
+])

@@ -182,13 +182,16 @@ class MockRouter(BlockingRouter):
     REGISTERED_OPCODES = []
 
     @classmethod
-    def register_app(cls, opcode, app):
+    def register_app(cls, opcode, app, group=settings.PERIODIC, limit_one=False):
         '''
         Register the given app with every instance of MockRouter as handling the
         given opcode. 
         '''
         MockRouter.REGISTERED_OPCODES.append(opcode)
+
         settings.SIM_OPERATION_CODES[opcode.upper()] = app
+        settings.SIM_OPCODE_GROUPS[opcode.upper()] = group
+        if limit_one: settings.SIM_OPCODE_MAY_NOT_DUPLICATE.add(opcode.upper())
 
     @classmethod
     def unregister_apps(cls):
@@ -198,6 +201,9 @@ class MockRouter(BlockingRouter):
         '''
         for opcode in MockRouter.REGISTERED_OPCODES:
             del settings.SIM_OPERATION_CODES[opcode]
+            del settings.SIM_OPCODE_GROUPS[opcode]
+            if opcode in settings.SIM_OPCODE_MAY_NOT_DUPLICATE:
+                settings.SIM_OPCODE_MAY_NOT_DUPLICATE.remove(opcode)
         MockRouter.REGISTERED_OPCODES = []
 
     def __init__(self, *args, **kwargs):
