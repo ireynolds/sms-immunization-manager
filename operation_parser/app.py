@@ -101,7 +101,7 @@ class OperationParser(AppBase):
             "Error. Cannot include %(opcode)s and %(conflicting_opcode)s in the same message. Please fix and try again.", 
                 { "opcode": opcode0, "conflicting_opcode": conflicting_opcode }
         )
-        return effect
+        return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
 
     def _contains_disallowed_repeated_op(self, operations, message):
         only_once_opcodes = set(settings.SIM_OPCODE_MAY_NOT_DUPLICATE)
@@ -124,7 +124,7 @@ class OperationParser(AppBase):
             "Error. Cannot include %(duplicated_opcode)s more than once in the same message. Please fix and try again.", 
                 { "duplicated_opcode": duplicated_opcode }
         )
-        return effect
+        return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
 
 
     def parse(self, message, opcodes=None):
