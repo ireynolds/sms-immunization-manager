@@ -73,7 +73,7 @@ class OperationParser(AppBase):
         effect = info(_("Parsed Operation Codes"), {}, result_fmtstr, result_context)
         return complete_effect(effect, message.logger_msg, SYNTAX)
 
-    def _contains_ops_from_multiple_groups(self, operations, message):
+    def _if_contains_ops_from_multiple_groups(self, operations, message):
         # Remove contextual opcodes
         opcodes = [opcode for opcode, _ in operations if settings.SIM_OPCODE_GROUPS[opcode] != settings.CONTEXTUAL]
 
@@ -103,7 +103,7 @@ class OperationParser(AppBase):
         )
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
 
-    def _contains_disallowed_repeated_op(self, operations, message):
+    def _if_contains_disallowed_repeated_op(self, operations, message):
         only_once_opcodes = set(settings.SIM_OPCODE_MAY_NOT_DUPLICATE)
         opcodes = [opcode for opcode, _ in operations if opcode in settings.SIM_OPCODE_MAY_NOT_DUPLICATE]
 
@@ -127,7 +127,7 @@ class OperationParser(AppBase):
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
 
 
-    def parse(self, message, opcodes=None):
+    def parse(self, message):
         '''
         Implements the RapidSMS "parse" stage. Given a message (and, optionally, a 
         list of valid opcodes), returns  a list of pairs of opcodes and their 
@@ -138,18 +138,16 @@ class OperationParser(AppBase):
 
         Returned arguments have had delimiters stripped from front and back.
         '''
-        if not opcodes:
-            opcodes = settings.SIM_OPERATION_CODES.keys()
+        opcodes = settings.SIM_OPERATION_CODES.keys()
 
         text = disambiguate_o0(gobbler.strip_delimiters(message.text).upper())
         operations = self._get_operations(text, opcodes)
 
         # Check for errors between all operations
         effects = []
-        effects.append(self._contains_ops_from_multiple_groups(operations, message))
-        effects.append(self._contains_disallowed_repeated_op(operations, message))
+        effects.append(self._if_contains_ops_from_multiple_groups(operations, message))
+        effects.append(self._if_contains_disallowed_repeated_op(operations, message))
         effects = filter(None, effects)
-
         if len(effects) == 0:
             effects = [self._ok_effect(operations, message)]
 
