@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils.translation import ugettext_noop as _
 from rapidsms.apps.base import AppBase
 from moderation.models import *
+from registration.models import *
 
 # Define which priorities halt message processing
 HALTING_PRIORITIES = set([ERROR])
@@ -150,5 +151,5 @@ class OperationBase(AppBase):
 # arguments to both signals. Receivers of these signals must return a list containing at least one
 # MessageEffect instance created using moderation.models.create_effect or one of its shortcut
 # functions.
-semantic_signal  = django.dispatch.Signal(providing_args=["message"])
-commit_signal = django.dispatch.Signal(providing_args=["message"])
+semantic_signal  = django.dispatch.Signal(providing_args=["message", "opcode"])
+commit_signal = django.dispatch.Signal(providing_args=["message", "opcode"])
