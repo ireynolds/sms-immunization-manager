@@ -7,7 +7,7 @@ from django.utils.functional import lazy
 from django.utils import six
 
 ##
-## The following helper methods for Parse stage 
+## The following helper methods for Parse stage
 ## success/failure define the convention for a response.
 ##
 
@@ -33,17 +33,17 @@ def ok_parse(opcode, desc_fmstr, desc_ctxt):
     )
 
 ##
-## The following helper methods for Semantic stage 
+## The following helper methods for Semantic stage
 ## success/failure define the convention for a response.
 ##
 
 def error_semantics(opcode, reason_fmstr, reason_ctxt):
     name = "Error Interpreting %(op_code)s Arguments"
-    
+
     desc_start = "Error in %(op_code)s."
     desc_end = "Please fix and send again."
     desc = "%s %s %s" % (desc_start, reason_fmstr, desc_end)
-    
+
     minimum_ctxt = { 'op_code': opcode }
     return error(
         ugettext_noop(name), minimum_ctxt,
@@ -125,7 +125,7 @@ def urgent(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     return create_effect(URGENT, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
 
-def complete_effect(effect, message, stage, operation_index = None, opcode = ''):
+def complete_effect(effect, message, stage, operation_index = None, opcode = '', sent_as_response = False):
     """
     Adds any remaining fields to effect not assigned by create_effect or its shortcut functions, and
     saves the given effect model. Used by receivers of MessageEffects created with create_effect
@@ -138,6 +138,7 @@ def complete_effect(effect, message, stage, operation_index = None, opcode = '')
     effect.stage = stage
     effect.operation_index = operation_index
     effect.opcode = opcode
+    effect.sent_as_response = sent_as_response
     effect.save()
     return effect
 
@@ -160,11 +161,13 @@ PRIORITY_CHOICES = (
 SYNTAX = 'SYNTAX'
 SEMANTIC = 'SEMANTIC'
 COMMIT = 'COMMIT'
+RESPOND = 'RESPOND'
 
 STAGE_CHOICES = (
     (SYNTAX, ugettext_lazy("Syntax")),
     (SEMANTIC, ugettext_lazy('Semantic')),
     (COMMIT, ugettext_lazy('Commit')),
+    (RESPOND, ugettext_lazy('Respond')),
 )
 
 class MessageEffect(models.Model):
@@ -204,6 +207,9 @@ class MessageEffect(models.Model):
     desc_format = models.TextField()
     # The context used to render desc_format
     desc_context = models.TextField()
+
+    # If True, this effect has been sent as a response to the message sender
+    sent_as_response = models.BooleanField(default="False")
 
     def __unicode__(self):
         context = {"name": unicode(self.get_name()), "desc": unicode(self.get_desc())}
