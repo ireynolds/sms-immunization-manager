@@ -10,85 +10,95 @@ from django.test import TestCase
 import app
 import gobbler
 
-class MockMessage: 
-    """
-    A useful class that satisfies the interface of a RapidSMS
-    Message on which OperationParser depends.
-    """
-    def __init__(self, text):
-        # Satisfy the interface upon which OperationParser.parse depends
-        self.text = text
-        self.fields = {}
+from utils.tests import MockRouter, MockApp
+from rapidsms.tests.harness.router import CustomRouterMixin
 
-class AppTest(TestCase):
-    """
-    Tests for app.OperationParser.
-    """
-    
+class BlankApp(MockApp):
+    return_values = None
+    def parse_arguments(*args, **kwargs):
+        pass
+
+class OperationParserTest(CustomRouterMixin, TestCase):
+    '''Tests for OperationParser.'''
+
+    router_class = "utils.tests.MockRouter"
+
+    def setUp(self):
+        MockRouter.register_app("ZZ", BlankApp)
+        MockRouter.register_app("QQ", BlankApp)
+        MockRouter.register_app("XX", BlankApp)
+        MockRouter.register_app("WW", BlankApp)
+
+    def tearDown(self):
+        MockRouter.unregister_apps()
+
     ## Helpers
 
+    def receive(self, text):
+        '''
+        Treat the given text as the body of an incoming message and route it through
+        the phases of RapidSMS as from number '4257886710' and 'mockbackend'.
+        '''
+        return CustomRouterMixin.receive(self, text, self.lookup_connections('mockbackend', ['4257886710'])[0])
+
     def parse(self, text):
-        # No connection -- leave it as None
-        op = app.OperationParser(None)
-        msg = MockMessage(text)
-        op.parse(msg, opcodes=["SL", "SE", "FF", "FT"])
-        return msg.fields['operations']
+        '''
+        Run the given text through the parser and return the list of 
+        (opcode, argument) pairs.
+        '''
+        message = self.receive(text)
+        return message.fields['operations']
 
     def check(self, text, *expected_ops):
+        '''
+        Verify the parser identifies the given expected operations
+        from the given text. Order is significant.
+        '''
         expected_ops = expected_ops
         actual_ops = self.parse(text)
-        self.assertEqual(expected_ops, actual_ops)
+        self.assertEqual(list(expected_ops), actual_ops)
 
     ## Test OperationParser
 
     def test_parse_one_opcode_no_args(self):
-        self.check("SL",
-            ("SL", ""))
+        self.check("ZZ",
+            ("ZZ", ""))
 
     def test_parse_one_opcode_strip_args(self):
-        self.check("SL P 100",
-            ("SL", "P 100"))
+        self.check("ZZ P 100",
+            ("ZZ", "P 100"))
 
     def test_parse_one_opcode_no_delimiters(self):
-        self.check("SLP500", 
-            ("SL", "P500"))
+        self.check("ZZP500", 
+            ("ZZ", "P500"))
 
     def test_parse_two_opcodes_with_args(self):
-        self.check("SLP500FFA",
-            ("SL", "P500"),
-            ("FF", "A"))
-
-    def test_parse_two_opcodes_first_assumed_ft(self):
-        self.check("A10B0SLD200P1770",
-            ("FT", "A10B0"),
-            ("SL", "D200P1770"))
+        self.check("ZZP500QQA",
+            ("ZZ", "P500"),
+            ("QQ", "A"))
 
     def test_parse_three_opcodes_with_args(self):
-        self.check("FT0SLP875FFB",
-            ("FT", "0"),
-            ("SL", "P875"),
-            ("FF", "B"))
+        self.check("xx0ZZP875QQB",
+            ("XX", "0"),
+            ("ZZ", "P875"),
+            ("QQ", "B"))
 
     def test_parse_two_opcodes_bad_casing(self):
-        self.check("fTA50SlP12ffC",
-            ("FT", "A50"),
-            ("SL", "P12"),
-            ("FF", "C"))
+        self.check("xxA50ZZP12QQC",
+            ("XX", "A50"),
+            ("ZZ", "P12"),
+            ("QQ", "C"))
 
     def test_strips_delims_from_args(self):
-        self.check(";;FT;;A;;10;;SL;;P;;100;;",
-            ("FT", "A;;10"),
-            ("SL", "P;;100"))
+        self.check(";;xx;;A;;10;;ZZ;;P;;100;;",
+            ("XX", "A;;10"),
+            ("ZZ", "P;;100"))
 
     def test_multiple_of_same_opcode(self):
-        self.check("SEASEDSEP",
-            ("SE", "A"),
-            ("SE", "D"),
-            ("SE", "P"))
-
-    def test_no_opcode(self):
-        self.check("B10A22",
-            ("FT", "B10A22"))
+        self.check("WWAWWDWWP",
+            ("WW", "A"),
+            ("WW", "D"),
+            ("WW", "P"))
 
     # Test disambiguate_o0
 
@@ -99,12 +109,16 @@ class AppTest(TestCase):
 
 class GobblerTest(TestCase):
     """
-    Tests for gobbler.
+    Tests for gobbler.Gobbler.
     """
 
     ## Helpers        
 
     def assertGobbles(self, pattern, string, exp_match, exp_remainder, exp_index):
+        '''
+        Assert that the pattern, applied once to the string by the Gobbler (gobble), returns 
+        the expected match from the expected index and leaves the expected remainder.
+        '''
         g = gobbler.Gobbler(string)
         act_match = g.gobble(pattern)
         self.assertEqual(exp_match, act_match)
@@ -112,6 +126,11 @@ class GobblerTest(TestCase):
         self.assertEqual(exp_index, g.index_of_previous)
 
     def assertGobblesAll(self, pattern, string, exp_matches, exp_remainder, exp_index):
+        '''
+        Assert that the pattern, applied as many times as possible to the string by 
+        the Gobbler (gobble_all), returns the expected matches (with the last from the 
+        expected index) and leaves the expected remainder.
+        '''
         g = gobbler.Gobbler(string)
         act_matches = g.gobble_all(pattern)
         self.assertEqual(exp_matches, act_matches)
@@ -119,6 +138,10 @@ class GobblerTest(TestCase):
         self.assertEqual(exp_index, g.index_of_previous)
 
     def assertDoesNotGobble(self, pattern, string, exp_index):
+        '''
+        Assert that the pattern, applied to the string by the Gobbler (gobble), returns no 
+        match and leaves the given index_of_previous.
+        '''
         g = gobbler.Gobbler(string)
         act_match = g.gobble(pattern)
         self.assertEqual(None, act_match)
@@ -126,6 +149,10 @@ class GobblerTest(TestCase):
         self.assertEqual(exp_index, g.index_of_previous)
 
     def assertDoesNotGobbleAny(self, pattern, string, exp_index):
+        '''
+        Assert that the pattern, applied to the string by the Gobbler as many times
+        as possible (gobble_all), returns no matches and leaves the given index_of_previous.
+        '''
         g = gobbler.Gobbler(string)
         act_matches = g.gobble_all(pattern)
         self.assertEqual(None, act_matches)

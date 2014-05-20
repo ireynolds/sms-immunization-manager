@@ -54,4 +54,5 @@ coverage.xml
 docs/_build/
 
 # Other
-docs/website-deploy
+website/output
+website/tmp
