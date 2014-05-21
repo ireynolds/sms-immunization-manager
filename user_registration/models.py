@@ -42,16 +42,13 @@ class Facility(models.Model):
     def __unicode__(self):
         return self.name
 
-
-# TODO: Maybe add contact to database id'd by phone number 
-# that is the same is Connection.identity
-# look up roles in this database
 class SimContact(Contact):
     """
     A user who interacts with the SMS immunization manager
     """
+    # TODO: Require facility
     # The facility where this user works
-    facility = models.ForeignKey(Facility)
+    facility = models.ForeignKey(Facility, blank=True, null=True)
 
     # The name of this role
     role_name = models.CharField(max_length=100, 
@@ -79,5 +76,3 @@ class SimContact(Contact):
 reversion.register(HierarchyNode)
 reversion.register(Facility)
 reversion.register(SimContact)
-
-# Create your models here.
