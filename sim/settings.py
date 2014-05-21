@@ -210,7 +210,6 @@ SIM_APPS = (
 
 APPS_AFTER_SIM = (
     'moderation',
-    'prototype',
     'reversion',
 
     # RapidSMS
@@ -219,9 +218,6 @@ APPS_AFTER_SIM = (
     "rapidsms.contrib.handlers",
     "rapidsms.contrib.httptester",
     "rapidsms.contrib.messaging",
-    #"rapidsms.contrib.registration",
-    #"rapidsms.contrib.echo",
-    #"rapidsms.contrib.default",  # Must be last
 )
 
 INSTALLED_APPS = APPS_BEFORE_SIM + SIM_APPS + APPS_AFTER_SIM

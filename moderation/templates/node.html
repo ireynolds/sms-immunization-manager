@@ -1,0 +1,21 @@
+{% extends "sim_base.html" %}
+
+{% block title %}Hierarchy Node{% endblock %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li><a href="{% url "moderation.views.node" 1 %}">United States</a></li>
+    <li><a href="{% url "moderation.views.node" 2 %}">Washington</a></li>
+    <li class="active">Seattle</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>A Hierarchy Node</h1>
+    <ul>
+        <li><a href="{% url "moderation.views.facility" 1 %}">Facility 1<a></li>
+        <li><a href="{% url "moderation.views.facility" 2 %}">Facility 2<a></li>
+    </ul>
+</div>
+{% endblock %}
