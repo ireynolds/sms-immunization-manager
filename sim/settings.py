@@ -193,7 +193,8 @@ APPS_BEFORE_SIM = (
     "django_tables2",
     "selectable",
     "south",
-    "rapidsms.contrib.messagelog"
+    "rapidsms.contrib.messagelog",
+    "crispy_forms",
 )
 
 SIM_APPS = (
@@ -231,6 +232,9 @@ INSTALLED_BACKENDS = {
 # TODO: Change these to URL pattern lookups
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+
+# The template pack to use with django-crispy-forms
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 RAPIDSMS_HANDLERS = (
     'rapidsms.contrib.echo.handlers.echo.EchoHandler',
