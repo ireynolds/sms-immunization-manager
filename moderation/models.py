@@ -196,7 +196,7 @@ class MessageEffect(models.Model):
     opcode = models.CharField(max_length=2, blank=True)
 
     # If True, this effect has been reviewed and dismissed by a moderator
-    moderator_dismissed = models.BooleanField(default="False")
+    moderator_dismissed = models.BooleanField(default=False)
 
     # The name of this effect, as an untranslated format string
     name_format = models.TextField()
@@ -209,7 +209,7 @@ class MessageEffect(models.Model):
     desc_context = models.TextField()
 
     # If True, this effect has been sent as a response to the message sender
-    sent_as_response = models.BooleanField(default="False")
+    sent_as_response = models.BooleanField(default=False)
 
     def __unicode__(self):
         context = {"name": unicode(self.get_name()), "desc": unicode(self.get_desc())}

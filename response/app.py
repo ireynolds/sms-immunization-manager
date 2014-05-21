@@ -2,6 +2,8 @@ import logging
 from rapidsms.apps.base import AppBase
 from moderation.models import *
 
+PLACEHOLDER_MESSAGE_TYPE = "AAA"
+
 class Responder(AppBase):
     """
     Responds to the message sender with an acknowledgment receipt or that an
@@ -21,11 +23,11 @@ class Responder(AppBase):
         # sort effects by the index of the operation code in the original
         # message. The index None is assumed to apply to the parsing of the
         # operation codes themselves so it should be first.
-        print message.fields['operation_effects']
+        #print message.fields['operation_effects']
         effects = sorted(message.fields['operation_effects'], key=lambda effect: -1 if effect.operation_index == None else effect.operation_index)
 
         # collect the effects that need a response sent
-        print effects
+        #print effects
         urgentEffects = [ effect for effect in effects if effect.priority == URGENT ]
         errorEffects = self._selectErrors(effects)
 
@@ -37,17 +39,16 @@ class Responder(AppBase):
         if errorEffects:
             self._sendRepsponses(errorEffects, message)
 
-        else:
-            # there are no errors, respond with a thanks!
+        elif message.fields['group'] == PLACEHOLDER_MESSAGE_TYPE:
+            # there are no errors, and this message needs a response
             name = "Confirmation Response Sent"
             desc = "Thanks for your message."
             response = info(name, {}, desc, {})
-            complete_effect(response, message, RESPOND, None, '', True)
+            complete_effect(response, message.logger_msg, RESPOND, None, '', True)
 
-            msg.fields['operation_effects'].append(effect)
+            message.fields['operation_effects'].append(response)
 
-            message.respond(__unicode__(response.get_desc()))
-
+            message.respond(unicode(response.get_desc()))
 
     def _selectErrors(self, effects):
         for effect in effects:
@@ -57,6 +58,6 @@ class Responder(AppBase):
 
     def _sendRepsponses(self, effects, message):
         for effect in effects:
-            message.respond(__unicode__(effect.get_desc()))
+            message.respond(unicode(effect.get_desc()))
             effect.sent_as_response = True
             effect.save()
