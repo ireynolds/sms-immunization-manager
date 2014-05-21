@@ -228,6 +228,8 @@ INSTALLED_BACKENDS = {
     },
 }
 
+# TODO: Change these to URL pattern lookups
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 
 RAPIDSMS_HANDLERS = (

@@ -23,8 +23,9 @@
         <![endif]-->
     </head>
 
-    <!-- Navigation Bar -->
     <body>
+        <!-- Navigation Bar -->
+        {% block navbar %}
         <nav class="navbar navbar-default" role="navigation">
             <div class="container-fluid">
                 <div class="navbar-header">
@@ -40,13 +41,14 @@
                  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav navbar-right">
                         <li><a href="#">
-                            {% blocktrans with "John Smith" as name%}Settings for {{ name }}{% endblocktrans %}
+                            {% blocktrans with request.user as name %}Settings for {{ name }}{% endblocktrans %}
                         </a></li>
-                        <li><a href="#">{% trans "Sign out" %}</a></li>
+                        <li><a href="{% url "logout" %}">{% trans "Log out" %}</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
+        {% endblock %}
 
         <!-- Breadcrumbs -->
         <div class="container">
