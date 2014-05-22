@@ -1,0 +1,35 @@
+doctype html
+
+html lang="en"
+  head
+    meta charset="utf-8"
+    title SIM | #{@item[:title]}
+    link rel="stylesheet" href="#{@items['/stylesheet/'].path}"
+
+    <!-- you don't need to keep this, but it's cool for stats! -->
+    meta name="generator" content="nanoc #{Nanoc::VERSION}"
+
+  body
+    div id="main"
+      == yield
+    
+    div id="sidebar"
+      h2 Documentation
+      ul
+        li 
+          a href="/" Home
+        li 
+          a href="/use/" How to Use
+        li
+          a href="/deploy/" How to Deploy
+        li 
+          a href="/contribute/" How to Contribute
+        li 
+          a href="/report-bug" Report a Bug
+
+      h2 About
+      ul
+        li 
+          a href="https://github.com/ireynolds/sms-immunization-manager" Get the Source
+        li 
+          a href="/about" About Us

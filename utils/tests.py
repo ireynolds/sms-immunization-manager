@@ -122,6 +122,18 @@ class MockAppQQ(MockApp):
     # is called.
     return_values = None
 
+class MockAppXX(MockApp):
+    '''
+    By convention, configured in OperationBaseTest to 
+    parse "XX" opcode.
+    '''
+
+    # May be assigned in testing code to determine what 
+    # values are returned when this class's parse_arguments
+    # is called.
+    return_values = None
+
+
 class MockSubscriber:
     '''
     Defines a mock version of a module that subscribes to
@@ -182,13 +194,16 @@ class MockRouter(BlockingRouter):
     REGISTERED_OPCODES = []
 
     @classmethod
-    def register_app(cls, opcode, app):
+    def register_app(cls, opcode, app, group=settings.PERIODIC, limit_one=False):
         '''
         Register the given app with every instance of MockRouter as handling the
         given opcode.
         '''
         MockRouter.REGISTERED_OPCODES.append(opcode)
+
         settings.SIM_OPERATION_CODES[opcode.upper()] = app
+        settings.SIM_OPCODE_GROUPS[opcode.upper()] = group
+        if limit_one: settings.SIM_OPCODE_MAY_NOT_DUPLICATE.add(opcode.upper())
 
     @classmethod
     def unregister_apps(cls):
@@ -198,6 +213,9 @@ class MockRouter(BlockingRouter):
         '''
         for opcode in MockRouter.REGISTERED_OPCODES:
             del settings.SIM_OPERATION_CODES[opcode]
+            del settings.SIM_OPCODE_GROUPS[opcode]
+            if opcode in settings.SIM_OPCODE_MAY_NOT_DUPLICATE:
+                settings.SIM_OPCODE_MAY_NOT_DUPLICATE.remove(opcode)
         MockRouter.REGISTERED_OPCODES = []
 
     def __init__(self, *args, **kwargs):
@@ -230,6 +248,7 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
 
         MockRouter.register_app("ZZ", MockAppZZ)
         MockRouter.register_app("QQ", MockAppQQ)
+        MockRouter.register_app("XX", MockAppXX, limit_one=True)
 
     def tearDown(self):
         global CALLED_APPS
@@ -280,7 +299,6 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
             self.assertEqual(
                 sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']),
                 sorted(kwargs.keys()))
-
 
     def test_calls_syntax_for_multiple(self):
         self.receive("zzqqzz")
@@ -387,3 +405,10 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
             self.assertParseCalled(1, MockAppZZ)
             self.assertSignalCalled(1, sem_zz)
             self.assertSignalCalled(0, com_zz)
+
+    def test_no_commit_if_parser_errors(self):
+        with MockSubscriber(commit_signal, MockAppXX) as com_xx:
+
+            self.receive("xx xx")
+
+            self.assertSignalCalled(0, com_xx)

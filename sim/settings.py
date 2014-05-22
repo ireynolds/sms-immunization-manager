@@ -193,7 +193,8 @@ APPS_BEFORE_SIM = (
     "django_tables2",
     "selectable",
     "south",
-    "rapidsms.contrib.messagelog"
+    "rapidsms.contrib.messagelog",
+    "crispy_forms",
 )
 
 SIM_APPS = (
@@ -211,7 +212,6 @@ SIM_APPS = (
 
 APPS_AFTER_SIM = (
     'moderation',
-    'prototype',
     'reversion',
 
     # RapidSMS
@@ -220,9 +220,6 @@ APPS_AFTER_SIM = (
     "rapidsms.contrib.handlers",
     "rapidsms.contrib.httptester",
     "rapidsms.contrib.messaging",
-    #"rapidsms.contrib.registration",
-    #"rapidsms.contrib.echo",
-    #"rapidsms.contrib.default",  # Must be last
 )
 
 INSTALLED_APPS = APPS_BEFORE_SIM + SIM_APPS + APPS_AFTER_SIM
@@ -233,7 +230,12 @@ INSTALLED_BACKENDS = {
     },
 }
 
+# TODO: Change these to URL pattern lookups
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+
+# The template pack to use with django-crispy-forms
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 RAPIDSMS_HANDLERS = (
     'rapidsms.contrib.echo.handlers.echo.EchoHandler',
@@ -245,6 +247,7 @@ RAPIDSMS_HANDLERS = (
 # ------------------------------------------------------------------------------
 # SIM-specific settings below
 # ------------------------------------------------------------------------------
+
 # A list of AppBase subclasses that should be used by RapidSMS' router, in
 # addition to those autodiscovered from INSTALLED_APPS.
 # TODO: Is it possible to make these references be strings, for consistency with
@@ -264,12 +267,10 @@ RAPIDSMS_APP_BASES = (
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
 from rapidsms.router.blocking import BlockingRouter
 RAPIDSMS_ROUTER = BlockingRouter()
-
 for app in RAPIDSMS_APP_BASES:
     RAPIDSMS_ROUTER.add_app(app)
 
 # Assign operation codes to AppBase handlers.
-# TODO: Perhaps assert that opcodes are only characters.
 SIM_OPERATION_CODES = {
     "SL": _stock_apps.StockLevel,
     "SE": _stock_apps.StockOut,
@@ -278,3 +279,29 @@ SIM_OPERATION_CODES = {
     "HE": _info_apps.Help,
     "FT": _equipment_apps.FridgeTemperature,
 }
+
+PERIODIC = "PERIODIC"
+SPONTANEOUS = "SPONTANEOUS"
+ADMINISTRATION = "ADMINISTRATION"
+INFORMATION = "INFORMATION"
+CONTEXTUAL = "CONTEXTUAL"
+
+SIM_OPCODE_GROUPS = {
+    "FT": PERIODIC,
+    "SL": PERIODIC,
+    "SE": SPONTANEOUS,
+    "WO": SPONTANEOUS,
+    "NF": SPONTANEOUS,
+    "RG": ADMINISTRATION,
+    "PL": ADMINISTRATION,
+    "HE": INFORMATION,
+    "FC": CONTEXTUAL,
+}
+
+SIM_OPCODE_MAY_NOT_DUPLICATE = set([
+    "FT",
+    "SL",
+    "PL",
+    "HE",
+    "FC"
+])
