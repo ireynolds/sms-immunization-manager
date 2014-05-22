@@ -340,11 +340,11 @@ SIM_OPCODE_MAY_NOT_DUPLICATE = set([
 DATA_REPORTER_ROLE = "DataReporter"
 ADMIN_ROLE = "Admin"
 ROLE_CHOICES = (
-        (DATA_REPORTER_ROLE, _("Data Reporter")),
-        (ADMIN_ROLE, _("Administrator"))
-        )
+    (DATA_REPORTER_ROLE, _("Data Reporter")),
+    (ADMIN_ROLE, _("Administrator"))
+)
 
-ROLE_OP_CHOICES = (
-    (DATA_REPORTER_ROLE, "HE"),
-    (ADMIN_ROLE, "HE, RG")
-     )
+ROLE_OP_CODES = (
+    (DATA_REPORTER_ROLE, ["HE"]),
+    (ADMIN_ROLE, ["HE", "RG"])
+ )

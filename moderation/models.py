@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
+from django.core.urlresolvers import reverse
 
 ##
 ## The following helper methods for Parse stage
@@ -244,7 +245,7 @@ class ModeratorProfile(models.Model):
     """
     A profile for a user that uses the moderation interface.
     """
-    user = models.OneToOneField(User, related_name='moderator_profile')
+    user = models.OneToOneField(User, related_name='moderator_profile', primary_key=True)
 
     language = models.CharField(max_length=6, blank=True,
                                 help_text="The language which this contact prefers to communicate "
@@ -252,7 +253,25 @@ class ModeratorProfile(models.Model):
                                 "to: " + settings.LANGUAGE_CODE,
                                 default=settings.LANGUAGE_CODE,)
 
-    # TODO: Add reference to hierarchy node or facility
+    # A moderator's preferred facility
+    facility = models.ForeignKey('user_registration.Facility', blank=True, null=True)
+
+    # A moderator's preferred administrative hierarchy node. If facility is set, this field is
+    # ignored.
+    node = models.ForeignKey('user_registration.HierarchyNode', blank=True, null=True)
+
+    def get_home_url(self):
+        """
+        Returns the preferred landing page for this user. If facility is set, returns the url for 
+        that facility. Otherwise, returns the url corresponding to node. If node is not set, returns
+        None.
+        """
+        if self.facility and self.facility.pk != None:
+            return reverse('moderation.views.facility', args=[self.facility.pk])
+        elif self.node and self.node.pk != None:
+            return reverse('moderation.views.node', args=[self.node.pk])
+        else:
+            return None
 
 # Create a moderator profile whenever a user is created
 @receiver(post_save, sender=User)
@@ -266,7 +285,7 @@ def my_handler(sender, instance, **kwargs):
 # This is compatable with Django 1.7's inclusion of a session-based language
 # preference. For now we also provide a middleware that implements this behavior
 @receiver(user_logged_in)
-def create_profile_if_none_exists(sender, request, user, **kwargs):
+def create_moderator_profile_if_none_exists(sender, request, user, **kwargs):
     lang_code = user.moderator_profile.language
     if lang_code != '' and lang_code != None:
         request.session[settings.LANGUAGE_SESSION_KEY] = lang_code
