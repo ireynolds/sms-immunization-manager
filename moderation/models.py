@@ -290,7 +290,7 @@ def my_handler(sender, instance, **kwargs):
 # This is compatable with Django 1.7's inclusion of a session-based language
 # preference. For now we also provide a middleware that implements this behavior
 @receiver(user_logged_in)
-def my_handler(sender, request, user, **kwargs):
+def create_profile_if_none_exists(sender, request, user, **kwargs):
     lang_code = user.moderator_profile.language
     if lang_code != '' and lang_code != None:
         request.session[settings.LANGUAGE_SESSION_KEY] = lang_code
