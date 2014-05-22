@@ -59,26 +59,25 @@ class UserProfile(models.Model):
                             choices=settings.ROLE_CHOICES, 
                             default=settings.DATA_REPORTER_ROLE)
 
-    # A description of this role
-    role_description = models.TextField(blank=True)
-
-    # The opcodes for operations that this role is allowed to carry out
-    op_codes = models.CharField(max_length=100, 
-                                choices=settings.ROLE_OP_CHOICES, 
-                                default=settings.DATA_REPORTER_ROLE)
-
-    # TODO: Remove?
-    def save(self, *args, **kwargs):
-        # ensures that opcodes match assigned role
-        self.op_codes = self.role_name
-        super(UserProfile, self).save(*args, **kwargs)
-
     def __unicode__(self):
-        return "%s (%s)" % (self.contact.name, self.get_role_name_display())
+        return "%s (%s)" % (self.contact.name, self.get_role_description())
+
+    def get_role_description(self):
+        """
+        Returns a description of this user's role, as a lazily internationalized string.
+        """
+        return dict(settings.ROLE_CHOICES)[self.role_name]
+
+    def get_op_codes(self):
+        """
+        Returns the list of opcodes this user is allowed to use.
+        """
+        return dict(settings.ROLE_OP_CODES)[self.role_name]
+
 
 # Create a UserProfile whenever a Contact is created
 @receiver(post_save, sender=Contact)
-def my_handler(sender, instance, **kwargs):
+def create_user_profile_if_none_exists(sender, instance, **kwargs):
     if not UserProfile.objects.filter(contact=instance).exists():
         profile = UserProfile()
         profile.contact = instance
