@@ -1,0 +1,25 @@
+message.fields:
+	{
+	'operations':
+		[
+			(u'SL', u'NEG 0NE'),
+			(u'FT', u'0NE TW0 THREE'),
+			(u'SL', u'F0UR FIVE SIX')
+		],
+	'operation_effects':
+		[
+			<MessageEffect: ERROR :: Error Parsing SL Arguments: Error in SL: NEG 0NE. Please fix and send again.>,
+			<MessageEffect: ERROR :: Error Parsing SL Arguments: Error in SL: F0UR FIVE SIX. Please fix and send again.>,
+			<MessageEffect: ERROR :: Error Parsing FT Arguments: Error in FT: 0NE TW0 THREE. Expected number of events. Please fix and send again.>
+		],
+	'effects':
+		[
+			<MessageEffect: INFO :: Parsed Operation Codes: Parser detected operations:
+				[
+					(u'SL', u'NEG 0NE'),
+					(u'FT', u'0NE TW0 THREE'),
+					(u'SL', u'F0UR FIVE SIX')
+				]
+			>
+		],
+	'operation_arguments': [{}, {}, {}]}

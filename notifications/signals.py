@@ -3,10 +3,10 @@ from utils.operations import semantic_signal, commit_signal
 from stock.apps import *
 from equipment.apps import *
 from django.dispatch.dispatcher import receiver
+from moderation.models import *
+from django.utils.translation import ugettext_noop as _
 
-logger = logging.getLogger("rapidsms")
-
-stubbed_equipment_ids = [None, 'A', 'BC', 'D']
+STUBBED_EQUIPMENT_IDS = ['A', 'B', 'C']
 
 ##
 ## Equipment Failure
@@ -15,13 +15,26 @@ stubbed_equipment_ids = [None, 'A', 'BC', 'D']
 @receiver(semantic_signal, sender=EquipmentFailure)
 def equipment_failure_check(message, **kwargs):
     equipment_id = kwargs['equipment_id']
-    if equipment_id not in stubbed_equipment_ids:
-        return "Message OK until %s. Unrecognized equipment code. Please fix and send again." % (equipment_id,)
+    
+    if equipment_id not in STUBBED_EQUIPMENT_IDS:
+        effect = error(
+            _("Error Interpreting %(op_code)s Arguments"), { 'op_code': kwargs['opcode'] },
+            _("Unrecognized equipment label %(equipment_id)s."), { 'equipment_id': equipment_id }
+        )
+    else:
+        effect = info(
+            _("Parsed %(op_code)s Arguments"), { 'op_code': kwargs['opcode'] },
+            _("Equipment label: %(equipment_id)s"), { 'equipment_id': equipment_id }
+        )
+
+    return [effect]
+
+
 
 @receiver(commit_signal, sender=EquipmentFailure)
 def equipment_failure_commit(message, **kwargs):
-    # TODO: Send notification
-    logger.debug("Equipment failure notification sent")
+    # TODO Implement
+    return []
 
 ##
 ## Equipment Repaired
@@ -30,12 +43,24 @@ def equipment_failure_commit(message, **kwargs):
 @receiver(semantic_signal, sender=EquipmentRepaired)
 def equipment_repaired_check(message, **kwargs):
     equipment_id = kwargs['equipment_id']
-    if equipment_id not in stubbed_equipment_ids:
-        return "Message OK until %s. Unrecognized equipment code. Please fix and send again." % (equipment_id,)
+    
+    if equipment_id not in STUBBED_EQUIPMENT_IDS:
+        effect = error(
+            _("Error Interpreting %(op_code)s Arguments"), { 'op_code': kwargs['opcode'] },
+            _("Unrecognized equipment label %(equipment_id)s."), { 'equipment_id': equipment_id }
+        )
+    else:
+        effect = info(
+            _("Parsed %(op_code)s Arguments"), { 'op_code': kwargs['opcode'] },
+            _("Equipment label: %(equipment_id)s"), { 'equipment_id': equipment_id }
+        )
+
+    return [effect]
 
 @receiver(commit_signal, sender=EquipmentRepaired)
 def equipment_repaired_commit(message, **kwargs):
-    pass
+    # TODO Implement
+    return []
 
 ##
 ## Stock Out
@@ -47,4 +72,5 @@ def stock_out_notification(message, **kwargs):
     """
     logger.debug("Stock out notification sent")
     message.respond("Stock out notification sent")
+
 #commit_signal.connect(stock_out_notification, sender=StockOut)

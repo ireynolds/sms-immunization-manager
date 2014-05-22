@@ -241,6 +241,7 @@ SIM_APPS = (
     'dhis2',
     'notifications',
     'utils',
+    'response',
     'info'
 )
 
@@ -299,12 +300,12 @@ for app in RAPIDSMS_APP_BASES:
 
 # Assign operation codes to AppBase handlers.
 SIM_OPERATION_CODES = {
-    "FT": _equipment_apps.FridgeTemperature,
     "SL": _stock_apps.StockLevel,
     "SE": _stock_apps.StockOut,
     "NF": _equipment_apps.EquipmentFailure,
-    "WO": _equipment_apps.EquipmentRepaired,
+    "RE": _equipment_apps.EquipmentRepaired,
     "HE": _info_apps.Help,
+    "FT": _equipment_apps.FridgeTemperature,
 }
 
 PERIODIC = "PERIODIC"
@@ -317,7 +318,7 @@ SIM_OPCODE_GROUPS = {
     "FT": PERIODIC,
     "SL": PERIODIC,
     "SE": SPONTANEOUS,
-    "WO": SPONTANEOUS,
+    "RE": SPONTANEOUS,
     "NF": SPONTANEOUS,
     "RG": ADMINISTRATION,
     "PL": ADMINISTRATION,

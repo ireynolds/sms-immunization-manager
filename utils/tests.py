@@ -19,28 +19,28 @@ class SIMTestCase(TestCase):
 
     def assertErrorIn(self, effects):
         '''
-        Asserts that effects contains at least on MessageEffect with 
+        Asserts that effects contains at least on MessageEffect with
         priority ERROR.
         '''
         self.assertPriorityIn(ERROR, effects)
 
     def assertInfoIn(self, effects):
         '''
-        Asserts that effects contains at least on MessageEffect with 
+        Asserts that effects contains at least on MessageEffect with
         priority INFO.
         '''
         self.assertPriorityIn(INFO, effects)
 
     def assertUrgentIn(self, effects):
         '''
-        Asserts that effects contains at least on MessageEffect with 
+        Asserts that effects contains at least on MessageEffect with
         priority URGENT.
         '''
         self.assertPriorityIn(URGENT, effects)
 
     def assertPriorityIn(self, priority, effects):
         '''
-        Asserts that effects contains at least on MessageEffect with 
+        Asserts that effects contains at least on MessageEffect with
         the given priority.
         '''
         for effect in effects:
@@ -81,9 +81,9 @@ class MockApp(OperationBase):
 
     def parse_arguments(self, opcode, argstring, message):
         '''
-        Mocks OperationBase.parse_arguments. 
+        Mocks OperationBase.parse_arguments.
 
-        On the Nth call to parse_arguments, returns the Nth element in the 
+        On the Nth call to parse_arguments, returns the Nth element in the
         self.__class__.return_values list, else some reasonable (INFO) default
         and appends the arguments to the list at CALLED_APPS[${self.__class__.__name__}]
         '''
@@ -102,22 +102,22 @@ class MockApp(OperationBase):
 
 class MockAppZZ(MockApp):
     '''
-    By convention, configured in OperationBaseTest to 
+    By convention, configured in OperationBaseTest to
     parse "ZZ" opcode.
     '''
 
-    # May be assigned in testing code to determine what 
+    # May be assigned in testing code to determine what
     # values are returned when this class's parse_arguments
     # is called.
     return_values = None
 
 class MockAppQQ(MockApp):
     '''
-    By convention, configured in OperationBaseTest to 
+    By convention, configured in OperationBaseTest to
     parse "QQ" opcode.
     '''
 
-    # May be assigned in testing code to determine what 
+    # May be assigned in testing code to determine what
     # values are returned when this class's parse_arguments
     # is called.
     return_values = None
@@ -136,30 +136,30 @@ class MockAppXX(MockApp):
 
 class MockSubscriber:
     '''
-    Defines a mock version of a module that subscribes to 
+    Defines a mock version of a module that subscribes to
     semantics and commit signals for a particular app (sender).
 
     Must be used as "with MockSubscriber(signal, sender) as subscriber" to
-    automatically connect to and disconnect from signals for a 
+    automatically connect to and disconnect from signals for a
     testing period.
     '''
 
     def __init__(self, signal, app):
         '''
-        Stores signal and app as fields of self, but does not connect 
-        to the signal--use this class in a with statement to 
-        connect and disconnect. 
+        Stores signal and app as fields of self, but does not connect
+        to the signal--use this class in a with statement to
+        connect and disconnect.
         '''
         self.return_value = None
         self.side_effects = None
 
         self.calls = []
-        
+
         self.signal = signal
         self.app = app
 
     def __enter__(self):
-        '''Connect to self.signal.''' 
+        '''Connect to self.signal.'''
         self.signal.connect(self, sender=self.app, weak=False)
         return self
 
@@ -185,7 +185,7 @@ class MockRouter(BlockingRouter):
     '''
     Defines a mock version of a Router that calls all non-SIM apps in
     settings.REGISTERED_APPS, OperationParser, and any app added
-    by calling MockRouter.register_app. 
+    by calling MockRouter.register_app.
 
     Allows a client to customize what apps are called to isolate
     the OperationParser during testing.
@@ -197,7 +197,7 @@ class MockRouter(BlockingRouter):
     def register_app(cls, opcode, app, group=settings.PERIODIC, limit_one=False):
         '''
         Register the given app with every instance of MockRouter as handling the
-        given opcode. 
+        given opcode.
         '''
         MockRouter.REGISTERED_OPCODES.append(opcode)
 
@@ -208,7 +208,7 @@ class MockRouter(BlockingRouter):
     @classmethod
     def unregister_apps(cls):
         '''
-        Unregister all apps (that were registered using MockRouter.register_app) from 
+        Unregister all apps (that were registered using MockRouter.register_app) from
         every instance of MockRouter.
         '''
         for opcode in MockRouter.REGISTERED_OPCODES:
@@ -223,11 +223,11 @@ class MockRouter(BlockingRouter):
 
         kwargs['apps'] = settings.APPS_BEFORE_SIM + (OperationParser,) + tuple(registered_apps) + settings.APPS_AFTER_SIM
         BlockingRouter.__init__(self, *args, **kwargs)
-        
+
 class OperationBaseTest(CustomRouterMixin, TestCase):
     '''Tests for OperationBase.'''
 
-    # An instance of this class is used as the router for all calls to 
+    # An instance of this class is used as the router for all calls to
     # self.receive.
     router_class = "utils.tests.MockRouter"
 
@@ -277,27 +277,27 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
 
         zz, = CALLED_APPS['MockAppZZ']
         self.assertParseCalled(1, MockAppZZ)
-        
+
     def test_calls_semantics(self):
         with MockSubscriber(semantic_signal, MockAppZZ) as sem:
             self.receive("zz")
-            
+
             self.assertSignalCalled(1, sem)
 
             _, kwargs = sem.calls[0]
             self.assertEqual(
-                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']),
                 sorted(kwargs.keys()))
 
     def test_calls_commit(self):
         with MockSubscriber(commit_signal, MockAppZZ) as com:
             self.receive("zz")
-            
+
             self.assertSignalCalled(1, com)
 
             _, kwargs = com.calls[0]
             self.assertEqual(
-                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']),
                 sorted(kwargs.keys()))
 
     def test_calls_syntax_for_multiple(self):
@@ -313,7 +313,7 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
     def test_calls_semantics_for_multiple(self):
         with MockSubscriber(semantic_signal, MockAppZZ) as sem_zz, \
              MockSubscriber(semantic_signal, MockAppQQ) as sem_qq:
-            
+
             self.receive("zzqqzz")
 
             self.assertSignalCalled(2, sem_zz)
@@ -321,23 +321,23 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
 
             _, kwargs = sem_zz.calls[0]
             self.assertEqual(
-                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']),
                 sorted(kwargs.keys()))
 
             _, kwargs = sem_zz.calls[1]
             self.assertEqual(
-                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']),
                 sorted(kwargs.keys()))
 
             _, kwargs = sem_qq.calls[0]
             self.assertEqual(
-                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']),
                 sorted(kwargs.keys()))
 
     def test_calls_commit_for_multiple(self):
         with MockSubscriber(commit_signal, MockAppZZ) as com_zz, \
              MockSubscriber(commit_signal, MockAppQQ) as com_qq:
-            
+
             self.receive("zzqqzz")
 
             self.assertSignalCalled(2, com_zz)
@@ -345,17 +345,17 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
 
             _, kwargs = com_zz.calls[0]
             self.assertEqual(
-                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']),
                 sorted(kwargs.keys()))
 
             _, kwargs = com_zz.calls[1]
             self.assertEqual(
-                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']),
                 sorted(kwargs.keys()))
 
             _, kwargs = com_qq.calls[0]
             self.assertEqual(
-                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']), 
+                sorted(['message', 'opcode', 'sender', 'signal', 'equipment_id']),
                 sorted(kwargs.keys()))
 
     def test_bad_syntax(self):
