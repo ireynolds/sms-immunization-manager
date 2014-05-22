@@ -1,5 +1,5 @@
-
 import os
+from django.utils.translation import ugettext_lazy as _
 
 # The top directory for this project. Contains requirements/, manage.py,
 # and README.rst, a sim directory with settings etc (see
@@ -39,7 +39,34 @@ TIME_ZONE = 'America/Los_Angeles'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
+
+LANGUAGES = (
+    ('en', _('English')),
+    ('es', _('Spanish')),
+    ('la', _('Lao')),
+)
+
+EXTRA_LANG_INFO = {
+    'la': {
+        'bidi': False, # left-to-right
+        'code': 'la',
+        'name': 'Lao',
+        'name_local': u'Lao', # TODO: Insert a unicode string in Lao here, instead of an english string.
+    },
+}
+
+LANGUAGE_SESSION_KEY = 'sim_language'
+LANGUAGE_COOKIE_NAME = LANGUAGE_SESSION_KEY
+
+LOCALE_PATHS = (
+    os.path.join(PROJECT_PATH, 'locale'),
+)
+
+# Add custom languages not provided by Django
+import django.conf.locale
+LANG_INFO = dict(django.conf.locale.LANG_INFO.items() + EXTRA_LANG_INFO.items())
+django.conf.locale.LANG_INFO = LANG_INFO
 
 SITE_ID = 1
 
@@ -107,8 +134,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'moderation.middleware.SessionLanguageMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -127,6 +155,13 @@ TEMPLATE_DIRS = (
 FIXTURE_DIRS = (
     os.path.join(PROJECT_PATH, 'fixtures'),
 )
+
+# TODO: Change these to URL pattern lookups
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+
+# The template pack to use with django-crispy-forms
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 # A sample logging configuration.
 # This logs all rapidsms messages to the file `rapidsms.log`
@@ -229,13 +264,6 @@ INSTALLED_BACKENDS = {
         "ENGINE": "rapidsms.backends.database.DatabaseBackend",
     },
 }
-
-# TODO: Change these to URL pattern lookups
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
-
-# The template pack to use with django-crispy-forms
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 RAPIDSMS_HANDLERS = (
     'rapidsms.contrib.echo.handlers.echo.EchoHandler',

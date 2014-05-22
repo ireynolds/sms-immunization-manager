@@ -5,6 +5,10 @@ from django.utils.translation import ugettext, ugettext_lazy, ugettext_noop
 from django.utils.encoding import force_text
 from django.utils.functional import lazy
 from django.utils import six
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.contrib.auth.signals import user_logged_in
+from django.dispatch import receiver
 
 ##
 ## The following helper methods for Parse stage
@@ -235,3 +239,34 @@ class MessageEffect(models.Model):
         Sets the name of this effect to the value (format % context).
         """
         self._set_lazy_i18n("desc_format", "desc_context", format, context)
+
+class ModeratorProfile(models.Model):
+    """
+    A profile for a user that uses the moderation interface.
+    """
+    user = models.OneToOneField(User, related_name='moderator_profile')
+
+    language = models.CharField(max_length=6, blank=True,
+                                help_text="The language which this contact prefers to communicate "
+                                "in, as a W3C language tag. If this field is left blank, defaults "
+                                "to: " + settings.LANGUAGE_CODE,
+                                default=settings.LANGUAGE_CODE,)
+
+    # TODO: Add reference to hierarchy node or facility
+
+# Create a moderator profile whenever a user is created
+@receiver(post_save, sender=User)
+def my_handler(sender, instance, **kwargs):
+    if not ModeratorProfile.objects.filter(user=instance).exists():
+        profile = ModeratorProfile()
+        profile.user = instance
+        profile.save()
+
+# Set the user's default language upon login
+# This is compatable with Django 1.7's inclusion of a session-based language
+# preference. For now we also provide a middleware that implements this behavior
+@receiver(user_logged_in)
+def my_handler(sender, request, user, **kwargs):
+    lang_code = user.moderator_profile.language
+    if lang_code != '' and lang_code != None:
+        request.session[settings.LANGUAGE_SESSION_KEY] = lang_code

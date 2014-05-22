@@ -12,19 +12,40 @@
   <h1 class="text-center">{% include "include/brand.html" %}</h1>
 </div>
 
+<!-- Login Form -->
 <div class="container">
     <div class="row">
         <div class="col-sm-6 col-sm-offset-3">
             <div class="panel panel-default">
-                <div class="panel-heading">{% trans "Please Sign In" %}</div>
                 <div class="panel-body">
                     <form role="form" method="post">
                         {% csrf_token %}
                         {{ form|crispy }}
-                        <button type="submit" class="btn btn-primary">{% trans "Sign In" %}</button>
+                        <button type="submit" class="btn btn-primary btn-block">{% trans "Log In" %}</button>
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Language Selection Form -->
+    <div class="row">
+        <div class="col-sm-6 col-sm-offset-3">
+            <form class="form-inline text-right" action="{% url 'set_language' %}" method="post" role="form">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ redirect_to }}" />
+                <div class="form-group">
+                    <label for="language-select">{% trans "Available Languages: " %}</label>
+                    <select class="form-control" name="language" id="language-select">
+                        {% get_language_info_list for LANGUAGES as languages %}
+                        {% for language in languages %}
+                        <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected="selected"{% endif %}>
+                            {{ language.name_local }} ({{ language.code }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -28,6 +28,7 @@
         {% block navbar %}
         <nav class="navbar navbar-default" role="navigation">
             <div class="container-fluid">
+                <!-- Brand Name -->
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="sr-only">{% trans "Toggle navigation" %}</span>
@@ -38,7 +39,24 @@
                     <a class="navbar-brand" href="/">{% include "include/brand.html" %}</a>
                 </div>
 
-                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <!-- Language Selection -->
+                <form class="navbar-form navbar-left" action="{% url 'set_language' %}" method="post" role="form">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ redirect_to }}" />
+                    <div class="form-group">
+                        <select class="form-control" name="language" id="language-select">
+                            {% get_language_info_list for LANGUAGES as languages %}
+                            {% for language in languages %}
+                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected="selected"{% endif %}>
+                                {{ language.name_local }} ({{ language.code }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+
+                <!-- Navigation Links (right-justified) -->
+                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav navbar-right">
                         {% if request.user.is_staff %}
                             <li class="dropdown">
@@ -54,7 +72,7 @@
                         <li><a href="#">
                             {% blocktrans with request.user as name %}Settings for {{ name }}{% endblocktrans %}
                         </a></li>
-                        <li><a href="{% url "logout" %}">{% trans "Sign out" %}</a></li>
+                        <li><a href="{% url "logout" %}">{% trans "Log Out" %}</a></li>
                     </ul>
                 </div>
             </div>
@@ -71,9 +89,11 @@
             {% block content %}{% endblock %}
         </div>
 
-
         <!-- Bootstrap core JavaScript -->
         <script src="/static/js/jquery-1.11.0.min.js"></script>
         <script src="/static/js/bootstrap.min.js"></script>
+
+        <!-- SIM-specific JavaScript-->
+        <script src="/static/js/sim.js"></script>
     </body>
 </html>
