@@ -5,9 +5,13 @@ from django.utils.translation import ugettext, ugettext_lazy, ugettext_noop
 from django.utils.encoding import force_text
 from django.utils.functional import lazy
 from django.utils import six
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.contrib.auth.signals import user_logged_in
+from django.dispatch import receiver
 
 ##
-## The following helper methods for Parse stage 
+## The following helper methods for Parse stage
 ## success/failure define the convention for a response.
 ##
 
@@ -29,30 +33,6 @@ def error_parse(opcode, arg_string, reason=None):
 def ok_parse(opcode, desc_fmstr, desc_ctxt):
     return info(
         ugettext_noop("Parsed %(op_code)s Arguments"), { 'op_code': opcode },
-        ugettext_noop(desc_fmstr), desc_ctxt
-    )
-
-##
-## The following helper methods for Semantic stage 
-## success/failure define the convention for a response.
-##
-
-def error_semantics(opcode, reason_fmstr, reason_ctxt):
-    name = "Error Interpreting %(op_code)s Arguments"
-    
-    desc_start = "Error in %(op_code)s."
-    desc_end = "Please fix and send again."
-    desc = "%s %s %s" % (desc_start, reason_fmstr, desc_end)
-    
-    minimum_ctxt = { 'op_code': opcode }
-    return error(
-        ugettext_noop(name), minimum_ctxt,
-        ugettext_noop(desc), dict(minimum_ctxt.items() + reason_ctxt.items())
-    )
-
-def ok_semantics(opcode, desc_fmstr, desc_ctxt):
-    return info(
-        ugettext_noop("Verified %(op_code)s Arguments"), { 'op_code': opcode },
         ugettext_noop(desc_fmstr), desc_ctxt
     )
 
@@ -125,7 +105,7 @@ def urgent(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     return create_effect(URGENT, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
 
-def complete_effect(effect, message, stage, operation_index = None, opcode = ''):
+def complete_effect(effect, message, stage, operation_index = None, opcode = '', sent_as_response = False):
     """
     Adds any remaining fields to effect not assigned by create_effect or its shortcut functions, and
     saves the given effect model. Used by receivers of MessageEffects created with create_effect
@@ -138,6 +118,7 @@ def complete_effect(effect, message, stage, operation_index = None, opcode = '')
     effect.stage = stage
     effect.operation_index = operation_index
     effect.opcode = opcode
+    effect.sent_as_response = sent_as_response
     effect.save()
     return effect
 
@@ -160,11 +141,13 @@ PRIORITY_CHOICES = (
 SYNTAX = 'SYNTAX'
 SEMANTIC = 'SEMANTIC'
 COMMIT = 'COMMIT'
+RESPOND = 'RESPOND'
 
 STAGE_CHOICES = (
     (SYNTAX, ugettext_lazy("Syntax")),
     (SEMANTIC, ugettext_lazy('Semantic')),
     (COMMIT, ugettext_lazy('Commit')),
+    (RESPOND, ugettext_lazy('Respond')),
 )
 
 class MessageEffect(models.Model):
@@ -193,7 +176,7 @@ class MessageEffect(models.Model):
     opcode = models.CharField(max_length=2, blank=True)
 
     # If True, this effect has been reviewed and dismissed by a moderator
-    moderator_dismissed = models.BooleanField(default="False")
+    moderator_dismissed = models.BooleanField(default=False)
 
     # The name of this effect, as an untranslated format string
     name_format = models.TextField()
@@ -204,6 +187,9 @@ class MessageEffect(models.Model):
     desc_format = models.TextField()
     # The context used to render desc_format
     desc_context = models.TextField()
+
+    # If True, this effect has been sent as a response to the message sender
+    sent_as_response = models.BooleanField(default=False)
 
     def __unicode__(self):
         context = {"name": unicode(self.get_name()), "desc": unicode(self.get_desc())}
@@ -253,3 +239,34 @@ class MessageEffect(models.Model):
         Sets the name of this effect to the value (format % context).
         """
         self._set_lazy_i18n("desc_format", "desc_context", format, context)
+
+class ModeratorProfile(models.Model):
+    """
+    A profile for a user that uses the moderation interface.
+    """
+    user = models.OneToOneField(User, related_name='moderator_profile')
+
+    language = models.CharField(max_length=6, blank=True,
+                                help_text="The language which this contact prefers to communicate "
+                                "in, as a W3C language tag. If this field is left blank, defaults "
+                                "to: " + settings.LANGUAGE_CODE,
+                                default=settings.LANGUAGE_CODE,)
+
+    # TODO: Add reference to hierarchy node or facility
+
+# Create a moderator profile whenever a user is created
+@receiver(post_save, sender=User)
+def my_handler(sender, instance, **kwargs):
+    if not ModeratorProfile.objects.filter(user=instance).exists():
+        profile = ModeratorProfile()
+        profile.user = instance
+        profile.save()
+
+# Set the user's default language upon login
+# This is compatable with Django 1.7's inclusion of a session-based language
+# preference. For now we also provide a middleware that implements this behavior
+@receiver(user_logged_in)
+def create_profile_if_none_exists(sender, request, user, **kwargs):
+    lang_code = user.moderator_profile.language
+    if lang_code != '' and lang_code != None:
+        request.session[settings.LANGUAGE_SESSION_KEY] = lang_code

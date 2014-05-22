@@ -1,0 +1,21 @@
+{% extends "sim_base.html" %}
+
+{% block title %}User Summary{% endblock %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li><a href="{% url "moderation.views.node" 1 %}">United States</a></li>
+    <li><a href="{% url "moderation.views.node" 2 %}">Washington</a></li>
+    <li><a href="{% url "moderation.views.node" 3 %}">Seattle</a></li>
+    <li><a href="{% url "moderation.views.facility" 3 %}">UW Medical Center</a></li>
+    <li class="active">User 1</a>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>A User</h1>
+    <p>An overview of this user's messages goes here</p>
+    <a href="{% url "moderation.views.user_edit" 1 %}">Edit user</a>
+</div>
+{% endblock %}

@@ -6,11 +6,12 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.conf import settings
 
 import app
 import gobbler
 
-from utils.tests import MockRouter, MockApp
+from utils.tests import MockRouter, MockApp, SIMTestCase
 from rapidsms.tests.harness.router import CustomRouterMixin
 
 class BlankApp(MockApp):
@@ -18,16 +19,16 @@ class BlankApp(MockApp):
     def parse_arguments(*args, **kwargs):
         pass
 
-class OperationParserTest(CustomRouterMixin, TestCase):
+class OperationParserTest(CustomRouterMixin, SIMTestCase):
     '''Tests for OperationParser.'''
 
     router_class = "utils.tests.MockRouter"
 
     def setUp(self):
-        MockRouter.register_app("ZZ", BlankApp)
-        MockRouter.register_app("QQ", BlankApp)
-        MockRouter.register_app("XX", BlankApp)
-        MockRouter.register_app("WW", BlankApp)
+        MockRouter.register_app("ZZ", BlankApp, settings.PERIODIC)
+        MockRouter.register_app("QQ", BlankApp, settings.PERIODIC, limit_one=True)
+        MockRouter.register_app("XX", BlankApp, settings.SPONTANEOUS)
+        MockRouter.register_app("WW", BlankApp, settings.CONTEXTUAL)
 
     def tearDown(self):
         MockRouter.unregister_apps()
@@ -41,64 +42,95 @@ class OperationParserTest(CustomRouterMixin, TestCase):
         '''
         return CustomRouterMixin.receive(self, text, self.lookup_connections('mockbackend', ['4257886710'])[0])
 
-    def parse(self, text):
-        '''
-        Run the given text through the parser and return the list of 
-        (opcode, argument) pairs.
-        '''
-        message = self.receive(text)
-        return message.fields['operations']
-
-    def check(self, text, *expected_ops):
+    def check_ok(self, text, *expected_ops):
         '''
         Verify the parser identifies the given expected operations
         from the given text. Order is significant.
         '''
-        expected_ops = expected_ops
-        actual_ops = self.parse(text)
+        message = self.receive(text)
+        actual_ops = message.fields['operations']
         self.assertEqual(list(expected_ops), actual_ops)
+        return message
+
+    def check_error(self, text):
+        '''
+        Verify that the parser attaches an error effect as a result
+        of parsing the given text.
+        '''
+        message = self.receive(text)
+        actual_effects = message.fields['operation_effects']
+        self.assertErrorIn(actual_effects)
+        return message
 
     ## Test OperationParser
 
     def test_parse_one_opcode_no_args(self):
-        self.check("ZZ",
+        self.check_ok("ZZ",
             ("ZZ", ""))
 
     def test_parse_one_opcode_strip_args(self):
-        self.check("ZZ P 100",
+        self.check_ok("ZZ P 100",
             ("ZZ", "P 100"))
 
     def test_parse_one_opcode_no_delimiters(self):
-        self.check("ZZP500", 
+        self.check_ok("ZZP500", 
             ("ZZ", "P500"))
 
     def test_parse_two_opcodes_with_args(self):
-        self.check("ZZP500QQA",
+        self.check_ok("ZZP500QQA",
             ("ZZ", "P500"),
             ("QQ", "A"))
 
     def test_parse_three_opcodes_with_args(self):
-        self.check("xx0ZZP875QQB",
-            ("XX", "0"),
+        self.check_ok("zz0ZZP875QQB",
+            ("ZZ", "0"),
             ("ZZ", "P875"),
             ("QQ", "B"))
 
     def test_parse_two_opcodes_bad_casing(self):
-        self.check("xxA50ZZP12QQC",
-            ("XX", "A50"),
+        self.check_ok("zZA50ZZP12QQC",
+            ("ZZ", "A50"),
             ("ZZ", "P12"),
             ("QQ", "C"))
 
     def test_strips_delims_from_args(self):
-        self.check(";;xx;;A;;10;;ZZ;;P;;100;;",
-            ("XX", "A;;10"),
+        self.check_ok(";;ZZ;;A;;10;;ZZ;;P;;100;;",
+            ("ZZ", "A;;10"),
             ("ZZ", "P;;100"))
 
     def test_multiple_of_same_opcode(self):
-        self.check("WWAWWDWWP",
+        self.check_ok("XXAXXDXXP",
+            ("XX", "A"),
+            ("XX", "D"),
+            ("XX", "P"))
+
+    def test_disallow_duplicates(self):
+        self.check_error("QQ A QQ B")
+
+    def test_disallow_from_multiple_groups(self):
+        self.check_error("QQ A XX B")
+
+    def test_disallow_from_multiple_groups_except_contextual(self):
+        self.check_ok("ZZ A QQ B WW C",
+            ("ZZ", "A"),
+            ("QQ", "B"),
+            ("WW", "C"))
+
+    def test_adds_group_to_fields_not_contextual(self):
+        message = self.check_ok("WW A ZZ A",
             ("WW", "A"),
-            ("WW", "D"),
-            ("WW", "P"))
+            ("ZZ", "A"))
+        self.assertEqual(settings.PERIODIC, message.fields['group'])
+
+    def test_error_if_only_contextual(self):
+        self.check_error("WW A")
+
+    def test_parses_he(self):
+        msg = self.receive("HE SL SL A 10")
+        self.assertEqual(
+            [("HE", "SL"), ("SL", "A 10")],
+            msg.fields['operations']
+        )
 
     # Test disambiguate_o0
 
