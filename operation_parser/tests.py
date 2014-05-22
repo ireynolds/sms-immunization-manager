@@ -120,10 +120,17 @@ class OperationParserTest(CustomRouterMixin, SIMTestCase):
         message = self.check_ok("WW A ZZ A",
             ("WW", "A"),
             ("ZZ", "A"))
-        self.assertEqual(settings.PERIODIC, message.fields['operation_group'])
+        self.assertEqual(settings.PERIODIC, message.fields['group'])
 
     def test_error_if_only_contextual(self):
         self.check_error("WW A")
+
+    def test_parses_he(self):
+        msg = self.receive("HE SL SL A 10")
+        self.assertEqual(
+            [("HE", "SL"), ("SL", "A 10")],
+            msg.fields['operations']
+        )
 
     # Test disambiguate_o0
 

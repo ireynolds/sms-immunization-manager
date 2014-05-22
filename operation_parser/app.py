@@ -25,6 +25,9 @@ class OperationParser(AppBase):
         '''
         given a string of the form [${OPCODE}${ARGUMENTS}]+, returns a sorted list
         of the indices of each opcode.
+
+        Assumes that the opcode immediately following HE is the argument to HE. 
+        This can result in misleading errors later in parsing, but is unavoidable. 
         '''
         indices = []
         for opcode in opcodes:            
@@ -35,6 +38,18 @@ class OperationParser(AppBase):
                     break
                 indices.append(index)
                 index += 2
+
+        indices = sorted(indices)
+        i = 0
+        while i < len(indices):
+            index = indices[i]
+            if text[index:index + 2] == "HE":
+                # If this test fails, then the HE received an invalid
+                # argument (if any argument), and will fail in its own
+                # parsing stage.
+                if i + 1 < len(indices):
+                    del indices[i + 1]
+            i += 1
 
         return indices
 
@@ -180,7 +195,7 @@ class OperationParser(AppBase):
         if len(effects) == 0:
             effects = [self._ok_effect(operations, message)]
 
-        message.fields['operation_group'] = self._group(operations)
+        message.fields['group'] = self._group(operations)
         message.fields['operations'] = operations
         message.fields['operation_effects'] = effects
 
