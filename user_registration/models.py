@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 from rapidsms.models import Contact
 import reversion
 
@@ -42,11 +44,13 @@ class Facility(models.Model):
     def __unicode__(self):
         return self.name
 
-class SimContact(Contact):
+class UserProfile(models.Model):
     """
     A user who interacts with the SMS immunization manager
     """
-    # TODO: Require facility
+    # The rapidsms Contact that this UserProfile maps to
+    contact = models.OneToOneField(Contact, primary_key=True)
+
     # The facility where this user works
     facility = models.ForeignKey(Facility, blank=True, null=True)
 
@@ -63,16 +67,24 @@ class SimContact(Contact):
                                 choices=settings.ROLE_OP_CHOICES, 
                                 default=settings.DATA_REPORTER_ROLE)
 
+    # TODO: Remove?
     def save(self, *args, **kwargs):
         # ensures that opcodes match assigned role
         self.op_codes = self.role_name
-        super(SimContact, self).save(*args, **kwargs)
+        super(UserProfile, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.name, self.get_role_name_display())
- 
+        return "%s (%s)" % (self.contact.name, self.get_role_name_display())
 
+# Create a UserProfile whenever a Contact is created
+@receiver(post_save, sender=Contact)
+def my_handler(sender, instance, **kwargs):
+    if not UserProfile.objects.filter(contact=instance).exists():
+        profile = UserProfile()
+        profile.contact = instance
+        profile.save()
+            
 # Register models for versioning
 reversion.register(HierarchyNode)
 reversion.register(Facility)
-reversion.register(SimContact)
+reversion.register(UserProfile)
