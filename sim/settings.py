@@ -1,5 +1,5 @@
-
 import os
+from django.utils.translation import ugettext_lazy as _
 
 # The top directory for this project. Contains requirements/, manage.py,
 # and README.rst, a sim directory with settings etc (see
@@ -39,7 +39,34 @@ TIME_ZONE = 'America/Los_Angeles'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
+
+LANGUAGES = (
+    ('en', _('English')),
+    ('es', _('Spanish')),
+    ('la', _('Lao')),
+)
+
+EXTRA_LANG_INFO = {
+    'la': {
+        'bidi': False, # left-to-right
+        'code': 'la',
+        'name': 'Lao',
+        'name_local': u'Lao', # TODO: Insert a unicode string in Lao here, instead of an english string.
+    },
+}
+
+LANGUAGE_SESSION_KEY = 'sim_language'
+LANGUAGE_COOKIE_NAME = LANGUAGE_SESSION_KEY
+
+LOCALE_PATHS = (
+    os.path.join(PROJECT_PATH, 'locale'),
+)
+
+# Add custom languages not provided by Django
+import django.conf.locale
+LANG_INFO = dict(django.conf.locale.LANG_INFO.items() + EXTRA_LANG_INFO.items())
+django.conf.locale.LANG_INFO = LANG_INFO
 
 SITE_ID = 1
 
@@ -107,8 +134,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'moderation.middleware.SessionLanguageMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -127,6 +155,13 @@ TEMPLATE_DIRS = (
 FIXTURE_DIRS = (
     os.path.join(PROJECT_PATH, 'fixtures'),
 )
+
+# TODO: Change these to URL pattern lookups
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+
+# The template pack to use with django-crispy-forms
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 # A sample logging configuration.
 # This logs all rapidsms messages to the file `rapidsms.log`
@@ -193,7 +228,8 @@ APPS_BEFORE_SIM = (
     "django_tables2",
     "selectable",
     "south",
-    "rapidsms.contrib.messagelog"
+    "rapidsms.contrib.messagelog",
+    "crispy_forms",
 )
 
 SIM_APPS = (
@@ -206,12 +242,12 @@ SIM_APPS = (
     'dhis2',
     'notifications',
     'utils',
+    'response',
     'info'
 )
 
 APPS_AFTER_SIM = (
     'moderation',
-    'prototype',
     'reversion',
 
     # RapidSMS
@@ -220,9 +256,6 @@ APPS_AFTER_SIM = (
     "rapidsms.contrib.handlers",
     "rapidsms.contrib.httptester",
     "rapidsms.contrib.messaging",
-    #"rapidsms.contrib.registration",
-    #"rapidsms.contrib.echo",
-    #"rapidsms.contrib.default",  # Must be last
 )
 
 INSTALLED_APPS = APPS_BEFORE_SIM + SIM_APPS + APPS_AFTER_SIM
@@ -232,8 +265,6 @@ INSTALLED_BACKENDS = {
         "ENGINE": "rapidsms.backends.database.DatabaseBackend",
     },
 }
-
-LOGIN_REDIRECT_URL = '/'
 
 RAPIDSMS_HANDLERS = (
     'rapidsms.contrib.echo.handlers.echo.EchoHandler',
@@ -245,6 +276,7 @@ RAPIDSMS_HANDLERS = (
 # ------------------------------------------------------------------------------
 # SIM-specific settings below
 # ------------------------------------------------------------------------------
+
 # A list of AppBase subclasses that should be used by RapidSMS' router, in
 # addition to those autodiscovered from INSTALLED_APPS.
 # TODO: Is it possible to make these references be strings, for consistency with
@@ -264,17 +296,15 @@ RAPIDSMS_APP_BASES = (
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
 from rapidsms.router.blocking import BlockingRouter
 RAPIDSMS_ROUTER = BlockingRouter()
-
 for app in RAPIDSMS_APP_BASES:
     RAPIDSMS_ROUTER.add_app(app)
 
 # Assign operation codes to AppBase handlers.
-# TODO: Perhaps assert that opcodes are only characters.
 SIM_OPERATION_CODES = {
     "SL": _stock_apps.StockLevel,
     "SE": _stock_apps.StockOut,
     "NF": _equipment_apps.EquipmentFailure,
-    "WO": _equipment_apps.EquipmentRepaired,
+    "RE": _equipment_apps.EquipmentRepaired,
     "HE": _info_apps.Help,
     "FT": _equipment_apps.FridgeTemperature,
 }
@@ -293,3 +323,28 @@ ROLE_OP_CHOICES = (
     (DATA_REPORTER_ROLE, "HE"),
     (ADMIN_ROLE, "HE, RG")
      )
+PERIODIC = "PERIODIC"
+SPONTANEOUS = "SPONTANEOUS"
+ADMINISTRATION = "ADMINISTRATION"
+INFORMATION = "INFORMATION"
+CONTEXTUAL = "CONTEXTUAL"
+
+SIM_OPCODE_GROUPS = {
+    "FT": PERIODIC,
+    "SL": PERIODIC,
+    "SE": SPONTANEOUS,
+    "RE": SPONTANEOUS,
+    "NF": SPONTANEOUS,
+    "RG": ADMINISTRATION,
+    "PL": ADMINISTRATION,
+    "HE": INFORMATION,
+    "FC": CONTEXTUAL,
+}
+
+SIM_OPCODE_MAY_NOT_DUPLICATE = set([
+    "FT",
+    "SL",
+    "PL",
+    "HE",
+    "FC"
+])

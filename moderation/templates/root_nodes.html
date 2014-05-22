@@ -1,0 +1,13 @@
+{% extends "sim_base.html" %}
+
+{% block title %}Root Nodes{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>List of Root Nodes</h1>
+    <ul>
+        <li><a href="{% url "moderation.views.node" 1 %}">Node 1<a></li>
+        <li><a href="{% url "moderation.views.node" 2 %}">Node 2<a></li>
+    </ul>
+</div>
+{% endblock %}
