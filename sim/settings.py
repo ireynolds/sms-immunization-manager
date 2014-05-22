@@ -237,6 +237,7 @@ SIM_APPS = (
     'stock',
     'equipment',
     'registration',
+    'user_registration',
     'permissions',
     'dhis2',
     'notifications',
@@ -333,3 +334,17 @@ SIM_OPCODE_MAY_NOT_DUPLICATE = set([
     "HE",
     "FC"
 ])
+
+# Define Roles and associated string of permitted opcodes
+# TODO: Require a json list of strings instead for opcodes?
+DATA_REPORTER_ROLE = "DataReporter"
+ADMIN_ROLE = "Admin"
+ROLE_CHOICES = (
+        (DATA_REPORTER_ROLE, _("Data Reporter")),
+        (ADMIN_ROLE, _("Administrator"))
+        )
+
+ROLE_OP_CHOICES = (
+    (DATA_REPORTER_ROLE, "HE"),
+    (ADMIN_ROLE, "HE, RG")
+     )
