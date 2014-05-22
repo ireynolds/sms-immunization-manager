@@ -37,30 +37,6 @@ def ok_parse(opcode, desc_fmstr, desc_ctxt):
     )
 
 ##
-## The following helper methods for Semantic stage
-## success/failure define the convention for a response.
-##
-
-def error_semantics(opcode, reason_fmstr, reason_ctxt):
-    name = "Error Interpreting %(op_code)s Arguments"
-
-    desc_start = "Error in %(op_code)s."
-    desc_end = "Please fix and send again."
-    desc = "%s %s %s" % (desc_start, reason_fmstr, desc_end)
-
-    minimum_ctxt = { 'op_code': opcode }
-    return error(
-        ugettext_noop(name), minimum_ctxt,
-        ugettext_noop(desc), dict(minimum_ctxt.items() + reason_ctxt.items())
-    )
-
-def ok_semantics(opcode, desc_fmstr, desc_ctxt):
-    return info(
-        ugettext_noop("Verified %(op_code)s Arguments"), { 'op_code': opcode },
-        ugettext_noop(desc_fmstr), desc_ctxt
-    )
-
-##
 ## Wrappers for creating effects
 ##
 
