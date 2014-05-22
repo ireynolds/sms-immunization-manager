@@ -15,30 +15,41 @@ class EquipmentBase(OperationBase):
 
     def _ok(self, opcode, args):
         '''Return a MessageEffect that indicates success.'''
-        return ok_parse(opcode,
-            "Parsed: equipment_id is %(equipment_id)s.", args)
+        return info(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Parsed: equipment_id is %(equipment_id)s."), args
+        )
 
-    def _error_extra_chars(self, opcode, arg_string):
+    def _error_extra_chars(self, opcode):
         '''
         Return a MessageEffect that indicates a failure as a result of
         the arguments having extra chars after the equipment_id.
         '''
-        return error_parse(opcode, arg_string, reason="Text after equipment ID not allowed.")
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Text after equipment ID not allowed."), {}
+        )
 
-    def _error_unrecognized_chars(self, opcode, arg_string):
+    def _error_unrecognized_chars(self, opcode):
         '''
         Return a MessageEffect that indicates a failure as a result of
         the arguments containing unrecognized characters in the argument string
         instead of an equipment_id.
         '''
-        return error_parse(opcode, arg_string, reason="Should start with equipment ID.")
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Should start with equipment ID."), {}
+        )
 
-    def _error_no_equipment_id(self, opcode, arg_string):
+    def _error_no_equipment_id(self, opcode):
         '''
         Return a MessageEffect that indicates a failure as a result of
         the arguments being empty.
         '''
-        return error_parse(opcode, arg_string, reason="Must provide an equipment ID.")
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Must provide an equipment ID."), {}
+        )
 
     def parse_arguments(self, opcode, arg_string, message):
         '''
@@ -54,14 +65,14 @@ class EquipmentBase(OperationBase):
 
         if equipment_id:
             if g.remainder:
-                args, effect = None, self._error_extra_chars(opcode, arg_string)
+                args, effect = None, self._error_extra_chars(opcode)
             else:
                 args, effect = args, self._ok(opcode, args)
         else:
             if g.remainder:
-                args, effect = None, self._error_unrecognized_chars(opcode, arg_string)
+                args, effect = None, self._error_unrecognized_chars(opcode)
             else:
-                args, effect = None, self._error_no_equipment_id(opcode, arg_string)
+                args, effect = None, self._error_no_equipment_id(opcode)
         effects.append(effect)
 
         return (effects, args)
