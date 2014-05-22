@@ -18,10 +18,7 @@ class HierarchyNode(models.Model):
     name = models.CharField(max_length=200)
 
     def __unicode__(self):
-        if self.parent:
-            return "%s (parent is %s )" % (self.name, self.parent.name)
-        else:
-            return "%s is root" % self.name
+        return self.name
 
 class Facility(models.Model):
     """
