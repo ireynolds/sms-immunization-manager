@@ -309,20 +309,6 @@ SIM_OPERATION_CODES = {
     "FT": _equipment_apps.FridgeTemperature,
 }
 
-from django.utils.translation import ugettext_lazy as _
-# Define Roles and associated string of permitted opcodes
-# TODO: Require a json list of strings instead for opcodes?
-DATA_REPORTER_ROLE = "DataReporter"
-ADMIN_ROLE = "Admin"
-ROLE_CHOICES = (
-        (DATA_REPORTER_ROLE, _("Data Reporter")),
-        (ADMIN_ROLE, _("Administrator"))
-        )
-
-ROLE_OP_CHOICES = (
-    (DATA_REPORTER_ROLE, "HE"),
-    (ADMIN_ROLE, "HE, RG")
-     )
 PERIODIC = "PERIODIC"
 SPONTANEOUS = "SPONTANEOUS"
 ADMINISTRATION = "ADMINISTRATION"
@@ -348,3 +334,17 @@ SIM_OPCODE_MAY_NOT_DUPLICATE = set([
     "HE",
     "FC"
 ])
+
+# Define Roles and associated string of permitted opcodes
+# TODO: Require a json list of strings instead for opcodes?
+DATA_REPORTER_ROLE = "DataReporter"
+ADMIN_ROLE = "Admin"
+ROLE_CHOICES = (
+        (DATA_REPORTER_ROLE, _("Data Reporter")),
+        (ADMIN_ROLE, _("Administrator"))
+        )
+
+ROLE_OP_CHOICES = (
+    (DATA_REPORTER_ROLE, "HE"),
+    (ADMIN_ROLE, "HE, RG")
+     )
