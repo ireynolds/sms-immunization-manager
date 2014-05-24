@@ -1,13 +1,30 @@
 {% extends "sim_base.html" %}
+{% load i18n %}
 
-{% block title %}Root Nodes{% endblock %}
+{% block title %}{% include "include/breadcrumbs.html" %}{% endblock %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    {% include "include/breadcrumbs.html" %}
+</ol>
+{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>List of Root Nodes</h1>
-    <ul>
-        <li><a href="{% url "moderation.views.node" 1 %}">Node 1<a></li>
-        <li><a href="{% url "moderation.views.node" 2 %}">Node 2<a></li>
-    </ul>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="panel panel-primary">
+                <div class="panel-heading">{% trans "Regions" %}</div>
+                {% include "include/node_list.html" %}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="input-group input-group-md">
+                <span class="input-group-addon"><span class="glyphicon glyphicon-home"></span></span>
+                <button type="button" class="btn btn-default btn-block">{% trans "Make this page my default" %}</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

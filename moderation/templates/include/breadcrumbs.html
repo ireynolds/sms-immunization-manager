@@ -1,0 +1,33 @@
+{% comment %}
+This template generates breadcrumb list elements. It uses the following context keys, any of which
+may be undefined:
+
+node: The current node.
+facility: A facility associated with node
+user: A user associated with facility
+
+{% endcomment %}
+
+{% if node %}
+    <li><a href="{% url "moderation.views.root_nodes" %}">{% include "include/country.html" %}</a></li>
+{% else %}
+    <li class="active">{% include "include/country.html" %}</li>
+{% endif %}
+
+{% if node %}
+    {% for n in node.root_path reversed %}
+        {% if not facility and forloop.last %}
+            <li class="active">{{ n }}</li>
+        {% else %}
+            <li><a href="{% url "moderation.views.node" n.pk %}">{{ n }}</a></li>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if facility %}
+    {% if user %}
+        <li><a href="{% url "moderation.views.facility" facility.pk %}">{{ facility }}</a></li>
+    {% else %}
+        <li class="active">{{ facility }}</li>
+    {% endif %}
+{% endif %}
