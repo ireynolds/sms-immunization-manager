@@ -221,7 +221,7 @@ class MockRouter(BlockingRouter):
     def __init__(self, *args, **kwargs):
         registered_apps = [settings.SIM_OPERATION_CODES[opcode] for opcode in MockRouter.REGISTERED_OPCODES]
 
-        kwargs['apps'] = settings.APPS_BEFORE_SIM + tuple(registered_apps) + settings.APPS_AFTER_SIM
+        kwargs['apps'] = settings.APPS_BEFORE_SIM + settings.SIM_PRE_APPS + tuple(registered_apps) + settings.APPS_AFTER_SIM
         BlockingRouter.__init__(self, *args, **kwargs)
 
 class OperationBaseTest(CustomRouterMixin, TestCase):

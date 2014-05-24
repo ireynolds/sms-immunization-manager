@@ -230,6 +230,9 @@ APPS_BEFORE_SIM = (
     "south",
     "rapidsms.contrib.messagelog",
     "crispy_forms",
+)
+
+SIM_PRE_APPS = (
     'operation_parser',
     'contextual',
 )
@@ -259,7 +262,7 @@ APPS_AFTER_SIM = (
     "rapidsms.contrib.messaging",
 )
 
-INSTALLED_APPS = APPS_BEFORE_SIM + SIM_APPS + APPS_AFTER_SIM
+INSTALLED_APPS = APPS_BEFORE_SIM + SIM_PRE_APPS + SIM_APPS + APPS_AFTER_SIM
 
 INSTALLED_BACKENDS = {
     "message_tester": {

@@ -13,6 +13,7 @@ import gobbler
 
 from utils.tests import MockRouter, MockApp, SIMTestCase
 from rapidsms.tests.harness.router import CustomRouterMixin
+from user_registration.models import Facility
 
 class BlankApp(MockApp):
     return_values = None
@@ -40,7 +41,11 @@ class OperationParserTest(CustomRouterMixin, SIMTestCase):
         Treat the given text as the body of an incoming message and route it through
         the phases of RapidSMS as from number '4257886710' and 'mockbackend'.
         '''
-        return CustomRouterMixin.receive(self, text, self.lookup_connections('mockbackend', ['4257886710'])[0])
+        contact = self.create_contact()
+        contact.contactprofile.facility = Facility()
+
+        connection = self.create_connection({'contact': contact})
+        return CustomRouterMixin.receive(self, text, connection)
 
     def check_ok(self, text, *expected_ops):
         '''
