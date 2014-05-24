@@ -64,11 +64,11 @@ class Facility(models.Model):
     def __unicode__(self):
         return self.name
 
-class UserProfile(models.Model):
+class ContactProfile(models.Model):
     """
     A user who interacts with the SMS immunization manager
     """
-    # The rapidsms Contact that this UserProfile maps to
+    # The rapidsms Contact that this ContactProfile maps to
     contact = models.OneToOneField(Contact, primary_key=True)
 
     # The facility where this user works
@@ -95,15 +95,15 @@ class UserProfile(models.Model):
         return dict(settings.ROLE_OP_CODES)[self.role_name]
 
 
-# Create a UserProfile whenever a Contact is created
+# Create a ContactProfile whenever a Contact is created
 @receiver(post_save, sender=Contact)
 def create_user_profile_if_none_exists(sender, instance, **kwargs):
-    if not UserProfile.objects.filter(contact=instance).exists():
-        profile = UserProfile()
+    if not ContactProfile.objects.filter(contact=instance).exists():
+        profile = ContactProfile()
         profile.contact = instance
         profile.save()
             
 # Register models for versioning
 reversion.register(HierarchyNode)
 reversion.register(Facility)
-reversion.register(UserProfile)
+reversion.register(ContactProfile)
