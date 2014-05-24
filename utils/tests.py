@@ -4,9 +4,9 @@ from moderation.models import *
 from django.utils.translation import ugettext_noop as _
 from rapidsms.tests.harness.router import CustomRouterMixin
 from rapidsms.router.blocking import BlockingRouter
-from operation_parser.app import OperationParser
 from rapidsms.apps.base import AppBase
 from django.dispatch.dispatcher import _make_id
+from user_registration.models import Facility
 
 ###
 ### Utilities for testing code
@@ -221,7 +221,7 @@ class MockRouter(BlockingRouter):
     def __init__(self, *args, **kwargs):
         registered_apps = [settings.SIM_OPERATION_CODES[opcode] for opcode in MockRouter.REGISTERED_OPCODES]
 
-        kwargs['apps'] = settings.APPS_BEFORE_SIM + (OperationParser,) + tuple(registered_apps) + settings.APPS_AFTER_SIM
+        kwargs['apps'] = settings.APPS_BEFORE_SIM + tuple(registered_apps) + settings.APPS_AFTER_SIM
         BlockingRouter.__init__(self, *args, **kwargs)
 
 class OperationBaseTest(CustomRouterMixin, TestCase):
@@ -236,7 +236,11 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
         Treat the given text as the body of an incoming message and route it through
         the phases of RapidSMS as from number '4257886710' and 'mockbackend'.
         '''
-        CustomRouterMixin.receive(self, text, self.lookup_connections('mockbackend', ['4257886710'])[0])
+        contact = self.create_contact()
+        contact.contactprofile.facility = Facility()
+
+        connection = self.create_connection({'contact': contact})
+        message = CustomRouterMixin.receive(self, text, connection)
 
     def setUp(self):
         '''

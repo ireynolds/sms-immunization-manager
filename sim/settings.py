@@ -230,10 +230,11 @@ APPS_BEFORE_SIM = (
     "south",
     "rapidsms.contrib.messagelog",
     "crispy_forms",
+    'operation_parser',
+    'contextual',
 )
 
 SIM_APPS = (
-    'operation_parser',
     'stock',
     'equipment',
     'registration',
@@ -277,37 +278,19 @@ RAPIDSMS_HANDLERS = (
 # SIM-specific settings below
 # ------------------------------------------------------------------------------
 
-# A list of AppBase subclasses that should be used by RapidSMS' router, in
-# addition to those autodiscovered from INSTALLED_APPS.
-# TODO: Is it possible to make these references be strings, for consistency with
-# the rest of settings.py?
-import stock.apps as _stock_apps
-import equipment.apps as _equipment_apps
-import info.apps as _info_apps
-RAPIDSMS_APP_BASES = (
-    _stock_apps.StockLevel,
-    _stock_apps.StockOut,
-    _equipment_apps.EquipmentFailure,
-    _equipment_apps.EquipmentRepaired,
-    _info_apps.Help,
-    _equipment_apps.FridgeTemperature,
+# Define Roles and associated string of permitted opcodes
+# TODO: Require a json list of strings instead for opcodes?
+DATA_REPORTER_ROLE = "DataReporter"
+ADMIN_ROLE = "Admin"
+ROLE_CHOICES = (
+    (DATA_REPORTER_ROLE, _("Data Reporter")),
+    (ADMIN_ROLE, _("Administrator"))
 )
 
-# Configure the RapidSMS router based on RAPIDSMS_APP_BASES
-from rapidsms.router.blocking import BlockingRouter
-RAPIDSMS_ROUTER = BlockingRouter()
-for app in RAPIDSMS_APP_BASES:
-    RAPIDSMS_ROUTER.add_app(app)
-
-# Assign operation codes to AppBase handlers.
-SIM_OPERATION_CODES = {
-    "SL": _stock_apps.StockLevel,
-    "SE": _stock_apps.StockOut,
-    "NF": _equipment_apps.EquipmentFailure,
-    "RE": _equipment_apps.EquipmentRepaired,
-    "HE": _info_apps.Help,
-    "FT": _equipment_apps.FridgeTemperature,
-}
+ROLE_OP_CODES = (
+    (DATA_REPORTER_ROLE, ["HE"]),
+    (ADMIN_ROLE, ["HE", "RG"])
+)
 
 PERIODIC = "PERIODIC"
 SPONTANEOUS = "SPONTANEOUS"
@@ -335,16 +318,36 @@ SIM_OPCODE_MAY_NOT_DUPLICATE = set([
     "FC"
 ])
 
-# Define Roles and associated string of permitted opcodes
-# TODO: Require a json list of strings instead for opcodes?
-DATA_REPORTER_ROLE = "DataReporter"
-ADMIN_ROLE = "Admin"
-ROLE_CHOICES = (
-    (DATA_REPORTER_ROLE, _("Data Reporter")),
-    (ADMIN_ROLE, _("Administrator"))
+# A list of AppBase subclasses that should be used by RapidSMS' router, in
+# addition to those autodiscovered from INSTALLED_APPS.
+# TODO: Is it possible to make these references be strings, for consistency with
+# the rest of settings.py?
+import stock.apps as _stock_apps
+import equipment.apps as _equipment_apps
+import info.apps as _info_apps
+import contextual.app as _contextual_apps
+RAPIDSMS_APP_BASES = (
+    _stock_apps.StockLevel,
+    _stock_apps.StockOut,
+    _equipment_apps.EquipmentFailure,
+    _equipment_apps.EquipmentRepaired,
+    _info_apps.Help,
+    _equipment_apps.FridgeTemperature,
 )
 
-ROLE_OP_CODES = (
-    (DATA_REPORTER_ROLE, ["HE"]),
-    (ADMIN_ROLE, ["HE", "RG"])
- )
+# Configure the RapidSMS router based on RAPIDSMS_APP_BASES
+from rapidsms.router.blocking import BlockingRouter
+RAPIDSMS_ROUTER = BlockingRouter()
+for app in RAPIDSMS_APP_BASES:
+    RAPIDSMS_ROUTER.add_app(app)
+
+# Assign operation codes to AppBase handlers.
+SIM_OPERATION_CODES = {
+    "SL": _stock_apps.StockLevel,
+    "SE": _stock_apps.StockOut,
+    "NF": _equipment_apps.EquipmentFailure,
+    "RE": _equipment_apps.EquipmentRepaired,
+    "HE": _info_apps.Help,
+    "FT": _equipment_apps.FridgeTemperature,
+    "FC": _contextual_apps.FacilityCode,
+}

@@ -41,6 +41,15 @@ class Facility(models.Model):
     def __unicode__(self):
         return self.name
 
+    @classmethod
+    def from_code(cls, code):
+        '''
+        Returns the facility with the given facility code, or raises an
+        error if no such facility exists.
+        ''' 
+        # TODO: Implement
+        return None
+
 class ContactProfile(models.Model):
     """
     A user who interacts with the SMS immunization manager
