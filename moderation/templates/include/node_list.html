@@ -1,0 +1,10 @@
+<table class="table">
+    <tbody>
+        {% for n in nodes %}
+            <tr>
+                <td><a href="{% url "moderation.views.node" n.pk %}">{{ n }}</a></td>
+                <td><span class="label label-danger">2 pending</span></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

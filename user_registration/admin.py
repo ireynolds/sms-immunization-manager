@@ -7,9 +7,9 @@ class HierarchyNodeAdmin(admin.ModelAdmin):
 class FacilityAdmin(admin.ModelAdmin):
     pass
 
-class UserProfileAdmin(admin.ModelAdmin):
+class ContactProfileAdmin(admin.ModelAdmin):
     pass
 
 admin.site.register(HierarchyNode, HierarchyNodeAdmin)
 admin.site.register(Facility, FacilityAdmin)
-admin.site.register(UserProfile, UserProfileAdmin)
+admin.site.register(ContactProfile, ContactProfileAdmin)

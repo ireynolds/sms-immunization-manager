@@ -37,7 +37,9 @@ def node(request, node_id):
     """
     Displays a single hierarchy node
     """
-    return render_to_response("node.html", context_instance=RequestContext(request))
+    node = get_object_or_404(HierarchyNode, pk=node_id)
+    return render_to_response("node.html", {"node": node},
+        context_instance=RequestContext(request))
 
 @login_required
 def facility(request, facility_id):

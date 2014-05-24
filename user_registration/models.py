@@ -20,6 +20,29 @@ class HierarchyNode(models.Model):
     def __unicode__(self):
         return self.name
 
+    def root_path(self):
+        """
+        Returns a path from this node to a root node. The first element in the returned list is
+        this node. The last element in the returned list is an ancestor of this node which has no
+        parent. If this node is a root node, returns [self].
+
+        If a cycle exists in the hierarchy graph which contains this node, returns None.
+        """
+        path = []
+        current_node = self
+
+        while current_node != None:
+            if current_node in path:
+                # A cycle was detected
+                # TODO: Should an exception be thrown instead?
+                return None
+            path.append(current_node)
+            current_node = current_node.parent
+            
+        return path
+
+
+
 class Facility(models.Model):
     """
     A facility represented in DHIS2

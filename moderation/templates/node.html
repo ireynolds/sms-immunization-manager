@@ -1,21 +1,39 @@
 {% extends "sim_base.html" %}
+{% load i18n %}
 
-{% block title %}Hierarchy Node{% endblock %}
+{% block title %}{{ node }}{% endblock %}
 
 {% block breadcrumbs %}
 <ol class="breadcrumb">
-    <li><a href="{% url "moderation.views.node" 1 %}">United States</a></li>
-    <li><a href="{% url "moderation.views.node" 2 %}">Washington</a></li>
-    <li class="active">Seattle</li>
+    {% include "include/breadcrumbs.html" %}
 </ol>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>A Hierarchy Node</h1>
-    <ul>
-        <li><a href="{% url "moderation.views.facility" 1 %}">Facility 1<a></li>
-        <li><a href="{% url "moderation.views.facility" 2 %}">Facility 2<a></li>
-    </ul>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="panel panel-primary">
+                <div class="panel-heading">{% trans "Regions" %}</div>
+                {% with node.children.all as nodes %}
+                    {% include "include/node_list.html" %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">{% trans "Recent Changes" %}</div>
+                <p class="text-center"><br />{% trans "No Changes" %}</p>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <div class="input-group input-group-md">
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-home"></span></span>
+                            <button type="button" class="btn btn-default btn-block">{% trans "Make this region my default" %}</button>
+                        </div>
+                    </li>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
