@@ -2,7 +2,7 @@ from django.test import TestCase
 from operations import OperationBase, semantic_signal, commit_signal
 from moderation.models import *
 from django.utils.translation import ugettext_noop as _
-from rapidsms.tests.harness.router import CustomRouterMixin
+from rapidsms.tests.harness.router import CustomRouterMixin as _CustomRouterMixin
 from rapidsms.router.blocking import BlockingRouter
 from rapidsms.apps.base import AppBase
 from django.dispatch.dispatcher import _make_id
@@ -224,13 +224,7 @@ class MockRouter(BlockingRouter):
         kwargs['apps'] = settings.APPS_BEFORE_SIM + settings.SIM_PRE_APPS + tuple(registered_apps) + settings.APPS_AFTER_SIM
         BlockingRouter.__init__(self, *args, **kwargs)
 
-class OperationBaseTest(CustomRouterMixin, TestCase):
-    '''Tests for OperationBase.'''
-
-    # An instance of this class is used as the router for all calls to
-    # self.receive.
-    router_class = "utils.tests.MockRouter"
-
+class CustomRouterMixin(_CustomRouterMixin):
     def receive(self, text):
         '''
         Treat the given text as the body of an incoming message and route it through
@@ -240,7 +234,14 @@ class OperationBaseTest(CustomRouterMixin, TestCase):
         contact.contactprofile.facility = Facility()
 
         connection = self.create_connection({'contact': contact})
-        message = CustomRouterMixin.receive(self, text, connection)
+        return _CustomRouterMixin.receive(self, text, connection)
+
+class OperationBaseTest(CustomRouterMixin, TestCase):
+    '''Tests for OperationBase.'''
+
+    # An instance of this class is used as the router for all calls to
+    # self.receive.
+    router_class = "utils.tests.MockRouter"
 
     def setUp(self):
         '''
