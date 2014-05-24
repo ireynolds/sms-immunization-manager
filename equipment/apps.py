@@ -16,7 +16,7 @@ class EquipmentBase(OperationBase):
     def _ok(self, opcode, args):
         '''Return a MessageEffect that indicates success.'''
         return info(
-            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Parsed %(op_code)s Arguments"), { 'op_code': opcode },
             _("Parsed: equipment_id is %(equipment_id)s."), args
         )
 
