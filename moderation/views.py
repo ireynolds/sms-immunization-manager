@@ -64,7 +64,7 @@ def user_edit(request, user_id):
 
 def set_language(request):
     """
-    Sets the user's prefered language. Taken from django.views.i18n in Django 1.7 with slight
+    Sets the user's session language. Taken from django.views.i18n in Django 1.7 with slight
     modifications to make the view exclusively use sessions for storing a prefered language.
     """
     next = request.POST.get('next', request.GET.get('next'))
@@ -77,5 +77,25 @@ def set_language(request):
         lang_code = request.POST.get('language', None)
         if lang_code and check_for_language(lang_code):
             request.session[settings.LANGUAGE_SESSION_KEY] = lang_code
+
+    return response
+
+
+def set_default_language(request):
+    """
+    Sets the user's prefered language. 
+    """
+    next = request.POST.get('next', request.GET.get('next'))
+    if not is_safe_url(url=next, host=request.get_host()):
+        next = request.META.get('HTTP_REFERER')
+        if not is_safe_url(url=next, host=request.get_host()):
+            next = '/'
+    response = HttpResponseRedirect(next)
+
+    if request.method == 'POST':
+        lang_code = request.POST.get('language', None)
+        if lang_code and check_for_language(lang_code):
+            request.user.moderator_profile.language = lang_code
+            request.user.moderator_profile.save()
 
     return response
