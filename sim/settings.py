@@ -334,6 +334,8 @@ import stock.apps as _stock_apps
 import equipment.apps as _equipment_apps
 import info.apps as _info_apps
 import contextual.app as _contextual_apps
+import user_registration.apps as _user_registration_apps
+
 RAPIDSMS_APP_BASES = (
     _stock_apps.StockLevel,
     _stock_apps.StockOut,
@@ -341,6 +343,7 @@ RAPIDSMS_APP_BASES = (
     _equipment_apps.EquipmentRepaired,
     _info_apps.Help,
     _equipment_apps.FridgeTemperature,
+    _user_registration_apps.PreferredLanguage,
 )
 
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
@@ -358,4 +361,5 @@ SIM_OPERATION_CODES = {
     "HE": _info_apps.Help,
     "FT": _equipment_apps.FridgeTemperature,
     "FC": _contextual_apps.FacilityCode,
+    "PL": _user_registration_apps.PreferredLanguage,
 }
