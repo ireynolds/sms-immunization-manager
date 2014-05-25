@@ -27,3 +27,28 @@ class PreferredLanguageTest(TestCase):
         self.assertEqual(effects[0].priority, 'INFO')
         self.assertEqual(kwargs['preferred_lang_code'], 1)
         self.assertEqual(kwargs['preferred_lang'], 'English')
+
+    def test_extra_char(self):
+        effects, kwargs = self.send_args("1 2")
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+    def test_unrecognized_char(self):
+        effects, kwargs = self.send_args("4")
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+    def test_unrecognized_chars(self):
+        effects, kwargs = self.send_args("456")
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+        
+        effects, kwargs = self.send_args("abc")
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
