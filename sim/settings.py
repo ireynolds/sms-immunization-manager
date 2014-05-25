@@ -1,5 +1,6 @@
 import os
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.messages import constants as messages
 
 # The top directory for this project. Contains requirements/, manage.py,
 # and README.rst, a sim directory with settings etc (see
@@ -163,6 +164,15 @@ LOGIN_REDIRECT_URL = '/'
 
 # The template pack to use with django-crispy-forms
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+# Define the CSS classes used to render messages
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}
 
 # A sample logging configuration.
 # This logs all rapidsms messages to the file `rapidsms.log`

@@ -1,12 +1,15 @@
 from models import *
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseNotAllowed, HttpResponseBadRequest
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import check_for_language
 from django.utils.http import is_safe_url
+from django.contrib import messages
+from django.utils.translation import ugettext as _
 from user_registration.models import *
+from forms import ModeratorAffiliationForm
 
 @login_required
 def home(request):
@@ -64,7 +67,7 @@ def user_edit(request, user_id):
 
 def set_language(request):
     """
-    Sets the user's session language. Taken from django.views.i18n in Django 1.7 with slight
+    Sets the user's session language. Based on the view django.views.i18n in Django 1.7, with slight
     modifications to make the view exclusively use sessions for storing a prefered language.
     """
     next = request.POST.get('next', request.GET.get('next'))
@@ -73,6 +76,7 @@ def set_language(request):
         if not is_safe_url(url=next, host=request.get_host()):
             next = '/'
     response = HttpResponseRedirect(next)
+
     if request.method == 'POST':
         lang_code = request.POST.get('language', None)
         if lang_code and check_for_language(lang_code):
@@ -80,10 +84,10 @@ def set_language(request):
 
     return response
 
-
+@login_required
 def set_default_language(request):
     """
-    Sets the user's prefered language. 
+    Sets the user's default language.
     """
     next = request.POST.get('next', request.GET.get('next'))
     if not is_safe_url(url=next, host=request.get_host()):
@@ -97,5 +101,23 @@ def set_default_language(request):
         if lang_code and check_for_language(lang_code):
             request.user.moderator_profile.language = lang_code
             request.user.moderator_profile.save()
+            messages.success(request, _("Your default language has been updated."))
 
     return response
+
+@login_required
+def set_affiliation(request):
+    """
+    Sets the user's node and/or facility affiliation. May only be accessed via POST, and returns
+    400 if the request is malformed.
+    """
+    if request.method == 'POST':
+        form = ModeratorAffiliationForm(request.POST, instance=request.user.moderator_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Your default page has been updated."))
+            return HttpResponseRedirect(reverse(home))
+        else:
+            return HttpResponseBadRequest()
+    else:
+        return HttpResponseNotAllowed(['POST']) 

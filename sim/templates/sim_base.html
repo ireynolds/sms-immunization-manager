@@ -53,11 +53,13 @@
                                             <input name="next" type="hidden" value="{{ redirect_to }}" />
                                             <input name="language" type="hidden" value="{{ l.code }}" />
                                             <a href="#" class="language-link">
+                                                {% if l.code == LANGUAGE_CODE %}<strong>{% endif %}
                                                 {% if l.code == request.user.moderator_profile.language %}
-                                                    {{ l.name_local }} (default)
+                                                    {% blocktrans with l.name_local as language %}{{ language }} (default){% endblocktrans %}
                                                 {% else %}
                                                     {{ l.name_local }}
                                                 {% endif %}
+                                                {% if l.code == LANGUAGE_CODE %}</strong>{% endif %}
                                             </a>
                                         </form>
                                     </li>
@@ -86,15 +88,30 @@
                                 </ul>
                             </li>
                         {% endif %}
+                        
+                        <li><a>
+                            {% blocktrans with request.user as name %}Logged in as {{ name }}{% endblocktrans %}
+                        </a></li>
 
                         <li><a href="#">
-                            {% blocktrans with request.user as name %}Change Password for {{ name }}{% endblocktrans %}
+                            {% trans "Change Password" %}
                         </a></li>
                         <li><a href="{% url "logout" %}">{% trans "Log Out" %}</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
+        {% endblock %}
+
+        <!-- Messages -->
+        {% block messages %}
+            <div class="container">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
         {% endblock %}
 
         <!-- Breadcrumbs -->

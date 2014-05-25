@@ -1,15 +1,15 @@
 {% load i18n %}
 <table class="table">
     <tbody>
-        {% if nodes %}
-            {% for n in nodes %}
+        {% if facilities %}
+            {% for f in facilities %}
                 <tr>
-                    <td><a href="{% url "moderation.views.node" n.pk %}">{{ n }}</a></td>
+                    <td><a href="{% url "moderation.views.facility" f.pk %}">{{ f }}</a></td>
                     <td class="text-right"><span class="label label-danger">2 pending</span></td>
                 </tr>
             {% endfor %}
         {% else %}
-            <tr><td class="text-center">{% trans "No Regions" %}</td></tr>
+            <tr><td class="text-center">{% trans "No Facilities" %}</td></tr>
         {% endif %}
     </tbody>
 </table>

@@ -6,6 +6,15 @@
     font-size: 200%;
 }
 
+#language-select {
+  width: 100%;
+}
+
+/* Since breadcrumbs take up some space, h1 can be closer to elements above */
+h1 {
+  margin-top: 0.1em;
+}
+
 /* Make bootstrap's dropdown list styling apply to links wrapped in forms,
    for the language selection menu. */
 

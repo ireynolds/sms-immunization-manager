@@ -1,0 +1,21 @@
+{% comment %}
+Renders a form and button for modifying the node and facility affiliation of the user.
+
+Expects the following context keys:
+affiliation_node - the node to affiliate with. If unset the user's node affiliation will be cleared.
+affiliation_facility - Same as affiliation_node, but specifies the user's facility affiliation.
+affiliation_message - The message to display in the button. Must be set.
+{% endcomment %}
+<form role="form" method="post" action="{% url "set_affiliation" %}">
+    {% csrf_token %}
+    <input type="hidden" name="node" value="{% if affiliation_node %}{{ affiliation_node.pk }}{% endif %}" />
+    <input type="hidden" name="facility" value="{% if affiliation_facility %}{{ affiliation_facility.pk }}{% endif %}" />
+    <button type="submit" class="btn btn-default btn-block">
+        <span class="glyphicon glyphicon-home"></span>
+        {{ affiliation_message }}
+    </button>
+<!--     <div class="input-group input-group-md">
+        <span class="input-group-addon"><span class="glyphicon glyphicon-home"></span></span>
+        <button type="submit" class="btn btn-default btn-block">{{ affiliation_message }}</button>
+    </div> -->
+</form>

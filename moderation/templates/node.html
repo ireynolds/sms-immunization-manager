@@ -12,26 +12,40 @@
 {% block content %}
 <div class="container">
     <div class="row">
+        <div class="col-sm-8">
+            <h1>{{ node }}</h1>
+        </div>
+        <div class="col-sm-4">
+            {% if request.user.moderator_profile.node != node or request.user.moderator_profile.facility %}
+                {% with _("Make this region my default") as affiliation_message %}
+                    {% with node as affiliation_node %}
+                        {% include "include/affiliation_form.html" %}
+                    {% endwith %}
+                {% endwith %}
+            {% else %}
+                {% with _("This region is your default") as affiliation_message %}
+                    {% include "include/affiliation_home.html" %}
+                {% endwith %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
         <div class="col-md-8">
             <div class="panel panel-default">
-                <div class="panel-heading">{% trans "Regions" %}</div>
-                {% with node.children.all as nodes %}
-                    {% include "include/node_list.html" %}
+                <div class="panel-heading">{% trans "Facilities" %}</div>
+                {% with node.facility_set.all as facilities %}
+                    {% include "include/facility_list.html" %}
                 {% endwith %}
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="panel panel-default">
-                <div class="panel-heading">{% trans "Recent Changes" %}</div>
-                <p class="text-center"><br />{% trans "No Changes" %}</p>
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <div class="input-group input-group-md">
-                            <span class="input-group-addon"><span class="glyphicon glyphicon-home"></span></span>
-                            <button type="button" class="btn btn-default btn-block">{% trans "Make this region my default" %}</button>
-                        </div>
-                    </li>
+                <div class="panel-heading">{% trans "Sub-Regions" %}</div>
+                {% with node.children.all as nodes %}
+                    {% include "include/node_list.html" %}
+                {% endwith %}
             </div>
         </div>
     </div>
