@@ -18,13 +18,12 @@ from django.core.urlresolvers import reverse
 
 def error_parse(opcode, arg_string, reason=None):
     name = "Error Parsing %(op_code)s Arguments"
-
     desc_start = "Error in %(op_code)s: %(arg_string)s."
-    desc_end = "Please fix and send again."
+
     if reason:
-        desc = "%s %s %s" % (desc_start, reason, desc_end)
+        desc = "%s %s" % (desc_start, reason)
     else:
-        desc = "%s %s" % (desc_start, desc_end)
+        desc = desc_start
 
     return error(
         ugettext_noop(name), { 'op_code': opcode },
@@ -262,7 +261,7 @@ class ModeratorProfile(models.Model):
 
     def get_home_url(self):
         """
-        Returns the preferred landing page for this user. If facility is set, returns the url for 
+        Returns the preferred landing page for this user. If facility is set, returns the url for
         that facility. Otherwise, returns the url corresponding to node. If node is not set, returns
         None.
         """
