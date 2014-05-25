@@ -71,7 +71,7 @@ class Responder(AppBase):
             # create a new effect for sending the response
             name = _("%(priority)s Response Sent")
             name_context = { 'priority': effect.priority }
-            desc = _(additional_message)
+            desc = _("Responded to sender. %s" % additional_message)
             desc_context = {}
             response = info(name, name_context, desc, desc_context)
             complete_effect(response, message.logger_msg, RESPOND, None, '', False)
