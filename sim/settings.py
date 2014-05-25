@@ -281,6 +281,11 @@ RAPIDSMS_HANDLERS = (
 # SIM-specific settings below
 # ------------------------------------------------------------------------------
 
+# Defines acceptable choices for language preference opcode
+# TODO: Change language tags to something useful
+PREFERRED_LANGUAGE_CODE = "[1-3]"
+PREFERRED_LANGUAGES = { 1 : "English", 2 : "Karoake", 3 : "Lao" }
+
 # Define Roles and associated string of permitted opcodes
 # TODO: Require a json list of strings instead for opcodes?
 DATA_REPORTER_ROLE = "DataReporter"
@@ -291,8 +296,8 @@ ROLE_CHOICES = (
 )
 
 ROLE_OP_CODES = (
-    (DATA_REPORTER_ROLE, ["HE"]),
-    (ADMIN_ROLE, ["HE", "RG"])
+    (DATA_REPORTER_ROLE, ["FT", "SL", "SE", "RE", "NF", "HE", "FC"]),
+    (ADMIN_ROLE, ["FT", "SL", "SE", "RE", "NF", "RG", "PL", "HE", "FC"])
 )
 
 PERIODIC = "PERIODIC"
