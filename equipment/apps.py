@@ -100,7 +100,7 @@ class FridgeTemperature(OperationBase):
     def _ok(self, opcode, args):
         '''Return a MessageEffect that indicates success.'''
         return ok_parse(opcode,
-            "Parsed: fridge_events is %(fridge_events)s.", args)
+            _("Parsed: fridge_events is %(fridge_events)s."), args)
 
     def _parse_events(self, opcode, args):
         """
@@ -168,7 +168,7 @@ class FridgeTemperature(OperationBase):
             if fridge_id:
                 if fridge_id in fridge_events:
                     # found a fridge id that was already in the message
-                    effect = error_parse(opcode, arg_string, "Duplicate Fridge ID.")
+                    effect = error_parse(opcode, arg_string, _("Duplicate Fridge ID."))
                     return [effect], {}
 
                 effects, events, remaining = self._parse_events(opcode, remaining)
@@ -182,11 +182,11 @@ class FridgeTemperature(OperationBase):
                     fridge_events[fridge_id] = events
                 else:
                     # didn't find any event numbers
-                    effect = error_parse(opcode, arg_string, "Expected number of events.")
+                    effect = error_parse(opcode, arg_string, _("Expected number of events."))
                     return [effect], {}
             else:
                 # didn't find a fridge id
-                effect = error_parse(opcode, arg_string, "Expected a fridge tag.")
+                effect = error_parse(opcode, arg_string, _("Expected a fridge tag."))
                 return [effect], {}
 
         # parsed all the args into fridge ids and numbers of events
