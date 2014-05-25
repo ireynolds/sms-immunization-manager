@@ -34,7 +34,7 @@ class StockLevel(OperationBase):
 
         if levels == None:
             # did not find any stock code and level combos
-            effect = error_parse(opcode, arg_string, "Did not find any stock levels.")
+            effect = error_parse(opcode, arg_string, _("Did not find any stock levels."))
             return [effect], {}
 
         # create a dictionary: stock code -> stock level
@@ -44,7 +44,7 @@ class StockLevel(OperationBase):
         for stock_code, stock_level in levels:
             if stock_code in stock_levels:
                 # there was a duplicate stock code in the message
-                effect = error_parse(opcode, arg_string, "Found a duplicate stock code.")
+                effect = error_parse(opcode, arg_string, _("Found a duplicate stock code."))
                 return [effect], {}
 
             # add to the inventory report
@@ -52,7 +52,7 @@ class StockLevel(OperationBase):
 
         # parsing was successful.
         parsed_args = { 'stock_levels': stock_levels }
-        effect = ok_parse(opcode, "Parsed: stock_levels is %(stock_levels)s.", parsed_args)
+        effect = ok_parse(opcode, _("Parsed: stock_levels is %(stock_levels)s."), parsed_args)
         return [effect], parsed_args
 
 class StockOut(OperationBase):
@@ -72,12 +72,12 @@ class StockOut(OperationBase):
 
         if len(remaining) > 0:
             # there are still characters remaining, meaning there was a parsing failure
-            effect = error_parse(opcode, arg_string, "Found extra characters after the stock code.")
+            effect = error_parse(opcode, arg_string, _("Found extra characters after the stock code."))
             return [effect], {}
 
         if codes == None:
             # could not parse any useful information
-            effect = error_parse(opcode, arg_string, "No stock code found.")
+            effect = error_parse(opcode, arg_string, _("No stock code found."))
             return [effect], {}
 
         # codes is a one element list containing the stock code
@@ -85,5 +85,5 @@ class StockOut(OperationBase):
 
         # parsing was successful.
         parsed_args = { 'stock_out': stock_code }
-        effect = ok_parse(opcode, "Parsed: stock_out is %(stock_out)s.", parsed_args)
+        effect = ok_parse(opcode, _("Parsed: stock_out is %(stock_out)s."), parsed_args)
         return [effect], parsed_args

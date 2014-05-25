@@ -88,6 +88,7 @@ class EquipmentRepaired(EquipmentBase):
     helptext = "For example, %(opcode)s A. Reports to managers that equipment A has been repaired."
 
 class FridgeTemperature(OperationBase):
+    """Implements the FridgeTemperate SMS API"""
 
     helptext = "For example, %(opcode)s A 1 0. Reports that fridge A had 1 high- and 1 low-temperature event, and any other fridges had none of either."
 
