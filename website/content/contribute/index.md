@@ -21,72 +21,72 @@ SIM source code can be found on GitHub [github.com/ireynolds/sms-immunization-ma
 
 The repository is layed out in the following structure:
 
-        .
-        ├── contextual
-        ├── dhis2
-        ├── equipment
-        ├── info
-        ├── moderation
-        |   ├── locale
-        |   └── templates
-        ├── notifications
-        ├── operation_parser
-        ├── permissions
-        |   └── locale
-        ├── project_report
-        ├── prototype
-        ├── registration
-        ├── response
-        ├── sim
-        |   ├── static
-        |   |   ├── css
-        |   |   ├── fonts
-        |   |   └── js
-        |   └── templates
-        |       ├── include
-        |       └── rapidsms
-        ├── stock
-        ├── user_registration
-        ├── utils
-        |  └── management
-        |      └── commands
-        └── website
-            ├── content
-            └── layouts
+    .
+    ├── contextual
+    ├── dhis2
+    ├── equipment
+    ├── info
+    ├── moderation
+    |   ├── locale
+    |   └── templates
+    ├── notifications
+    ├── operation_parser
+    ├── permissions
+    |   └── locale
+    ├── project_report
+    ├── prototype
+    ├── registration
+    ├── response
+    ├── sim
+    |   ├── static
+    |   |   ├── css
+    |   |   ├── fonts
+    |   |   └── js
+    |   └── templates
+    |       ├── include
+    |       └── rapidsms
+    ├── stock
+    ├── user_registration
+    ├── utils
+    |  └── management
+    |      └── commands
+    └── website
+        ├── content
+        └── layouts
 
-`contextual` ...
+`contextual`: ...
 
-`dhis2` stores the SIM app that communicates with a DHIS2 server. This app performs the semantic checks for permissions as well as retrieving from and saving to a DHIS2 database.
+`dhis2`: app that communicates with a DHIS2 server. This app performs the semantic checks for permissions as well as retrieving from and saving to a DHIS2 database.
 
-`equipment` ...
+`equipment`: app that reacts to SMS messages that include reports on equipment status.
 
-`info` ...
+`info`: app that responds to SMS messages that include help requests.
 
-`moderation` ...
+`moderation`: contains code for the admin moderation web interface.
 
-`notifications` ...
+`notifications`: app that sends notifications to different users based on registered intrest.
 
-`operation_parser` ...
+`operation_parser`: app that parses the different operation codes and their block of arguments from a single message.
 
-`permisions` ...
+`permisions`: app that verifies permissions of the user that is sent an incoming SMS message.
 
-`project_report` ... THIS MIGHT BE REMOVED BEFORE END OF QUARTER?
+`project_report`: ... THIS MIGHT BE REMOVED BEFORE END OF QUARTER?
 
-`prototype` ... THIS MIGHT BE REMOVED BEFORE END OF QUARTER?
+`prototype`: ... THIS MIGHT BE REMOVED BEFORE END OF QUARTER?
 
-`registration` ...
+`registration`: ...
 
-`response` ...
+`response`: app that sends the response to the sender of a message.
 
-`sim` ...
+`sim`: main Django app settings
 
-`stock` ...
+`stock`: app that reacts to SMS messages that include reports about inventory stock levels.
 
-`user_registration` ...
+`user_registration`: ...
 
-`utils` ...
+`utils`: utility classes that are used throughout SIM.
 
-`website` contains the version controlled content used to generate this web site.
+`website`: contains the version controlled content used to generate this web site.
 
 Typically development of a new feature is done in a new branch. During development, it is recommended to periodically pull and merge master into your branch to ensure that the rest of the code stays current. Once development of a feature is complete and it is fully tested a pull request will alert the rest of the development team to take a look.
 
@@ -117,21 +117,21 @@ Getting Started
 
 First, install Ubuntu 13.04 Desktop (32- or 64-bit). Add the following to `~/.bashrc`:
 
-        export WORKON_HOME=~/Envs
-        mkdir -p $WORKON_HOME
-        source /usr/local/bin/virtualenvwrapper.sh
-        export SIMROOT=~/sms-immunization-manager
+    export WORKON_HOME=~/Envs
+    mkdir -p $WORKON_HOME
+    source /usr/local/bin/virtualenvwrapper.sh
+    export SIMROOT=~/sms-immunization-manager
 
 Add the following to a new file called `~/setup-sms-immunization-manager.sh:`
 
-        sudo apt-get install python2.7 -y
-        sudo apt-get install git -y
+    sudo apt-get install python2.7 -y
+    sudo apt-get install git -y
 
-        sudo apt-get install python-pip -y
-        sudo pip install virtualenv
-        sudo pip install virtualenvwrapper
+    sudo apt-get install python-pip -y
+    sudo pip install virtualenv
+    sudo pip install virtualenvwrapper
 
-        source ~/.bashrc
+    source ~/.bashrc
 
 `cd ~/`
 
