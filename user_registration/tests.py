@@ -8,9 +8,10 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 from rapidsms.tests.harness import RapidTest
 from rapidsms.contrib.messagelog.app import MessageLogApp
+from rapidsms.models import Connection, Contact
 from user_registration.apps import PreferredLanguage
 from user_registration.signals import *
-from user_registration.models import ContactProfile
+from user_registration.models import ContactProfile, get_connection
 from utils.tests import *
 
 class PreferredLanguageTest(TestCase):
@@ -148,4 +149,39 @@ class UserRegistrationTest(TestCase):
         self.assertEqual(len(effects), 1)
         self.assertEqual(kwargs, None)
         self.assertEqual(effects[0].priority, 'ERROR')
+
+class UserRegistrationSignalTest(RapidTest):
+    def setUp(self):
+        self.contact = self.create_contact({'name' : "tester #1"})
+        self.connection = self.create_connection({'contact' : self.contact})
+        self.data = {
+            'text' : "hello world!",
+            'connections' : [self.connection]
+        }
+
+    def createMessage(self):
+        msgLogger = MessageLogApp(None)
+        message = self.create_incoming_message(self.data)
+        msgLogger.parse(message)
+
+        message.fields = {}
+        message.fields['operation_effects'] = []
+        return message
+
+    def test_commit_simple(self):
+        kwargs = {'phone_number' : "12345678"}
+        self.mesg = self.createMessage() 
+
+        # Check that now Connection previously exists for this new user
+        self.assertIsNone(get_connection(kwargs['phone_number']))
+        effects = user_registration_commit(self.mesg, **kwargs)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+        
+        # Check that Connection and associated Contact and ContactProfile exists
+        cxn = get_connection(kwargs['phone_number'])
+        self.assertIsNotNone(cxn)
+        cp = ContactProfile.objects.get(contact=cxn.contact.pk)
+        self.assertIsNotNone(cp)
 

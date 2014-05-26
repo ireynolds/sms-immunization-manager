@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from rapidsms.models import Contact
+from rapidsms.models import Contact, Connection
 import reversion
 
 class HierarchyNode(models.Model):    
@@ -112,6 +112,15 @@ def create_user_profile_if_none_exists(sender, instance, **kwargs):
         profile.contact = instance
         profile.save()
             
+def get_connection(identity):
+    try:
+        cxn = Connection.objects.get(identity=identity)
+    except Connection.DoesNotExist:
+        cxn = None
+
+    return cxn
+
+
 # Register models for versioning
 reversion.register(HierarchyNode)
 reversion.register(Facility)
