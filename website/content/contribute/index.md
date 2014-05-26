@@ -11,7 +11,9 @@ Getting Started
 ---------------
 <!-- repos w/ organization, branching strategies; build; run; automated tests; bug-tracking -->
 
-### Source Code
+Our source code is divided into small modules that can easily be included or removed from your deployment.
+
+### GitHub Repo
 
 SIM source code can be found on GitHub [github.com/ireynolds/sms-immunization-manager](https://github.com/ireynolds/sms-immunization-manager).
 
@@ -100,6 +102,13 @@ SIM is built using the well known frameworks:
 * [Bootstrap](http://www.getbootstrap.com)
 
 This documentation page is created with [nanoc](http://nanoc.ws/).
+To work on this documentation you will need to install:
+
+* ruby
+* RubyGems
+* nanoc
+* kramdown
+* slim
 
 Getting Started
 ---------------
