@@ -118,22 +118,4 @@ class UserRegistration(OperationBase):
             else:
                 effect = self._ok_phone(opcode, args)
 
-
-#        contact_name, remaining = gobbler.gobble(NAME, remaining)
-#
-#        if contact_name:
-#            if remaining:
-#                effect = _error_extra_chars(opcode, arg_string)
-#            else:
-#                args['phone_number'] = phone_number
-#                args['contact_name'] = contact_name
-#                effect = _ok_phone_and_name(opcode, args)
-#        else:
-#            if remaining:
-#                #TODO: error unrecognized characters
-#                pass
-#            else:
-#                args['phone_number'] = phone_number
-#                effect = _ok_phone(opcode, args)
-#
         return [effect], args
