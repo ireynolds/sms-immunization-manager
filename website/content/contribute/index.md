@@ -94,6 +94,7 @@ Our Languages, Libraries, and Frameworks
 The SIM server is written in [Python](https://www.python.org/) version 2.7.6
 
 SIM is built using the well known frameworks:
+
 * [Django](https://www.djangoproject.com/)
 * [RapidSMS](https://www.rapidsms.org/)
 * [Bootstrap](http://www.getbootstrap.com)
