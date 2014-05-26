@@ -5,10 +5,17 @@ title: Contribute
 Contribute
 ==========
 
+This project started at the University of Washington Computer Science department but we are happy to work with developers anywhere. If you need to modify SIM for your deployment, work with us so that useful changes can be merged in with the core development.
+
 Getting Started
 ---------------
 <!-- repos w/ organization, branching strategies; build; run; automated tests; bug-tracking -->
+
+### Source Code
+
 SIM source code can be found on GitHub [github.com/ireynolds/sms-immunization-manager](https://github.com/ireynolds/sms-immunization-manager).
+
+###Directory Structure
 
 The repository is layed out in the following structure:
 
@@ -79,17 +86,186 @@ The repository is layed out in the following structure:
 
 `website` contains the version controlled content used to generate this web site.
 
-
 Typically development of a new feature is done in a new branch. During development, it is recommended to periodically pull and merge master into your branch to ensure that the rest of the code stays current. Once development of a feature is complete and it is fully tested a pull request will alert the rest of the development team to take a look.
 
 Our Languages, Libraries, and Frameworks
 ---------------
 
-The SIM server is written in [Python](https://www.python.org/) and is based on the well-known [Django](https://www.djangoproject.com/) and [RapidSMS](https://www.rapidsms.org/) frameworks.
+The SIM server is written in [Python](https://www.python.org/) version 2.7.6
 
-The administrator moderation interface is built upon [bootstrap](http://www.getbootstrap.com) for layout and styling.
+SIM is built using the well known frameworks:
+* [Django](https://www.djangoproject.com/)
+* [RapidSMS](https://www.rapidsms.org/)
+* [Bootstrap](http://www.getbootstrap.com)
 
 This documentation page is created with [nanoc](http://nanoc.ws/).
+
+Getting Started
+---------------
+
+### Short Instructions -- Experts Only
+
+First, install Ubuntu 13.04 Desktop (32- or 64-bit). Add the following to `~/.bashrc`:
+
+        export WORKON_HOME=~/Envs
+        mkdir -p $WORKON_HOME
+        source /usr/local/bin/virtualenvwrapper.sh
+        export SIMROOT=~/sms-immunization-manager
+
+Add the following to a new file called `~/setup-sms-immunization-manager.sh:`
+
+        sudo apt-get install python2.7 -y
+        sudo apt-get install git -y
+
+        sudo apt-get install python-pip -y
+        sudo pip install virtualenv
+        sudo pip install virtualenvwrapper
+
+        source ~/.bashrc
+
+`cd ~/`
+
+`git clone https://github.com/ireynolds/sms-immunization-manager.git
+mkvirtualenv -r $SIMROOT/requirements.txt sms-immunization-manager
+workon sms-immunization-manager`
+
+`python $SIMROOT/manage.py runserver 0.0.0.0:8000`
+
+Then run `source ~/setup-sms-immunization-manager.sh`.
+
+Access the server by running `wget localhost:8000` or by visiting localhost:8000 in your browser.
+
+### Create a Ubuntu Desktop 13.04 virtual machine
+
+Most team members probably know how to do this. Ask a teammate for help if you have trouble.
+
+Useful links:
+
+* [cs.washington.edu/lab/software/homeVMs](https://cs.washington.edu/lab/software/homeVMs/)
+  * For Linux and Windows, direct link to where to download VMWare’s Player for free (scroll all the way to the bottom): [http://www.vmware.com/products/player](http://www.vmware.com/products/player/)
+  * An even more direct link (but may become out-of-date): https://my.vmware.com/web/vmware/free#desktop_end_user_computing/vmware_player/6_0
+  * For Mac OS X, see instructions the on CSE page above.
+* Ubuntu 13.04 Desktop installation disk image:
+  * [www.ubuntu.com/download/desktop](http://www.ubuntu.com/download/desktop)
+  * Either the 32 or 64 bit version will be compatible with our project’s source code. However, some computers may have difficulty using a 64 bit guest operating system [link](http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=1003945). Thus, we recommend installing the 32 bit version of Ubuntu for virtual machines.
+* (untested) instructions for installing Ubuntu on VMWare Player:
+  * [www.howtogeek.com/howto/11287/how-to-run-ubuntu-in-windows-7-with-vmware-player](http://www.howtogeek.com/howto/11287/how-to-run-ubuntu-in-windows-7-with-vmware-player/)
+Install Python, PIP and VirtualEnv
+Install Python
+Ubuntu 13.04 should have Python 2.7 installed by default. Verify this by running `python -V` and checking that the version number starts with 2.7
+
+If python is not installed, run the following:
+`sudo apt-get install python2.7`
+
+If a different version of python is installed (e.g. python 3.x.x, or python 2.3.x), consult the internet or teammates for instructions on how to switch versions.
+
+#### Install PIP
+
+PIP is a tool for installing Python packages. Install it using the following command:
+
+`sudo apt-get install python-pip`
+
+#### Install VirtualEnv
+
+VirtualEnv is a tool for managing what libraries are installed within a Python environment. We use it to ensure consistency between the python libraries installed in our development and deployment environments. The virtualenvwrapper package adds some additional tools to virtualenv that make it more user-friendly.
+
+Install virtualenv and virtualenvwrapper by running the following commands. Don’t be alarmed if some warnings appear.
+
+`sudo pip install virtualenv`
+
+`sudo pip install virtualenvwrapper`
+
+virtualenvwrapper requires some changes to your bashrc file. Add the following to `~/.bashrc` (you will likely have to install vim, for example, by running `sudo apt-get install vim`):
+
+        export WORKON_HOME=~/Envs #Set up virtualenvwrapper directory
+        mkdir -p $WORKON_HOME
+        source /usr/local/bin/virtualenvwrapper.sh
+
+This change to `~/.bashrc` creates a directory Envs within your home directory, which will contain the Python libraries used by each virtual Python environment you create. After making changes to .bashrc, you must either launch a new terminal session, or re-load your bashrc file by running source `~/.bashrc`.
+
+### Check out SIM’s source code
+
+#### Install Git
+
+`sudo apt-get install git`
+
+#### Configure User Information in Git
+
+Define your name and email address using the following commands. This information will appear in Git’s commit log next to commits you make.
+
+`git config --global user.name "Your Name Here"`
+
+`git config --global user.email "your_netid@uw.edu"`
+
+You may use either your UW or CSE email address. If you mistype your name or email address, or wish to change this information in the future, simply re-execute the commands above.
+
+#### Check out SIM from Github
+
+You will need to decide on a location to keep SIM’s source code within your VM’s file system. In the following commands, we assume you wish you wish to check out the source code into the root of your home directory (accessed using the path `~/` ). However, you may check out the code into any folder you wish, and modify the following commands accordingly to reference a different parent folder than `~`.
+
+`cd ~/`
+
+`git clone https://github.com/ireynolds/sms-immunization-manager.git`
+
+You will have to enter your username and password for GitHub. After this, a directory `sms-immunization-manager` should now exist within your home directory.
+
+#### Create an environment variable pointing to the repository root
+
+To help simplify commands (and to allow convenient copy-pasting between teammates), define an environment variable SIMROOT that points to the root directory of SIM’s Git repository. If you checked out our Git repository using the commands above, this can be accomplished by adding the following to your bashrc file:
+
+`export SIMROOT=~/sms-immunization-manager`
+
+Again, you will need to start a new terminal session, or re-load your bashrc file by running `source ~/.bashrc`
+
+Once this environment variable is defined, you can use it to reference the repository root directory. For example, this command lists the files in the Git repository:
+
+`ls $SIMROOT`
+
+#### Create a Virtual Environment for SIM
+
+To create a new virtual environment named ‘sms-immunization-manager’ containing the Python packages needed to run SIM, run the following:
+
+`mkvirtualenv -r $SIMROOT/requirements.txt sms-immunization-manager`
+
+This command will download the packages listed in `requirements.txt`, and install them to a subdirectory of `~/Envs`.
+
+### Running SIM
+
+#### Enabling and disabling virtual environments
+
+To enable SIM’s virtual environment, run:
+
+`workon sms-immunization-manager`
+
+To disable the currently enabled virtual environment, run:
+
+`deactivate`
+
+Make sure to enable SIM’s virtual environment before trying to run SIM. When run outside of its virtual environment, SIM will encounter an error when importing Django.
+
+#### Initializing a testing database
+
+SIM is configured to use a sqlite3 database at `$SIMROOT/db.sqlite3` by default. Before running SIM, this database must be initialized (by creating tables and installing any initial data). To sync the database, run the following commands:
+
+`python $SIMROOT/manage.py syncdb`
+
+`python $SIMROOT/manage.py migrate`
+
+#### Start an interactive shell session
+
+`python $SIMROOT/manage.py shell`
+
+You can exit the shell by typing Ctrl-D.
+
+#### Start Django’s built-in development server
+
+`python $SIMROOT/manage.py runserver`
+
+To interact with the server, visit [http://localhost:8000](http://localhost:8000) in a web browser. You can exit the server by typing Ctrl-C.
+
+### Celebrate
+That’s it! Your VM is ready to be used for development!
+
 
 Core Architecture
 ---------------
