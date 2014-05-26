@@ -1,7 +1,7 @@
 {% extends "sim_base.html" %}
 {% load i18n %}
 
-{% block title %}{% include "include/breadcrumbs.html" %}{% endblock %}
+{% block title %}{% include "include/country.html" %}{% endblock %}
 
 {% block breadcrumbs %}
 <ol class="breadcrumb">
@@ -12,17 +12,35 @@
 {% block content %}
 <div class="container">
     <div class="row">
+        <div class="col-sm-8">
+            <h1>{% include "include/country.html" %}</h1>
+        </div>
+        <div class="col-sm-4">
+            {% if request.user.moderator_profile.node or request.user.moderator_profile.facility %}
+                {% with _("Make this page my default") as affiliation_message %}
+                    {% include "include/affiliation_form.html" %}
+                {% endwith %}
+            {% else %}
+                {% with _("This page is your default") as affiliation_message %}
+                    {% include "include/affiliation_home.html" %}
+                {% endwith %}
+            {% endif %}
+        </div>
+    </div>
+
+
+    <div class="row">
         <div class="col-md-8">
             <div class="panel panel-primary">
-                <div class="panel-heading">{% trans "Regions" %}</div>
-                {% include "include/node_list.html" %}
+                <div class="panel-heading">{% trans "Pending Moderation" %}</div>
+                {% include "include/moderation_list.html" %}
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="input-group input-group-md">
-                <span class="input-group-addon"><span class="glyphicon glyphicon-home"></span></span>
-                <button type="button" class="btn btn-default btn-block">{% trans "Make this page my default" %}</button>
+            <div class="panel panel-default">
+                <div class="panel-heading">{% trans "Sub-Regions" %}</div>
+                {% include "include/node_list.html" %}
             </div>
         </div>
     </div>
