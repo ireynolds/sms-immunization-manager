@@ -103,7 +103,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files to collect
 STATICFILES_DIRS = (
-    'os.path.join(PROJECT_PATH, 'static'),
+    os.path.join(PROJECT_PATH, 'static'),
     '/usr/local/lib/python2.7/dist-packages/rapidsms/static/',
 )
 
