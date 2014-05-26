@@ -25,12 +25,20 @@ def home(request):
 
     return HttpResponseRedirect(default_url)
 
+def root_moderation_contacts():
+    """
+    Returns a QuerySet of Contacts with no Facility affiliation that have undismissed MessageEffects
+    that require moderator action.
+    """
+    pass
 
 @login_required
 def root_nodes(request):
     """
-    Lists the root hierarchy notes
+    Lists the root hierarchy nodes
     """
+    # TODO: collect
+
     nodes = HierarchyNode.objects.filter(parent=None)
     return render_to_response('root_nodes.html', {'nodes': nodes},
         context_instance=RequestContext(request))
@@ -49,21 +57,23 @@ def facility(request, facility_id):
     """
     Displays a summary of a facility
     """
-    return render_to_response("facility.html", context_instance=RequestContext(request))
+    facility = get_object_or_404(Facility, pk=facility_id)
+    return render_to_response("facility.html", {'facility': facility},
+        context_instance=RequestContext(request))
 
 @login_required
-def user_summary(request, user_id):
+def contact(request, contact_id):
     """
-    Displays a summary of a user
+    Displays a summary of a contact
     """
-    return render_to_response("user_summary.html", context_instance=RequestContext(request))
+    return render_to_response("contact.html", context_instance=RequestContext(request))
 
 @login_required
-def user_edit(request, user_id):
+def contact_edit(request, contact_id):
     """
-    Edits a user
+    Edits a contact
     """
-    return render_to_response("user_edit.html", context_instance=RequestContext(request))
+    return render_to_response("contact_edit.html", context_instance=RequestContext(request))
 
 def set_language(request):
     """
