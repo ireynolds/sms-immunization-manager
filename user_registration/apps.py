@@ -81,7 +81,7 @@ class UserRegistration(OperationBase):
         """
         Return a MessageEffect that indicates success.
         """
-        return ok_parse(opcode, "Parsed: phone number to register for %(contact_name) is %(phone_number)s", args)
+        return ok_parse(opcode, "Parsed: phone number to register for %(contact_name)s is %(phone_number)s", args)
 
     #TODO: Make error message more helpful??? i.e. what is proper format?
 
@@ -113,7 +113,7 @@ class UserRegistration(OperationBase):
             args['phone_number'] = phone_number
             if remaining:
                 # Treats all text after phone number as user name
-                args['contact_name'] = contact_name
+                args['contact_name'] = remaining.strip() 
                 effect = self._ok_phone_and_name(opcode, args)
             else:
                 effect = self._ok_phone(opcode, args)
