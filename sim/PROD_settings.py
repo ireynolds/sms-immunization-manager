@@ -95,7 +95,7 @@ MEDIA_URL = '/media/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/public/static/"
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'public', 'static')
+STATIC_ROOT = '/var/www/static'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -103,7 +103,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files to collect
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_PATH, 'static'),
+    '/usr/local/lib/python2.7/dist-packages/rapidsms/static/',
 )
 
 # List of finder classes that know how to find static files in
