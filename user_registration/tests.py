@@ -15,7 +15,7 @@ from utils.tests import *
 
 class PreferredLanguageTest(TestCase):
     """
-    All tests involving PL opcode
+    All tests involving the PL opcode
     """
 
     def setUp(self):
@@ -90,5 +90,21 @@ class PreferredLanguageSignalTest(RapidTest):
         cp = ContactProfile.objects.get(contact=self.contact.pk)
         self.assertEqual(cp.contact.language, "English")
 
+class UserRegistrationTest(TestCase):
+    """
+    All tests involving the RG opcode
+    """
 
+    def setUp(self):
+        self.rg = UserRegistration(None)
+        self.OP_CODE = self.rg.get_opcodes().pop()
+
+    def send_args(self, arg_string):
+        return self.rg.parse_arguments(self.OP_CODE, arg_string, None)
     
+    def test_simple(self):
+        effects, kwargs = self.send_args("12345678")
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+        self.assertEqual(kwargs['phone_number'], '12345678')

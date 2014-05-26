@@ -355,6 +355,7 @@ RAPIDSMS_APP_BASES = (
     _info_apps.Help,
     _equipment_apps.FridgeTemperature,
     _user_registration_apps.PreferredLanguage,
+    _user_registration_apps.UserRegistration,
 )
 
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
@@ -373,4 +374,5 @@ SIM_OPERATION_CODES = {
     "FT": _equipment_apps.FridgeTemperature,
     "FC": _contextual_apps.FacilityCode,
     "PL": _user_registration_apps.PreferredLanguage,
+    "RG": _user_registration_apps.UserRegistration,
 }
