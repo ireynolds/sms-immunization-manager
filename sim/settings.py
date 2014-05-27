@@ -244,6 +244,7 @@ APPS_BEFORE_SIM = (
 )
 
 SIM_PRE_APPS = (
+    'permissions',
     'operation_parser',
     'contextual',
 )
@@ -253,7 +254,6 @@ SIM_APPS = (
     'equipment',
     'registration',
     'user_registration',
-    'permissions',
     'dhis2',
     'notifications',
     'utils',

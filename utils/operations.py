@@ -4,7 +4,6 @@ from django.conf import settings
 from django.utils.translation import ugettext_noop as _
 from rapidsms.apps.base import AppBase
 from moderation.models import *
-#from user_registration.models import *
 
 # Define which priorities halt message processing
 HALTING_PRIORITIES = set([ERROR])

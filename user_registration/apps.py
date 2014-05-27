@@ -119,3 +119,4 @@ class UserRegistration(OperationBase):
                 effect = self._ok_phone(opcode, args)
 
         return [effect], args
+

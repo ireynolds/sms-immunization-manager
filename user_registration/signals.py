@@ -17,7 +17,7 @@ def preferred_language_commit(message, **kwargs):
     result_fmtstr = _("Changed language preference to %(language)s")
     result_context = {"language" : preferred_lang}
     effect = info(_("Changed Language Preferences"), {}, result_fmtstr, result_context)
-    return [complete_effect(effect, message.logger_msg, COMMIT, opcode="PL")]
+    return [effect] #[complete_effect(effect, message.logger_msg, COMMIT, opcode="PL")]
 
 
 # Taken from CreateDataMixin in rapidsms.tests.harness.base
@@ -33,7 +33,7 @@ def random_string(self, length=255, extra_chars=''):
     return ''.join([random.choice(chars) for i in range(length)])
 
 @receiver(commit_signal, sender=UserRegistration)
-def user_registration_commit(message, **kwargs):
+def user_registration_commit(sender, message, **kwargs):
     # Check if a Connection for this new user already exists
     connection = get_connection(kwargs['phone_number'])
     if connection is not None:
@@ -58,4 +58,5 @@ def user_registration_commit(message, **kwargs):
                 _("Registered New User"), {},
                 _("Phone number: %(phone_number)s"), { 'phone_number' : kwargs['phone_number'] }
                 )
-    return [complete_effect(effect, message.logger_msg, COMMIT, opcode="RG")]
+    return [effect] #[complete_effect(effect, message.logger_msg, COMMIT, opcode="RG")]
+
