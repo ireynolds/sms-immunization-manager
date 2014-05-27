@@ -10,30 +10,26 @@ There are two ways to interact with a SIM deployment. Administrative users inter
 Features and Capabilities
 ------------------
 
+* SIM accepts text based messages from user defined backends. These could be a restful HTTP interface or a cellular modem that accepts SMS messages directly.
 
-...
+* Each message that SIM receives will be parsed and can trigger a defined action. Messages can be used to set or retrieve data from a database.
 
-...
+* After handling a message a response can be sent to the original sender, as well as other notifications sent to interested users.
 
-...
+* All of these capabilities can be observed and moderated through a web based administration interface.
 
 Admin Interface
 ------------------
 
 The Admin Interface was created to allow users to moderate the messages that are being sent in by reporting users in the field. The moderation interface is built on Django and is easy to customize further. If other features are needed for your project, please help by [contributing to the project](/contribute).
 
-...
-
-...
-
-...
-
 SMS Operations
 ------------------
 
-These operations were designed to support the initial Laos deployment and hopefully provide a usable base for future work. They have been designed to be configurable and pluggable. If other operations are needed for your project, please help by [contributing to the project](/contribute).
+These operations were designed to support the initial Laos deployment and hopefully provide a usable base for future work. The supporting python code is designed to be configurable and pluggable. If other operations are needed for your project, please help by [contributing to the project](/contribute).
 
-### Requirements
+### Message Requirements
+
 A “message” is the complete body of an incoming SMS message, which consists of one or more (opcode, arguments) pairs. An opcode is two alphabetic characters.
 
 A LABEL, a common argument, is two alphabetic characters (not so--see implemented Laos-specific hacks).
@@ -64,9 +60,10 @@ Except where noted below, a particular opcode may appear multiple times in a sin
 SL and FT must appear together, and FT must come first.
 
 #### Unhandled Errors
+
 If a single message reports conflicting data (for example, a message simultaneously reports that equipment A is both failing and working or a SL message reports two different values for the same vaccine), then the system makes no guarantees about the system’s behavior.
 
-### Codes
+### Supported Operation Codes
 Codes are organized into groups by usage and/or functionality (below).
 
 #### Periodic Reporting

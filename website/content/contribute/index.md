@@ -15,11 +15,13 @@ Our source code is divided into small modules that can easily be included or rem
 
 ### GitHub Repo
 
-SIM source code can be found on GitHub [github.com/ireynolds/sms-immunization-manager](https://github.com/ireynolds/sms-immunization-manager).
+SIM source code can be found on GitHub:
+
+[github.com/ireynolds/sms-immunization-manager](https://github.com/ireynolds/sms-immunization-manager).
 
 ###Directory Structure
 
-The repository is layed out in the following structure:
+In the repository you will find the following structure:
 
     .
     ├── contextual
@@ -88,7 +90,7 @@ The repository is layed out in the following structure:
 
 `website`: contains the version controlled content used to generate this web site.
 
-Typically development of a new feature is done in a new branch. During development, it is recommended to periodically pull and merge master into your branch to ensure that the rest of the code stays current. Once development of a feature is complete and it is fully tested a pull request will alert the rest of the development team to take a look.
+Typically, development of a new feature is done in a new branch. During development, it is recommended to periodically pull and merge master into your branch to ensure that the rest of the code stays current. Once development of a feature is complete and it is fully tested a pull request will alert the rest of the development team to take a look.
 
 Our Languages, Libraries, and Frameworks
 ---------------
@@ -97,21 +99,23 @@ The SIM server is written in [Python](https://www.python.org/) version 2.7.6
 
 SIM is built using the well known frameworks:
 
-* [Django](https://www.djangoproject.com/)
-* [RapidSMS](https://www.rapidsms.org/)
+* [Django](http://www.djangoproject.com)
+* [RapidSMS](http://www.rapidsms.org)
 * [Bootstrap](http://www.getbootstrap.com)
 
-This documentation page is created with [nanoc](http://nanoc.ws/).
-To work on this documentation you will need to install:
+Tools helpful to development:
 
-* ruby
-* RubyGems
-* nanoc
-* kramdown
-* slim
+* [PIP Python Package Index](https://pypi.python.org/pypi/pip)
+* [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/index.html)
+
+This documentation page is created with [nanoc](http://nanoc.ws/). You will need it if you want to edit these pages.
 
 Getting Started
 ---------------
+
+If you are an experience Django developer you will already have an idea of how to get started. We have detailed instructions here to make sure you don't miss anything.
+
+[Developer Setup Instructions]()
 
 ### Short Instructions -- Experts Only
 
