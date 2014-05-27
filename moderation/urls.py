@@ -7,8 +7,8 @@ urlpatterns = patterns('moderation.views',
 
     url(r'^facility/(\d+)/$', 'facility'),
 
-    url(r'^user/(\d+)/$', 'user_summary'),
-    url(r'^user/(\d+)/edit/$', 'user_edit'),
+    url(r'^contact/(\d+)/$', 'contact'),
+    url(r'^contact/(\d+)/edit/$', 'contact_edit'),
 
     url(r'^set_language/$', 'set_language', name="set_language"),
     url(r'^set_default_language/$', 'set_default_language', name="set_default_language"),

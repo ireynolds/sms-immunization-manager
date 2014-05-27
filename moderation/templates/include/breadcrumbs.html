@@ -4,16 +4,18 @@ may be undefined:
 
 node: The current node.
 facility: A facility associated with node
-user: A user associated with facility
+contact: A contact associated with facility
 
 {% endcomment %}
 
+<!-- The "root" node -->
 {% if node %}
     <li><a href="{% url "moderation.views.root_nodes" %}">{% include "include/country.html" %}</a></li>
 {% else %}
     <li class="active">{% include "include/country.html" %}</li>
 {% endif %}
 
+<!-- The administrative hierarchy (1 or more nodes) -->
 {% if node %}
     {% for n in node.root_path reversed %}
         {% if not facility and forloop.last %}
@@ -24,8 +26,9 @@ user: A user associated with facility
     {% endfor %}
 {% endif %}
 
+<!-- The facility -->
 {% if facility %}
-    {% if user %}
+    {% if contact %}
         <li><a href="{% url "moderation.views.facility" facility.pk %}">{{ facility }}</a></li>
     {% else %}
         <li class="active">{{ facility }}</li>
