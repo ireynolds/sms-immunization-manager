@@ -1,7 +1,7 @@
 import logging
 from rapidsms.apps.base import AppBase
 from moderation.models import *
-from django.utils.translation import ugettext_noop as _
+from django.utils.translation import override, ugettext_noop as _
 from sim.settings import INFORMATION
 
 DO_NOT_SEND_CONFIRMATION = [ INFORMATION ]
@@ -50,7 +50,9 @@ class Responder(AppBase):
 
             message.fields['operation_effects'].append(response)
 
-            message.respond(unicode(response.get_desc()))
+            # set translation language for response
+            with override(message.connections[0].contact.language):
+                message.respond(unicode(response.get_desc()))
 
     def _selectErrors(self, effects):
         """
@@ -69,18 +71,19 @@ class Responder(AppBase):
         """
         for effect in effects:
             # create a new effect for sending the response
-            name = _("%(priority)s Response Sent")
-            name_context = { 'priority': effect.priority }
-            desc = _("Responded to sender. %s" % additional_message)
-            desc_context = {}
-            response = info(name, name_context, desc, desc_context)
+            name = _("Response Sent")
+            desc = _("Responded to sender.%s" % additional_message)
+            response = info(name, {}, desc, {})
             complete_effect(response, message.logger_msg, RESPOND, None, '', False)
 
-            msg_to_send = ugettext("%(description)s%(additional_message)s")
+            # set translation language for response
+            with override(message.connections[0].contact.language):
 
-            # send and record the effect
-            message.respond(unicode(msg_to_send % { 'description': effect.get_desc, 'additional_message': additional_message }))
-            message.fields['operation_effects'].append(response)
+                msg_to_send = ugettext("%(description)s%(additional_message)s" % { 'description': effect.get_desc, 'additional_message': additional_message })
+
+                # send and record the effect
+                message.respond(unicode(msg_to_send))
+                message.fields['operation_effects'].append(response)
 
             effect.sent_as_response = True
             effect.save()

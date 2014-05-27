@@ -44,6 +44,8 @@ class ResponseTest(CreateDataMixin, TestCase):
         message.fields = {}
         message.fields['operation_effects'] = []
         message.fields['group'] = "OTHER"
+        message.connections[0].contact = self.create_contact()
+        message.connections[0].contact.language = "en"
 
         return message
 
