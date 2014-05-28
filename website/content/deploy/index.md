@@ -199,7 +199,7 @@ To create the certificate select the number of days until it will expire. In thi
 
 ### Configure a SMS-HTTP Gateway
 
-#### EnvayaSMS
+To learn how to configure gateways, go [here](gateway-config).
 
 ### Configure a Back-End
 

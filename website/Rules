@@ -25,6 +25,8 @@ compile '*' do
     filter :kramdown
     layout 'default'
   end
+
+  filter :relativize_paths, type: :html
 end
 
 route '*' do
