@@ -57,17 +57,17 @@ EXTRA_LANG_INFO = {
     },
 }
 
+# Add custom languages not provided by Django
+import django.conf.locale
+LANG_INFO = dict(django.conf.locale.LANG_INFO.items() + EXTRA_LANG_INFO.items())
+django.conf.locale.LANG_INFO = LANG_INFO
+
 LANGUAGE_SESSION_KEY = 'sim_language'
 LANGUAGE_COOKIE_NAME = LANGUAGE_SESSION_KEY
 
 LOCALE_PATHS = (
     os.path.join(PROJECT_PATH, 'locale'),
 )
-
-# Add custom languages not provided by Django
-import django.conf.locale
-LANG_INFO = dict(django.conf.locale.LANG_INFO.items() + EXTRA_LANG_INFO.items())
-django.conf.locale.LANG_INFO = LANG_INFO
 
 SITE_ID = 1
 
@@ -280,6 +280,13 @@ INSTALLED_BACKENDS = {
         "ENGINE": "rapidsms.backends.database.DatabaseBackend",
     },
 }
+
+# The name of the backend used to represent phone numbers
+PHONE_BACKEND = "message_tester"
+
+# The name of the backend used to represent messages sent using the moderator
+# web interface
+MODERATOR_BACKEND = "moderation"
 
 RAPIDSMS_HANDLERS = (
     'rapidsms.contrib.echo.handlers.echo.EchoHandler',

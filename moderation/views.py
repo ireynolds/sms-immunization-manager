@@ -9,7 +9,8 @@ from django.utils.http import is_safe_url
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 from user_registration.models import *
-from forms import ModeratorAffiliationForm
+from moderation.models import *
+from forms import *
 
 @login_required
 def home(request):
@@ -24,13 +25,6 @@ def home(request):
             return HttpResponseRedirect(home_url)
 
     return HttpResponseRedirect(default_url)
-
-def root_moderation_contacts():
-    """
-    Returns a QuerySet of Contacts with no Facility affiliation that have undismissed MessageEffects
-    that require moderator action.
-    """
-    pass
 
 @login_required
 def root_nodes(request):
@@ -66,14 +60,93 @@ def contact(request, contact_id):
     """
     Displays a summary of a contact
     """
-    return render_to_response("contact.html", context_instance=RequestContext(request))
+    class MessageWrapper(object):
+        """
+        A class which wraps a message and provides additional behavior needed by templates.
+        """
+        def __init__(self, message):
+            self.message = message
+            self.effects = message.messageeffect_set.all()
+            self.wrapped_effects = map(EffectWrapper, self.effects)
+            self.needs_action = self.effects.filter(priority__in=MODERATOR_PRIORITIES, 
+                moderator_dismissed=False).exists()
+            self.created_by_moderator = message.connection.backend.name == settings.MODERATOR_BACKEND
+
+    class EffectWrapper(object):
+        """
+        A class which wraps a message effect and provides additional behavior needed by templates.
+        """
+        ROW_CLASSES = {
+            DEBUG: '',
+            INFO: '',
+            WARN: 'warning',
+            ERROR: 'danger',
+            URGENT: 'danger',
+        }
+        LABEL_CLASSES = {
+            DEBUG: 'info',
+            INFO: 'success',
+            WARN: 'warning',
+            ERROR: 'danger',
+            URGENT: 'danger',
+        }
+        def __init__(self, effect):
+            self.effect = effect
+            self.row_class = self.ROW_CLASSES[effect.priority]
+            self.label_class = self.LABEL_CLASSES[effect.priority]
+
+    contact = get_object_or_404(Contact, pk=contact_id)
+
+    wrapped_messages = map(MessageWrapper, contact.message_set.order_by('-date'))
+    #contact_revisions = reversion.get_for_object(self)
+
+
+    return render_to_response("contact.html", 
+        {   'contact': contact,
+            'wrapped_messages': wrapped_messages,
+        },
+        context_instance=RequestContext(request))
 
 @login_required
 def contact_edit(request, contact_id):
-    """
-    Edits a contact
-    """
-    return render_to_response("contact_edit.html", context_instance=RequestContext(request))
+    contact = get_object_or_404(Contact, pk=contact_id)
+    if request.method == "POST":
+        form = ContactForm(request.POST, instance=contact)
+        profile_formset = ContactProfileFormSet(request.POST, instance=contact)
+        connection_formset = ConnectionFormSet(request.POST, instance=contact)
+
+        if form.is_valid() and profile_formset.is_valid() and connection_formset.is_valid():
+            form.save()
+            profile_formset.save()
+            connection_formset.save()
+
+            messages.success(_("The contact %(name)s was successfully updated") % 
+                {'name': unicode(contact)})
+            return HttpResponseRedirect(reverse("moderation.views.contact", contact.pk))
+    else:
+        form = ContactForm(instance=contact)
+        profile_formset = ContactProfileFormSet(instance=contact)
+        connection_formset = ConnectionFormSet(instance=contact)
+
+    return render_to_response("contact_edit.html", 
+        {   'contact': contact, 
+            'form': form, 
+            'profile_formset': profile_formset,
+            'connection_formset': connection_formset
+        },
+        context_instance=RequestContext(request))
+
+@login_required
+def dismiss_effect(request, effect_id):
+    pass
+
+@login_required
+def dismiss_message(request, message_id):
+    pass
+
+@login_required
+def dismiss_contact(request, contact_id):
+    pass
 
 def set_language(request):
     """

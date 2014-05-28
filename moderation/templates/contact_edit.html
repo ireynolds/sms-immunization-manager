@@ -1,22 +1,53 @@
 {% extends "sim_base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
 
-{% block title %}Edit User{% endblock %}
+{% block title %}
+    {% if contact.contactprofile.facility %}{{ contact.contactprofile.facility }} - {% endif %}
+    {{ contact.name }} -
+    {% trans "Edit Contact" %}
+{% endblock %}
 
 {% block breadcrumbs %}
 <ol class="breadcrumb">
-    <li><a href="{% url "moderation.views.node" 1 %}">United States</a></li>
-    <li><a href="{% url "moderation.views.node" 2 %}">Washington</a></li>
-    <li><a href="{% url "moderation.views.node" 3 %}">Seattle</a></li>
-    <li><a href="{% url "moderation.views.facility" 1 %}">UW Medical Center</a></li>
-    <li><a href="{% url "moderation.views.user_summary" 1 %}">User 1</a></li>
-    <li class="active">Edit User</a>
+    {% with _("Edit Contact") as contact_action %}
+        {% with contact.contactprofile.facility as facility %}
+            {% if facility %}
+                {% with facility.hierarchy_node as node %}
+                    {% include "include/breadcrumbs.html" %}
+                {% endwith %}
+            {% else %}
+                {% include "include/breadcrumbs.html" %}
+            {% endif %}
+        {% endwith %}
+    {% endwith %}
 </ol>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>Edit User 1</h1>
-    <p>A form goes here for editing this user</p>
-    <a href="{% url "moderation.views.facility" 1 %}" class="btn btn-primary active" role="button">Save User</a>
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{% trans "Edit Contact" %}</h1>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <!-- Edit Form -->
+        <div class="col-md-8">
+            {{ form|crispy }}
+        </div>
+
+        <!-- Recent Changes -->
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">{% trans "Recent Changes" %}</div>
+                <p class="text-center">TODO: Add changes</p>
+            </div>
+        </div>
+    </div>
 </div>
+
 {% endblock %}

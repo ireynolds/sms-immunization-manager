@@ -10,7 +10,7 @@ Expects a context key 'moderation_contacts' which is a list of contacts requirin
             {% for c in moderation_contacts %}
                 <tr>
                     <!-- User information -->
-                    <td><a href="{% url "moderation.views.contact" c.pk %}">{{ c.name }}</a></td>
+                    <td><a href="{% url "moderation.views.contact" c.pk %}">{{ c }}</a></td>
 
 
                     <!-- A label containing the number of messages requiring moderator action -->
