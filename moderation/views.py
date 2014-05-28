@@ -79,16 +79,16 @@ def contact(request, contact_id):
         ROW_CLASSES = {
             DEBUG: '',
             INFO: '',
-            WARN: 'warning',
+            WARN: '',
             ERROR: 'danger',
-            URGENT: 'danger',
+            URGENT: '',
         }
         LABEL_CLASSES = {
             DEBUG: 'info',
             INFO: 'success',
             WARN: 'warning',
             ERROR: 'danger',
-            URGENT: 'danger',
+            URGENT: 'warning',
         }
         def __init__(self, effect):
             self.effect = effect
