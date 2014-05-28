@@ -15,7 +15,7 @@ def opcode_permissions_check(message, opcode, **kwargs):
     contact_profile = message.connections[0].contact.contactprofile
     permitted_opcodes = contact_profile.get_op_codes()
     fmt_args = { 'requested_opcode' : opcode, 
-                 'role' : contact_profile.get_role_description() }
+                 'role' : contact_profile.get_role_name_display() }
     
     if opcode in permitted_opcodes:
     # TODO: check facility code
