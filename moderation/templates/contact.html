@@ -1,0 +1,72 @@
+{% extends "sim_base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if contact.contactprofile.facility %}{{ contact.contactprofile.facility }} - {% endif %}
+    {{ contact.name }}
+{% endblock %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    {% with contact.contactprofile.facility as facility %}
+        {% if facility %}
+            {% with facility.hierarchy_node as node %}
+                {% include "include/breadcrumbs.html" %}
+            {% endwith %}
+        {% else %}
+            {% include "include/breadcrumbs.html" %}
+        {% endif %}
+    {% endwith %}
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>
+                {{ contact }} &nbsp;
+                <small>{{ contact.contactprofile.get_phone_number }}</small>
+            </h1>
+            <h4>
+                {{ contact.contactprofile.get_role_name_display }} &nbsp;
+                <small>
+                    {% comment %}This is a hack to get the name of the contact's language in the user's language. Adding a context value containing dict(LANGUAGE) is a possible alternative{% endcomment %}
+                    {% for code, name in LANGUAGES %}
+                        {% if code == contact.language %}
+                            {% blocktrans with lang_name=name%}Prefers {{ lang_name }}{% endblocktrans %}
+                        {% endif %}
+                    {% endfor %}
+                </small>
+            </h4>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <!-- Message Log -->
+        <div class="col-md-10">
+            {% for wrapper in wrapped_messages %}
+                {% include "include/message.html" %}
+            {% endfor %}
+        </div>
+
+        <!-- Month Select -->
+        <div class="col-md-2">
+            <div class="panel panel-default text-center">
+                <div class="panel-heading">{% trans "Months" %}</div>
+                <ul class="nav nav-pills nav-stacked">
+                    <li><a href="#">January 2014</a></li>
+                    <li><a href="#">February 2014</a></li>
+                    <li><a href="#">March 2014</a></li>
+                    <li><a href="#">April 2014</a></li>
+                    <li><a href="#">May 2014</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

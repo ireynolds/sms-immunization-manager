@@ -5,7 +5,15 @@
             {% for n in nodes %}
                 <tr>
                     <td><a href="{% url "moderation.views.node" n.pk %}">{{ n }}</a></td>
-                    <td class="text-right"><span class="label label-danger">2 pending</span></td>
+                    <td class="text-right">
+                        {% with n.moderation_contacts_count as count %}
+                            {% if count %}
+                                <span class="label label-warning" data-placement="top" data-toggle="tooltip" title="{% blocktrans count count=count%}{{ count }} contact in this region requires moderator action{% plural %}{{ count }} contacts in this region require moderator action{% endblocktrans %}">
+                                        {% blocktrans count count=count%}{{ count }} contact{% plural %}{{ count }} contacts{% endblocktrans %}
+                                </span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
                 </tr>
             {% endfor %}
         {% else %}

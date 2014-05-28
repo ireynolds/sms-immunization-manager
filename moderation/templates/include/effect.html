@@ -1,0 +1,10 @@
+{% with effect_wrapper.effect as effect %}
+<tr class="{{ effect_wrapper.row_class }}">
+    <td>{{ effect.get_stage_display }}</td>
+    <td><span class="label label-{{ effect_wrapper.label_class }}">{{ effect.get_priority_display }}</span></td>
+    <td>{{ effect.opcode }}</td>
+    <td>{{ effect.get_name }}</td>
+    <td>{{ effect.get_desc }}</td>
+    <td></td>
+</tr>
+{% endwith %}

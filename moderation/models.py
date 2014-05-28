@@ -79,7 +79,7 @@ def warn(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     Returns an un-saved MessageEffect with a warning priority. See create_effect for a description
     of this function's parameters.
 
-    Warning effects documents minor or non-user-actionable errors. Warnings typically are not
+    Warning effects document minor or non-user-actionable errors. Warnings are not typically
     returned to users, and do not prevent later processing from taking place.
     """
     return create_effect(WARN, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
@@ -131,11 +131,14 @@ URGENT = 'URGENT'
 
 PRIORITY_CHOICES = (
     (DEBUG, ugettext_lazy("Debug")),
-    (INFO, ugettext_lazy("Debug")),
+    (INFO, ugettext_lazy("Info")),
     (WARN, ugettext_lazy("Warning")),
     (ERROR, ugettext_lazy("Error")),
     (URGENT, ugettext_lazy("Urgent")),
 )
+
+# Define what priorities require moderator action
+MODERATOR_PRIORITIES = [ERROR]
 
 # Define the stage an effect can occur in.
 SYNTAX = 'SYNTAX'
@@ -181,19 +184,27 @@ class MessageEffect(models.Model):
     # The name of this effect, as an untranslated format string
     name_format = models.TextField()
     # The context used to render name_format as a JSON-encoded dictionary
-    name_context = models.TextField()
+    name_context = models.TextField(default='{}')
 
     # A description of this effect's outcome, as an untranslated format string
     desc_format = models.TextField()
     # The context used to render desc_format
-    desc_context = models.TextField()
+    desc_context = models.TextField(default='{}')
 
     # If True, this effect has been sent as a response to the message sender
     sent_as_response = models.BooleanField(default=False)
 
+    class Meta:
+        ordering=['date']
+
     def __unicode__(self):
-        context = {"name": unicode(self.get_name()), "desc": unicode(self.get_desc())}
-        return ugettext(self.priority) + ugettext(" :: %(name)s: %(desc)s") % context
+        context = {
+            "stage": ugettext(self.get_stage_display()),
+            "priority": ugettext(self.get_priority_display()),
+            "name": unicode(self.get_name()),
+            "desc": unicode(self.get_desc()),
+        }
+        return ugettext("%(stage)s %(priority)s: %(name)s: %(desc)s") % context
 
     def _set_lazy_i18n(self, format_field, context_field, format, context):
         """
@@ -240,6 +251,7 @@ class MessageEffect(models.Model):
         """
         self._set_lazy_i18n("desc_format", "desc_context", format, context)
 
+
 class ModeratorProfile(models.Model):
     """
     A profile for a user that uses the moderation interface.
@@ -274,7 +286,7 @@ class ModeratorProfile(models.Model):
 
 # Create a moderator profile whenever a user is created
 @receiver(post_save, sender=User)
-def my_handler(sender, instance, **kwargs):
+def create_moderator_profile_if_none_exists(sender, instance, **kwargs):
     if not ModeratorProfile.objects.filter(user=instance).exists():
         profile = ModeratorProfile()
         profile.user = instance
@@ -284,7 +296,7 @@ def my_handler(sender, instance, **kwargs):
 # This is compatable with Django 1.7's inclusion of a session-based language
 # preference. For now we also provide a middleware that implements this behavior
 @receiver(user_logged_in)
-def create_moderator_profile_if_none_exists(sender, request, user, **kwargs):
+def set_language_on_login(sender, request, user, **kwargs):
     lang_code = user.moderator_profile.language
     if lang_code != '' and lang_code != None:
         request.session[settings.LANGUAGE_SESSION_KEY] = lang_code

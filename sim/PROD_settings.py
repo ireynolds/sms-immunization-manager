@@ -24,7 +24,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite3',
+        'NAME': '/var/git/sms-immunization-manager/db.sqlite3',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -57,17 +57,17 @@ EXTRA_LANG_INFO = {
     },
 }
 
-# Add custom languages not provided by Django
-import django.conf.locale
-LANG_INFO = dict(django.conf.locale.LANG_INFO.items() + EXTRA_LANG_INFO.items())
-django.conf.locale.LANG_INFO = LANG_INFO
-
 LANGUAGE_SESSION_KEY = 'sim_language'
 LANGUAGE_COOKIE_NAME = LANGUAGE_SESSION_KEY
 
 LOCALE_PATHS = (
     os.path.join(PROJECT_PATH, 'locale'),
 )
+
+# Add custom languages not provided by Django
+import django.conf.locale
+LANG_INFO = dict(django.conf.locale.LANG_INFO.items() + EXTRA_LANG_INFO.items())
+django.conf.locale.LANG_INFO = LANG_INFO
 
 SITE_ID = 1
 
@@ -95,7 +95,7 @@ MEDIA_URL = '/media/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/public/static/"
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'public', 'static')
+STATIC_ROOT = '/var/www/static'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -104,6 +104,7 @@ STATIC_URL = '/static/'
 # Additional locations of static files to collect
 STATICFILES_DIRS = (
     os.path.join(PROJECT_PATH, 'static'),
+    '/usr/local/lib/python2.7/dist-packages/rapidsms/static/',
 )
 
 # List of finder classes that know how to find static files in
@@ -280,13 +281,6 @@ INSTALLED_BACKENDS = {
         "ENGINE": "rapidsms.backends.database.DatabaseBackend",
     },
 }
-
-# The name of the backend used to represent phone numbers
-PHONE_BACKEND = "message_tester"
-
-# The name of the backend used to represent messages sent using the moderator
-# web interface
-MODERATOR_BACKEND = "moderation"
 
 RAPIDSMS_HANDLERS = (
     'rapidsms.contrib.echo.handlers.echo.EchoHandler',

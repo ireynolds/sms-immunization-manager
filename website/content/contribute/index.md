@@ -15,11 +15,11 @@ Our source code is divided into small modules that can easily be included or rem
 
 ### GitHub Repo
 
-SIM source code can be found on GitHub [github.com/ireynolds/sms-immunization-manager](https://github.com/ireynolds/sms-immunization-manager).
+SIM source code can be found on [GitHub](https://github.com/ireynolds/sms-immunization-manager).
 
-###Directory Structure
+### Directory Structure
 
-The repository is layed out in the following structure:
+In the repository you will find the following structure:
 
     .
     ├── contextual
@@ -53,6 +53,8 @@ The repository is layed out in the following structure:
     └── website
         ├── content
         └── layouts
+
+The folders are:
 
 `contextual`: ...
 
@@ -88,104 +90,76 @@ The repository is layed out in the following structure:
 
 `website`: contains the version controlled content used to generate this web site.
 
-Typically development of a new feature is done in a new branch. During development, it is recommended to periodically pull and merge master into your branch to ensure that the rest of the code stays current. Once development of a feature is complete and it is fully tested a pull request will alert the rest of the development team to take a look.
+Typically, developers create new features in a separate "feature branch". Developers regularly merge the master branch into their feature branch to keep it up-to-date. Once development of a feature is complete and fully-tested, the developer submits a pull request to alert the rest of the development team to do a code review.
 
 Our Languages, Libraries, and Frameworks
 ---------------
 
-The SIM server is written in [Python](https://www.python.org/) version 2.7.6
+The SIM server is written in [Python](https://www.python.org/) 2.7.6.
 
 SIM is built using the well known frameworks:
 
-* [Django](https://www.djangoproject.com/)
-* [RapidSMS](https://www.rapidsms.org/)
+* [Django](http://www.djangoproject.com)
+* [RapidSMS](http://www.rapidsms.org)
 * [Bootstrap](http://www.getbootstrap.com)
 
-This documentation page is created with [nanoc](http://nanoc.ws/).
-To work on this documentation you will need to install:
+Tools helpful to development:
 
-* ruby
-* RubyGems
-* nanoc
-* kramdown
-* slim
+* [PyPI: The Python Package Index](https://pypi.python.org/pypi/pip)
+* [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/index.html)
+
+This documentation page is created with [nanoc](http://nanoc.ws/). You will need it if you want to edit these pages.
 
 Getting Started
 ---------------
+
+If you are an experience Django developer you will already have an idea of how to get started. We have detailed instructions here to make sure you don't miss anything.
 
 ### Short Instructions -- Experts Only
 
 First, install Ubuntu 13.04 Desktop (32- or 64-bit). Add the following to `~/.bashrc`:
 
-    export WORKON_HOME=~/Envs
-    mkdir -p $WORKON_HOME
-    source /usr/local/bin/virtualenvwrapper.sh
-    export SIMROOT=~/sms-immunization-manager
+        export WORKON_HOME=~/Envs
+        mkdir -p $WORKON_HOME
+        source /usr/local/bin/virtualenvwrapper.sh
+        export SIMROOT=~/sms-immunization-manager
 
-Add the following to a new file called `~/setup-sms-immunization-manager.sh:`
+Add the following to a new file called `~/setup-sms-immunization-manager.sh`:
 
-    sudo apt-get install python2.7 -y
-    sudo apt-get install git -y
+        sudo apt-get install python2.7 -y
+        sudo apt-get install git -y
 
-    sudo apt-get install python-pip -y
-    sudo pip install virtualenv
-    sudo pip install virtualenvwrapper
+        sudo apt-get install python-pip -y
+        sudo pip install virtualenv
+        sudo pip install virtualenvwrapper
 
-    source ~/.bashrc
+        source ~/.bashrc
 
-`cd ~/`
+        cd ~/
 
-`git clone https://github.com/ireynolds/sms-immunization-manager.git
-mkvirtualenv -r $SIMROOT/requirements.txt sms-immunization-manager
-workon sms-immunization-manager`
+        git clone https://github.com/ireynolds/sms-immunization-manager.git
+        mkvirtualenv -r $SIMROOT/requirements.txt sms-immunization-manager
+        workon sms-immunization-manager
 
-`python $SIMROOT/manage.py runserver 0.0.0.0:8000`
+Then run `source ~/setup-sms-immunization-manager.sh`. To run the server, run `python $SIMROOT/manage.py runserver 0.0.0.0:8000`. Then you can access the server either by running `wget localhost:8000` or by visiting `localhost:8000` in your browser.
 
-Then run `source ~/setup-sms-immunization-manager.sh`.
+### Extended Instructions
 
-Access the server by running `wget localhost:8000` or by visiting localhost:8000 in your browser.
+#### Install PyPI
 
-### Create a Ubuntu Desktop 13.04 virtual machine
-
-Most team members probably know how to do this. Ask a teammate for help if you have trouble.
-
-Useful links:
-
-* [cs.washington.edu/lab/software/homeVMs](https://cs.washington.edu/lab/software/homeVMs/)
-  * For Linux and Windows, direct link to where to download VMWare’s Player for free (scroll all the way to the bottom): [http://www.vmware.com/products/player](http://www.vmware.com/products/player/)
-  * An even more direct link (but may become out-of-date): https://my.vmware.com/web/vmware/free#desktop_end_user_computing/vmware_player/6_0
-  * For Mac OS X, see instructions the on CSE page above.
-* Ubuntu 13.04 Desktop installation disk image:
-  * [www.ubuntu.com/download/desktop](http://www.ubuntu.com/download/desktop)
-  * Either the 32 or 64 bit version will be compatible with our project’s source code. However, some computers may have difficulty using a 64 bit guest operating system [link](http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=1003945). Thus, we recommend installing the 32 bit version of Ubuntu for virtual machines.
-* (untested) instructions for installing Ubuntu on VMWare Player:
-  * [www.howtogeek.com/howto/11287/how-to-run-ubuntu-in-windows-7-with-vmware-player](http://www.howtogeek.com/howto/11287/how-to-run-ubuntu-in-windows-7-with-vmware-player/)
-Install Python, PIP and VirtualEnv
-Install Python
-Ubuntu 13.04 should have Python 2.7 installed by default. Verify this by running `python -V` and checking that the version number starts with 2.7
-
-If python is not installed, run the following:
-`sudo apt-get install python2.7`
-
-If a different version of python is installed (e.g. python 3.x.x, or python 2.3.x), consult the internet or teammates for instructions on how to switch versions.
-
-#### Install PIP
-
-PIP is a tool for installing Python packages. Install it using the following command:
-
-`sudo apt-get install python-pip`
+PyPI (`pip` at the terminal) is a tool for installing Python packages. Install it by running `sudo apt-get install python-pip`.
 
 #### Install VirtualEnv
 
-VirtualEnv is a tool for managing what libraries are installed within a Python environment. We use it to ensure consistency between the python libraries installed in our development and deployment environments. The virtualenvwrapper package adds some additional tools to virtualenv that make it more user-friendly.
+VirtualEnv is a tool for managing what python packages are installed from the perspective of a particular instance of the Python process. We use it to ensure consistency between the Python libraries installed in our development and deployment environments. The VirtualEnvWrapper package adds some additional tools to VirtualEnv that make it more user-friendly.
 
-Install virtualenv and virtualenvwrapper by running the following commands. Don’t be alarmed if some warnings appear.
+Install VirtualEnv and VirtualEnvWrapper by running the following commands. Don’t be alarmed if some warnings appear.
 
 `sudo pip install virtualenv`
 
 `sudo pip install virtualenvwrapper`
 
-virtualenvwrapper requires some changes to your bashrc file. Add the following to `~/.bashrc` (you will likely have to install vim, for example, by running `sudo apt-get install vim`):
+VirtualEnvWrapper requires some changes to your `~/.bashrc` file. Add the following to `~/.bashrc` (you will likely have to install vim, for example, by running `sudo apt-get install vim`):
 
         export WORKON_HOME=~/Envs #Set up virtualenvwrapper directory
         mkdir -p $WORKON_HOME

@@ -13,3 +13,10 @@ $('#language-select').change(
     function(){
         $(this).closest('form').trigger('submit');
     });
+
+// Activate Bootstrap's tooltips
+$(document).ready(function () {
+    $('.label').tooltip();
+    $('.conversation-icon').tooltip();
+    $('th').tooltip();
+});

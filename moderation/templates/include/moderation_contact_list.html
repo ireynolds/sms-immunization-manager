@@ -1,0 +1,32 @@
+{% comment %}
+Renders a list of contacts that require moderation, and a summary of their pending messages
+
+Expects a context key 'moderation_contacts' which is a list of contacts requiring moderation.
+{% endcomment %}
+{% load i18n %}
+<table class="table">
+    <tbody>
+        {% if moderation_contacts %}
+            {% for c in moderation_contacts %}
+                <tr>
+                    <!-- User information -->
+                    <td><a href="{% url "moderation.views.contact" c.pk %}">{{ c }}</a></td>
+
+
+                    <!-- A label containing the number of messages requiring moderator action -->
+                    <td class="text-right">
+                        {% with c.contactprofile.moderation_messages.count as count %}
+                            {% if count %}
+                                <span class="label label-warning" data-placement="top" data-toggle="tooltip" title="{% blocktrans count count=count%}This contact has {{ count }} message that requires moderator action{% plural %}This contact has {{ count }} messages that require moderator action{% endblocktrans %}">
+                                        {% blocktrans count count=count%}{{ count }} message{% plural %}{{ count }} messages{% endblocktrans %}
+                                </span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td class="text-center">{% trans "No contacts require moderation" %}</td></tr>
+        {% endif %}
+    </tbody>
+</table>
