@@ -302,8 +302,8 @@ PREFERRED_LANGUAGES = { 1 : "English", 2 : "Karoake", 3 : "Lao" }
 DATA_REPORTER_ROLE = "DataReporter"
 ADMIN_ROLE = "Admin"
 ROLE_CHOICES = (
-    (DATA_REPORTER_ROLE, _("Data Reporter")),
-    (ADMIN_ROLE, _("Administrator"))
+    (DATA_REPORTER_ROLE, "Data Reporter"),
+    (ADMIN_ROLE, "Administrator")
 )
 
 ROLE_OP_CODES = (
