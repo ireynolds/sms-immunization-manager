@@ -139,12 +139,14 @@ PRIORITY_CHOICES = (
 )
 
 # Define the stage an effect can occur in.
+FILTER = 'FILTER'
 SYNTAX = 'SYNTAX'
 SEMANTIC = 'SEMANTIC'
 COMMIT = 'COMMIT'
 RESPOND = 'RESPOND'
 
 STAGE_CHOICES = (
+    (FILTER, ugettext_lazy("Filter")),
     (SYNTAX, ugettext_lazy("Syntax")),
     (SEMANTIC, ugettext_lazy('Semantic')),
     (COMMIT, ugettext_lazy('Commit')),
