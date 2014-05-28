@@ -1,21 +1,78 @@
 {% extends "sim_base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
 
-{% block title %}User Summary{% endblock %}
+{% block title %}
+    {% if contact.contactprofile.facility %}{{ contact.contactprofile.facility }} - {% endif %}
+    {{ contact.name }}
+{% endblock %}
 
 {% block breadcrumbs %}
 <ol class="breadcrumb">
-    <li><a href="{% url "moderation.views.node" 1 %}">United States</a></li>
-    <li><a href="{% url "moderation.views.node" 2 %}">Washington</a></li>
-    <li><a href="{% url "moderation.views.node" 3 %}">Seattle</a></li>
-    <li><a href="{% url "moderation.views.facility" 3 %}">UW Medical Center</a></li>
-    <li class="active">User 1</a>
+    {% with contact.contactprofile.facility as facility %}
+        {% if facility %}
+            {% with facility.hierarchy_node as node %}
+                {% include "include/breadcrumbs.html" %}
+            {% endwith %}
+        {% else %}
+            {% include "include/breadcrumbs.html" %}
+        {% endif %}
+    {% endwith %}
 </ol>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>A User</h1>
-    <p>An overview of this user's messages goes here</p>
-    <a href="{% url "moderation.views.user_edit" 1 %}">Edit user</a>
+    <div class="row">
+        <div class="col-sm-12">
+            <h1>{{ contact }}</h1>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <!-- Edit Form -->
+        <div class="col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">{% trans "Contact Information" %}</div>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th class="text-right">{% trans "Name" %}</th>
+                            <td>{{ contact.name }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-right">{% trans "Phone Number" %}</th>
+                            <td>{{ contact.contactprofile.get_phone_number }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-right">{% trans "Preferred Language" %}</th>
+                            {% comment %}This is a hack to get the name of the contact's language in the user's language. Adding a context value containing dict(LANGUAGE) is a possible alternative{% endcomment %}
+                            {% for code, name in LANGUAGES %}
+                                {% if code == contact.language %}
+                                    <td>{{ name }}</td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <th class="text-right">{% trans "Role" %}</th>
+                            <td>{{ contact.contactprofile.get_role_name_display }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+<a href="#" class="btn btn-default text-center" role="button">Primary link</a>
+                <a href="{% url "moderation.views.contact_edit" contact.pk %}">Edit</a>
+            </div>
+        </div>
+
+        <!-- Message Log -->
+        <div class="col-md-9">
+            {% for wrapper in wrapped_messages %}
+                {% include "include/message.html" %}
+            {% endfor %}
+        </div>
+    </div>
 </div>
+
 {% endblock %}

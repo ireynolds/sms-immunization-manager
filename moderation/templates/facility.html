@@ -33,8 +33,10 @@
         </div>
     </div>
 
+    <hr />
+
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-7">
             <div class="panel panel-primary">
                 <div class="panel-heading">{% trans "Pending Moderation" %}</div>
                 {% with facility.moderation_contacts as moderation_contacts %}
@@ -43,10 +45,30 @@
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-5">
             <div class="panel panel-default">
-                <div class="panel-heading">{% trans "Sub-Regions" %}</div>
-                {% include "include/node_list.html" %}
+                <div class="panel-heading">{% trans "Contacts" %}</div>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Name" %}</th>
+                                <th>{% trans "Role" %}</th>
+                                <th>{% trans "Connection" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cp in facility.contactprofile_set.all %}
+                                <tr>
+                                    <td><a href="{% url "moderation.views.contact" cp.pk %}">{{ cp.contact }}</a></td>
+                                    <td>{{ cp.get_role_name_display }}</td>
+                                    <td>
+                                        {{ cp.get_phone_number }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

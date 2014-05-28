@@ -17,4 +17,6 @@ $('#language-select').change(
 // Activate Bootstrap's tooltips
 $(document).ready(function () {
     $('.label').tooltip();
+    $('.conversation-icon').tooltip();
+    $('th').tooltip();
 });

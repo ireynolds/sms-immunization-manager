@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from rapidsms.models import Contact
+from rapidsms.models import Contact, Connection
 from rapidsms.contrib.messagelog.models import Message
 from moderation.models import MessageEffect, MODERATOR_PRIORITIES
 import reversion
@@ -129,24 +129,31 @@ class ContactProfile(models.Model):
     facility = models.ForeignKey(Facility, blank=True, null=True)
 
     # The name of this role
+    # TODO: For consistency this should just be 'role'
     role_name = models.CharField(max_length=100, 
                             choices=settings.ROLE_CHOICES, 
                             default=settings.DATA_REPORTER_ROLE)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.contact.name, self.get_role_description())
-
-    def get_role_description(self):
-        """
-        Returns a description of this user's role, as a lazily internationalized string.
-        """
-        return dict(settings.ROLE_CHOICES)[self.role_name]
+        return "%s (%s)" % (self.contact.name, self.get_role_name_display())
 
     def get_op_codes(self):
         """
         Returns the list of opcodes this user is allowed to use.
         """
         return dict(settings.ROLE_OP_CODES)[self.role_name]
+
+    def get_phone_number(self):
+        """
+        Returns the phone number associated with this contact. If no phone number exists, returns
+        None.
+        """
+        connections = Connection.objects.filter(contact=self.contact, 
+            backend__name=settings.PHONE_BACKEND)
+        if len(connections) == 0:
+            return None
+        return connections[0].identity
+
 
     def moderation_effects(self):
         """

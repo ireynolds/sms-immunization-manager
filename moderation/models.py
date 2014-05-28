@@ -195,6 +195,9 @@ class MessageEffect(models.Model):
     # If True, this effect has been sent as a response to the message sender
     sent_as_response = models.BooleanField(default=False)
 
+    class Meta:
+        ordering=['date']
+
     def __unicode__(self):
         context = {
             "stage": ugettext(self.get_stage_display()),
@@ -284,7 +287,7 @@ class ModeratorProfile(models.Model):
 
 # Create a moderator profile whenever a user is created
 @receiver(post_save, sender=User)
-def my_handler(sender, instance, **kwargs):
+def create_moderator_profile_if_none_exists(sender, instance, **kwargs):
     if not ModeratorProfile.objects.filter(user=instance).exists():
         profile = ModeratorProfile()
         profile.user = instance
@@ -294,7 +297,7 @@ def my_handler(sender, instance, **kwargs):
 # This is compatable with Django 1.7's inclusion of a session-based language
 # preference. For now we also provide a middleware that implements this behavior
 @receiver(user_logged_in)
-def create_moderator_profile_if_none_exists(sender, request, user, **kwargs):
+def set_language_on_login(sender, request, user, **kwargs):
     lang_code = user.moderator_profile.language
     if lang_code != '' and lang_code != None:
         request.session[settings.LANGUAGE_SESSION_KEY] = lang_code

@@ -5,7 +5,7 @@ may be undefined:
 node: The current node.
 facility: A facility associated with node
 contact: A contact associated with facility
-
+contact_action: An action being performed on contact
 {% endcomment %}
 
 <!-- The "root" node -->
@@ -33,4 +33,18 @@ contact: A contact associated with facility
     {% else %}
         <li class="active">{{ facility }}</li>
     {% endif %}
+{% endif %}
+
+<!-- The contact -->
+{% if contact %}
+    {% if contact_action %}
+        <li><a href="{% url "moderation.views.contact" contact.pk %}">{{ contact }}</a></li>
+    {% else %}
+        <li class="active">{{ contact }}</li>
+    {% endif %}
+{% endif %}
+
+<!-- The being applied to the contact -->
+{% if contact_action %}
+    <li class="active">{{ contact_action }}</li>
 {% endif %}
