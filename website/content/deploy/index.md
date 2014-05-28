@@ -10,9 +10,17 @@ The following instructions are intended to be as helpful as possible and thus ar
 Configuration
 -------------
 
-These instructions describe configuring a server on Amazon Web Services, installing and configuring SIM as well as software dependencies. in following sections we will describe connecting an HTTP backend and a DHIS2 server.
+These instructions will help you get a SIM server up and running. If you are familiar with deploying a Django website on an Apache server much of this will be familiar. SIM is dependent on the following software:
+
+* Python 2.7.6
+* Django
+* RapidSMS
+* Apahce
+* modwsgi
 
 ### Configure SIM
+
+For users that are unfamiliar with webhosting we have created these step-by-step instructions for deploying a SIM server using a hosted server from Amazon Web Services.
 
 #### Starting an Amazon EC2 instance
 
@@ -82,6 +90,8 @@ Reload sshd’s configuration data by running
 Once SSH password authentication has been enabled, log out of the ubuntu user and into your personal user. Use your personal user when accessing the server unless you have a specific reason for using ubuntu or root.
 
 ### Setting up Apache
+
+Apache acts as the web server that will be hosting static elements and routing dynamic requests the the python code.
 
 #### Installing Apache
 
