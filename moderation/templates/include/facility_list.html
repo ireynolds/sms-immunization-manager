@@ -5,7 +5,15 @@
             {% for f in facilities %}
                 <tr>
                     <td><a href="{% url "moderation.views.facility" f.pk %}">{{ f }}</a></td>
-                    <td class="text-right"><span class="label label-danger">2 pending</span></td>
+                    <td class="text-right">
+                        {% with f.moderation_contacts.count as count %}
+                            {% if count %}
+                                <span class="label label-warning" data-placement="top" data-toggle="tooltip" title="{% blocktrans count count=count%}{{ count }} contact at this facility requires moderator action{% plural %}{{ count }} contacts at this facility require moderator action{% endblocktrans %}">
+                                        {% blocktrans count count=count%}{{ count }} contact{% plural %}{{ count }} contacts{% endblocktrans %}
+                                </span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
                 </tr>
             {% endfor %}
         {% else %}

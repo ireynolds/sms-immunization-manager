@@ -60,3 +60,15 @@ data_sources:
 
     # The default encoding for all files in `content/` and `layouts/`.
     encoding: utf-8
+
+# Deployment tests
+deploy:
+  # to the mock production server
+  prod:
+    kind: rsync
+    dst:  "nshahan@54.186.86.252:/var/www/docs"
+    options: [ '--omit-dir-times' ]
+  # to a local folder
+  dev:
+    kind: rsync
+    dst:  "/~/docs"

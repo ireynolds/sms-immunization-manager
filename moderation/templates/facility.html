@@ -1,87 +1,76 @@
 {% extends "sim_base.html" %}
+{% load i18n %}
 
-{% block title %}Facility{% endblock %}
+{% block title %}{{ facility }}{% endblock %}
 
 {% block breadcrumbs %}
 <ol class="breadcrumb">
-    <li><a href="{% url "moderation.views.node" 1 %}">United States</a></li>
-    <li><a href="{% url "moderation.views.node" 2 %}">Washington</a></li>
-    <li><a href="{% url "moderation.views.node" 3 %}">Seattle</a></li>
-    <li class="active">UW Medical Center</li>
+    {% with facility.hierarchy_node as node %}
+        {% include "include/breadcrumbs.html" %}
+    {% endwith %}
 </ol>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1>A Facility</h1>
-    <p>Some more description of this facility</p>
-    <address>
-        <strong>Example Address</strong><br>
-        795 Folsom Ave, Suite 600<br>
-        San Francisco, CA 94107<br>
-        <abbr title="Phone">P:</abbr> (123) 456-7890
-    </address>
-</div>
+    <div class="row">
+        <div class="col-sm-8">
+            <h1>{{ facility }}</h1>
+            {{ facility.description }}
+        </div>
+        <div class="col-sm-4">
+            {% if user.moderator_profile.facility != facility %}
+                {% with _("Make this facility my default") as affiliation_message %}
+                    {% with facility as affiliation_facility %}
+                        {% include "include/affiliation_form.html" %}
+                    {% endwith %}
+                {% endwith %}
+            {% else %}
+                {% with _("This facility is your default") as affiliation_message %}
+                    {% include "include/affiliation_home.html" %}
+                {% endwith %}
+            {% endif %}
+        </div>
+    </div>
 
-<hr />
+    <hr />
 
-<div class="container">
     <div class="row">
         <div class="col-md-7">
             <div class="panel panel-primary">
-                <div class="panel-heading">Moderations</div>
-                <div class="panel-body">
-
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <td>User</td>
-                                <td>Date</td>
-                                <td>Pending Actions</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><a href="{% url "moderation.views.user_summary" 1 %}">User 1</a></td>
-                                <td>05/20/2014</td>
-                                <td>DHIS2 Update<br />Phone Number Update</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                </div>
+                <div class="panel-heading">{% trans "Pending Moderation" %}</div>
+                {% with facility.moderation_contacts as moderation_contacts %}
+                    {% include "include/moderation_contact_list.html" %}
+                {% endwith %}
             </div>
         </div>
 
         <div class="col-md-5">
             <div class="panel panel-default">
-                <div class="panel-heading">Users</div>
-                <div class="panel-body">
-
-                    <table class="table table-striped">
+                <div class="panel-heading">{% trans "Contacts" %}</div>
+                    <table class="table table-condensed">
                         <thead>
                             <tr>
-                                <td>Name</td>
-                                <td>Phone Number</td>
-                                <td></td>
+                                <th>{% trans "Name" %}</th>
+                                <th>{% trans "Role" %}</th>
+                                <th>{% trans "Connection" %}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><a href="{% url "moderation.views.user_summary" 1 %}">User 1</a></td>
-                                <td><a href="{% url "moderation.views.user_summary" 1 %}">41 553 282 1884</a></td>
-                                <td><span class="label label-danger">2 pending</span></td>
-                            </tr>
-                            <tr>
-                                <td><a href="{% url "moderation.views.user_summary" 2 %}">User 2</a></td>
-                                <td><a href="{% url "moderation.views.user_summary" 2 %}">41 714 027 9387</a></td>
-                                <td></td>
-                            </tr>
+                            {% for cp in facility.contactprofile_set.all %}
+                                <tr>
+                                    <td><a href="{% url "moderation.views.contact" cp.pk %}">{{ cp.contact }}</a></td>
+                                    <td>{{ cp.get_role_name_display }}</td>
+                                    <td>
+                                        {{ cp.get_phone_number }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
-
                 </div>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

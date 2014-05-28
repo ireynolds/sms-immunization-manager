@@ -1,8 +1,11 @@
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from rapidsms.models import Contact, Connection
+from rapidsms.contrib.messagelog.models import Message
+from moderation.models import MessageEffect, MODERATOR_PRIORITIES
 import reversion
 
 class HierarchyNode(models.Model):    
@@ -26,7 +29,7 @@ class HierarchyNode(models.Model):
         this node. The last element in the returned list is an ancestor of this node which has no
         parent. If this node is a root node, returns [self].
 
-        If a cycle exists in the hierarchy graph which contains this node, returns None.
+        If a cycle exists in the hierarchy graph that contains this node, returns None.
         """
         path = []
         current_node = self
@@ -41,6 +44,26 @@ class HierarchyNode(models.Model):
             
         return path
 
+    def moderation_contacts_count(self):
+        """
+        Returns the number of contacts in this administrative region that have undismissed message
+        effects that require moderator action.
+        """
+        # TODO: Perhaps we should create a many-to-many ancestor relationship to accelerate this
+        # computation, instead of having to traverse the tree in Python. For simplicity (and since
+        # the administrative tree is relatively shallow) we do things the slow way for now.
+        count = 0
+
+        # Count moderations on facilities belonging to this node
+        for facility in self.facility_set.all():
+            count += facility.moderation_contacts().count()
+
+        # Count the moderations of any child nodes
+        # TODO: This will infinitely loop if a cycle exists. Fix this, or ensure cycles never exist.
+        for node in self.children.all():
+            count += node.moderation_contacts_count()
+
+        return count
 
 
 class Facility(models.Model):
@@ -73,6 +96,28 @@ class Facility(models.Model):
         # TODO: Implement
         return None
 
+    def moderation_effects(self):
+        """
+        Returns a QuerySet of undismissed MessageEffects associated with this facility that require
+        moderator action.
+        """
+        in_facility = Q(message__contact__contactprofile__facility=self)
+        not_dismissed = Q(moderator_dismissed=False)
+        moderator_priority = Q(priority__in=MODERATOR_PRIORITIES)
+        return MessageEffect.objects.filter(in_facility & not_dismissed & moderator_priority)
+
+    def moderation_contacts(self):
+        """
+        Returns a QuerySet of Contacts associated with this facility that have undismissed effects
+        that require moderation action.
+        """
+        # Group by Contact id
+        contact_pks = self.moderation_effects().values_list('message__contact', flat=True)
+
+        # Create the Contact query. Note that this produces a SQL subquery, and does not evaluate
+        # the Python value of the contact_pks QuerySet.
+        return Contact.objects.filter(pk__in=contact_pks)
+
 class ContactProfile(models.Model):
     """
     A user who interacts with the SMS immunization manager
@@ -84,18 +129,13 @@ class ContactProfile(models.Model):
     facility = models.ForeignKey(Facility, blank=True, null=True)
 
     # The name of this role
+    # TODO: For consistency this should just be 'role'
     role_name = models.CharField(max_length=100, 
                             choices=settings.ROLE_CHOICES, 
                             default=settings.DATA_REPORTER_ROLE)
 
     def __unicode__(self):
-        return "%s (%s)" % (self.contact.name, self.get_role_description())
-
-    def get_role_description(self):
-        """
-        Returns a description of this user's role, as a lazily internationalized string.
-        """
-        return dict(settings.ROLE_CHOICES)[self.role_name]
+        return "%s (%s)" % (self.contact.name, self.get_role_name_display())
 
     def get_op_codes(self):
         """
@@ -103,10 +143,41 @@ class ContactProfile(models.Model):
         """
         return dict(settings.ROLE_OP_CODES)[self.role_name]
 
+    def get_phone_number(self):
+        """
+        Returns the phone number associated with this contact. If no phone number exists, returns
+        None.
+        """
+        connections = Connection.objects.filter(contact=self.contact, 
+            backend__name=settings.PHONE_BACKEND)
+        if len(connections) == 0:
+            return None
+        return connections[0].identity
+
+
+    def moderation_effects(self):
+        """
+        Returns a QuerySet of undismissed MessageEffects associated with this Contact that require
+        moderator action.
+        """
+        in_contact = Q(message__contact__contactprofile=self)
+        not_dismissed = Q(moderator_dismissed=False)
+        moderator_priority = Q(priority__in=MODERATOR_PRIORITIES)
+        return MessageEffect.objects.filter(in_contact & not_dismissed & moderator_priority)
+
+    def moderation_messages(self):
+        """
+        Returns a QuerySet of Messages associated with this Contact that contain undismissed
+        MessageEffects that require moderator action.
+        """
+        message_pks = self.moderation_effects().values_list('message', flat=True)
+        # Note that this produces a SQL subquery, and does not evaluate the QuerySet message_pks
+        return Message.objects.filter(pk__in=message_pks)
+
 
 # Create a ContactProfile whenever a Contact is created
 @receiver(post_save, sender=Contact)
-def create_user_profile_if_none_exists(sender, instance, **kwargs):
+def create_contact_profile_if_none_exists(sender, instance, **kwargs):
     if not ContactProfile.objects.filter(contact=instance).exists():
         profile = ContactProfile()
         profile.contact = instance

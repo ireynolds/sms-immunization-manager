@@ -20,7 +20,7 @@ If you're interesting in learning more about something in specific, you can
 
 Otherwise, continue reading to get an overview of what SIM can do.
 
-## Data Reporting ##
+## A Community Health Worker (CHW) Reports Vaccine Stock Via SMS ##
 
 In the primary use case, a health worker registered to a facility has some permission to report 
 data, such as vaccine stock or fridge temperature, for that facility. When they want to, for 
@@ -38,28 +38,37 @@ and the user immediately receives a message in their language thanking them for 
 Every deployment can easily configure its own opcode and vaccine identifiers for this and other 
 operations.
 
-## Equipment Status Reporting ##
+## A Community Health Worker Reports Equipment Well-Being Via SMS ##
 
 In a secondary use case, a health worker notices that the facility's fridge is about to have a 
 mechanical failure. The user sends the code
 		
 	NF B
 
-In this message, ```NF``` is the opcode for "non-functional", and ```A``` is the identifier 
-assigned to one of the facility's vaccine storage fridges. When SIM receives the message, it sends 
-a notification by email and/or SMS to a technician who's responsible for maintaining that equipment. 
+In this message, ```NF``` is the opcode for "non-functional equipment", and ```A``` is the identifier 
+assigned to one of the facility's vaccine storage fridges. When SIM receives the message, it immediately
+notifies an administrator of the failure so that it can be repaired as soon as possible. 
 
 SIM keeps information about what equipment exists at each facility by automatically importing it 
 from its configured cold chain information manager.
 
-## Other Operations ##
+## Implementing New Use Cases For Your Country ##
 
 It's easy to either (a) remove or change the operations that ship with the product or (b) add new 
 operations that suit your deployment. Although SIM ships with several useful operations built-in, 
 it's designed to allow you, the user, to easily implement the operations that best suit your 
 deployment.
 
-## How does the system handle invalid inputs? ##
+## Moderators Review Any Invalid SMS Messages #
+
+The system keeps a log of incoming and outgoing messages for each user and each facility, as well 
+as a log of side effects caused by each message (such as updates to DHIS2, parsing error, 
+notifications sent to technicians, user information updated, or any other side effect). 
+
+Administrators can see these logs by logging into a web interface. They can use it to manually 
+review and act on any messages the system receives but can't understand. 
+
+## Forgiving and Robust Interpretation of SMS Messages ##
 
 Typically, users
 
@@ -79,12 +88,3 @@ made in a trial deployment in Laos, SIM is designed to parse messages correctly 
 
 If a message can't be parsed correctly, SIM replies promptly via SMS with a descriptive error 
 message that helps the user understand why the message was invalid. 
-
-## Moderation
-
-The system keeps a log of incoming and outgoing messages for each user and each facility, as well 
-as a log of side effects caused by each message (such as updates to DHIS2, parsing error, 
-notifications sent to technicians, user information updated, or any other side effect). 
-
-Administrators can see these logs by logging into a web interface. They can use it to manually 
-review and act on any messages the system receives but can't understand. 
