@@ -16,9 +16,7 @@ class SpamFilter(AppBase):
 #            mlogger.parse(msg)
 #            complete_effect(effect, msg.logger_msg, FILTER)
 #
-            # If message is spam, halt further processing of message and delete
-            # the Connection associated with this message
-            Connection.objects.get(identity=msg.connections[0].identity).delete()
+            # If message is spam, halt further processing of message
             return True
         else:
             # TODO: Save the message effects!
