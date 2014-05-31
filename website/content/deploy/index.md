@@ -5,6 +5,9 @@ title: Deploy
 Deployment Instructions
 =============
 
+* toc
+{:toc}
+
 The following instructions are intended to be as helpful as possible and thus are rather detailed.
 
 Configuration
@@ -199,7 +202,7 @@ To create the certificate select the number of days until it will expire. In thi
 
 ### Configure a SMS-HTTP Gateway
 
-#### EnvayaSMS
+To learn how to configure gateways, go [here](gateway-config).
 
 ### Configure a Back-End
 

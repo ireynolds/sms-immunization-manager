@@ -5,6 +5,9 @@ title: Contribute
 Contribute
 ==========
 
+* toc
+{:toc}
+
 This project started at the University of Washington Computer Science department but we are happy to work with developers anywhere. If you need to modify SIM for your deployment, work with us so that useful changes can be merged in with the core development.
 
 Getting Started

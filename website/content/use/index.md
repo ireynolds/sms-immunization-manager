@@ -5,6 +5,9 @@ title: Use
 Usage Instructions
 ==================
 
+* toc
+{:toc}
+
 There are two users who interact with a SIM deployment: 
 
 * Administrative users, who interact with SIM via a web interface to configure the software and moderate messages.

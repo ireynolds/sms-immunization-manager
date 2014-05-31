@@ -241,6 +241,7 @@ APPS_BEFORE_SIM = (
     "south",
     "rapidsms.contrib.messagelog",
     "crispy_forms",
+    "envaya"
 )
 
 SIM_PRE_APPS = (

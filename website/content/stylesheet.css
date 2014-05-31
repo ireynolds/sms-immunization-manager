@@ -22,18 +22,21 @@ a {
 
 a:link,
 a:visited {
-  color: #f30;
+  /*color: #f30;*/
+  color: #36e;
 }
 
 a:hover {
-  color: #f90;
+  color: #3af;
+  /*color: #f90;*/
 }
 
 /* Any code tag whose parent is NOT a pre tag */
-:not(pre) > code {
+/*:not(pre) > code {*/
+p code {
   background-color: #fafafa;
   border: solid 1px #efeee6;
-  padding: 1px 3px;
+  padding: 0px 3px;
 }
 
 pre {
@@ -71,6 +74,12 @@ pre {
 
 #main ul, #main ol {
   margin: 20px;
+  margin-left: 40px;
+}
+
+#main .maruku_toc ul {
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 
 #main li {
