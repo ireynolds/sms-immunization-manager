@@ -1,6 +1,6 @@
 from utils.operations import OperationBase
 from operation_parser.gobbler import Gobbler, gobble, LABEL
-from moderation.models import error_parse, ok_parse, info, error
+from moderation.models import info, error
 from django.utils.translation import ugettext_noop as _
 
 SINGLE_ALPHA = "[A-Z]"
@@ -92,16 +92,42 @@ class FridgeTemperature(OperationBase):
 
     helptext = "For example, %(opcode)s A 1 0. Reports that fridge A had 1 high- and 1 low-temperature event, and any other fridges had none of either."
 
-    def _error():
-        pass
+    def _error_missing_digits(self, opcode):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments missing numbers after the fridge tag.
+        '''
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Expected the number of temperature events."), {}
+        )
 
-    def _ok_multiple():
-        pass
+    def _error_duplicate_fridge(self, opcode):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments having duplicate fridge tags.
+        '''
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Duplicate fridge tag."), {}
+        )
+
+    def _error_missing_fridge_tag(self, opcode):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments haveing numbers with missing fridge tags.
+        '''
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Expected a fridge tag."), {}
+        )
 
     def _ok(self, opcode, args):
         '''Return a MessageEffect that indicates success.'''
-        return ok_parse(opcode,
-            _("Parsed: fridge_events is %(fridge_events)s."), args)
+        return info(
+            _("Parsed %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Parsed: fridge_events is %(fridge_events)s."), args
+        )
 
     def _parse_events(self, opcode, args):
         """
@@ -132,7 +158,7 @@ class FridgeTemperature(OperationBase):
                 return None, (0, 0), remaining
 
             # did not find the expected low digit
-            return error_parse(opcode, args), None, remaining
+            return self._error_missing_digits(opcode), None, remaining
 
         # did not find any digits
         return None, None, remaining
@@ -169,7 +195,7 @@ class FridgeTemperature(OperationBase):
             if fridge_id:
                 if fridge_id in fridge_events:
                     # found a fridge id that was already in the message
-                    effect = error_parse(opcode, arg_string, _("Duplicate Fridge ID."))
+                    effect = self._error_duplicate_fridge(opcode)
                     return [effect], {}
 
                 effects, events, remaining = self._parse_events(opcode, remaining)
@@ -183,11 +209,11 @@ class FridgeTemperature(OperationBase):
                     fridge_events[fridge_id] = events
                 else:
                     # didn't find any event numbers
-                    effect = error_parse(opcode, arg_string, _("Expected number of events."))
+                    effect = self._error_missing_digits(opcode)
                     return [effect], {}
             else:
                 # didn't find a fridge id
-                effect = error_parse(opcode, arg_string, _("Expected a fridge tag."))
+                effect = self._error_missing_fridge_tag(opcode)
                 return [effect], {}
 
         # parsed all the args into fridge ids and numbers of events

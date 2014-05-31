@@ -9,10 +9,48 @@ STOCK_CODE = "[A-z]+"
 STOCK_LEVEL = "[0-9]+"
 NOT_ALPHA_NUM = "[^A-z0-9]*"
 
-class StockLevel(OperationBase):
+class StockBase(OperationBase):
+    def _error_unrecognized_chars(self, opcode):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments containing unrecognized characters in the argument string.
+        '''
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Extra characters found in message."), {}
+        )
+
+class StockLevel(StockBase):
     """Implements the StockLevel SMS API."""
 
     helptext = "For example, %(opcode)s P 2100 M 10. Reports 2100 doses of vaccine P, 10 of M, and 0 of any others."
+
+    def _error_none_found(self, opcode):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments containing no recognized stock levels.
+        '''
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("No stock levels found."), {}
+        )
+
+    def _error_duplicate_stock_levels(self, opcode):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments containing duplicate stock levels.
+        '''
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Found a duplicate stock code."), {}
+        )
+
+    def _ok(self, opcode, args):
+        '''Return a MessageEffect that indicates success.'''
+        return info(
+            _("Parsed %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Parsed: stock_levels is %(stock_levels)s."), args
+        )
 
     def parse_arguments(self, opcode, arg_string, message):
         """
@@ -29,12 +67,12 @@ class StockLevel(OperationBase):
 
         if len(remaining) > 0:
             # there are still characters remaining, meaning there was a parsing failure
-            effect = error_parse(opcode, arg_string)
+            effect = self._error_unrecognized_chars(opcode)
             return [effect], {}
 
         if levels == None:
             # did not find any stock code and level combos
-            effect = error_parse(opcode, arg_string, _("Did not find any stock levels."))
+            effect = _error_none_found(opcode)
             return [effect], {}
 
         # create a dictionary: stock code -> stock level
@@ -44,7 +82,7 @@ class StockLevel(OperationBase):
         for stock_code, stock_level in levels:
             if stock_code in stock_levels:
                 # there was a duplicate stock code in the message
-                effect = error_parse(opcode, arg_string, _("Found a duplicate stock code."))
+                effect = self._error_duplicate_stock_levels(opcode)
                 return [effect], {}
 
             # add to the inventory report
@@ -52,13 +90,30 @@ class StockLevel(OperationBase):
 
         # parsing was successful.
         parsed_args = { 'stock_levels': stock_levels }
-        effect = ok_parse(opcode, _("Parsed: stock_levels is %(stock_levels)s."), parsed_args)
+        effect = self._ok(opcode, parsed_args)
         return [effect], parsed_args
 
-class StockOut(OperationBase):
+class StockOut(StockBase):
     """Implements the StockOut SMS API."""
 
     helptext = "For example, %(opcode)s P. In an emergency, reports that you are out of doses of vaccine P."
+
+    def _ok(self, opcode, args):
+        '''Return a MessageEffect that indicates success.'''
+        return info(
+            _("Parsed %(op_code)s Arguments"), { 'op_code': opcode },
+            _("Parsed: stock_out is %(stock_out)s."), args
+        )
+
+    def _error_none_found(self, opcode):
+        '''
+        Return a MessageEffect that indicates a failure as a result of
+        the arguments containing no recognized stock levels.
+        '''
+        return error(
+            _("Error Parsing %(op_code)s Arguments"), { 'op_code': opcode },
+            _("No stock code found."), {}
+        )
 
     def parse_arguments(self, opcode, arg_string, message):
         """
@@ -72,12 +127,12 @@ class StockOut(OperationBase):
 
         if len(remaining) > 0:
             # there are still characters remaining, meaning there was a parsing failure
-            effect = error_parse(opcode, arg_string, _("Found extra characters after the stock code."))
+            effect = self._error_unrecognized_chars(opcode)
             return [effect], {}
 
         if codes == None:
             # could not parse any useful information
-            effect = error_parse(opcode, arg_string, _("No stock code found."))
+            effect = self._error_none_found(opcode)
             return [effect], {}
 
         # codes is a one element list containing the stock code
@@ -85,5 +140,5 @@ class StockOut(OperationBase):
 
         # parsing was successful.
         parsed_args = { 'stock_out': stock_code }
-        effect = ok_parse(opcode, _("Parsed: stock_out is %(stock_out)s."), parsed_args)
+        effect = self._ok(opcode, parsed_args)
         return [effect], parsed_args
