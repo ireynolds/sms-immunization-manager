@@ -4,6 +4,11 @@ title: SMS Operations
 
 {::options parse_block_html="true" /}
 
+# SMS Operations
+
+* toc
+{:toc}
+
 ## Message Requirements
 
 A "message" is the complete body of an incoming SMS message, which contains multiple SMS operations (except where noted below, a particular operation may appear multiple times in a single message.). Each SMS operation is a two-character "operation code" followed by some text (the "arguments"). The arguments usually encode some data, such as the stock level of a particular vaccine or the name and phone number of a new health worker to register.

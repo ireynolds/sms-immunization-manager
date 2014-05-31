@@ -5,6 +5,9 @@ title: Deploy
 Deployment Instructions
 =============
 
+* toc
+{:toc}
+
 The following instructions are intended to be as helpful as possible and thus are rather detailed.
 
 Configuration
