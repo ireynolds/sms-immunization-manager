@@ -9,7 +9,7 @@
 
 body {
   background: #fff;
-  font-family: Georgia, Palatino, serif;
+  font-family: 'Segoe UI', Helvetica, Tahoma, Sans Serif;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -31,9 +31,7 @@ a:hover {
   /*color: #f90;*/
 }
 
-/* Any code tag whose parent is NOT a pre tag */
-/*:not(pre) > code {*/
-p code {
+p code, li code {
   background-color: #fafafa;
   border: solid 1px #efeee6;
   padding: 0px 3px;
@@ -75,6 +73,10 @@ pre {
 #main ul, #main ol {
   margin: 20px;
   margin-left: 40px;
+}
+
+.maruku_toc {
+  margin-top: 20px;
 }
 
 #main .maruku_toc ul {
