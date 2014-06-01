@@ -29,6 +29,10 @@ title: Configuring Amazon AWS
 18. Either generate a new keypair, or use an existing one. This keypair should only be used for our 403 project, and not for any personal EC2 instances you may have, since you may need to share it with other team members.
 19. Make sure you have downloaded the keypair as a .pem file. Pace this file into your home directory and run chmod 400 on the file.
 
+## Enabling external HTTP and HTTPS access
+
+If the security group for this instance does not permit inbound HTTP (port 80) and HTTPS (port 443) traffic, add these ports via AWS's web console.
+
 ## Viewing Provisioned EC2 Instances
 
 1. Open the EC2 Management Console for the US-West availability zone.
