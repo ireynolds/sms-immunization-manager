@@ -79,7 +79,7 @@ class Responder(AppBase):
             # set translation language for response
             with override(message.connections[0].contact.language):
 
-                msg_to_send = ugettext("%(description)s%(additional_message)s" % { 'description': effect.get_desc, 'additional_message': additional_message })
+                msg_to_send = ugettext("%(description)s%(additional_message)s" % { 'description': unicode(effect.get_desc()), 'additional_message': additional_message })
 
                 # send and record the effect
                 message.respond(unicode(msg_to_send))
