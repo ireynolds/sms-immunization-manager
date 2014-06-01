@@ -31,8 +31,8 @@ You can find our source repository on [GitHub](https://github.com/ireynolds/sms-
     ├── contextual
     ├── dhis2
     ├── envaya
-        ├── migrations
-        └── templates
+    |   ├── migrations
+    |   └── templates
     ├── equipment
     ├── info
     ├── messagelog
