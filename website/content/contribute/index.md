@@ -1,31 +1,41 @@
 ---
-title: Contribute
+title: Contributing to SIM
 ---
 
-Contribute
-==========
+# Contributing to SIM
 
-This project started at the University of Washington Computer Science department but we are happy to work with developers anywhere. If you need to modify SIM for your deployment, work with us so that useful changes can be merged in with the core development.
+* toc
+{:toc}
 
-Getting Started
----------------
-<!-- repos w/ organization, branching strategies; build; run; automated tests; bug-tracking -->
+SIM's development is overseen by the University of Washington's Department of Computer Science and Engineering, but any other interested developers are welcome to contribute. If you need to modify SIM for your deployment, please work with us so that useful changes can be merged into the core product.
 
-Our source code is divided into small modules that can easily be included or removed from your deployment.
+## Tools and Frameworks
 
-### GitHub Repo
+The SIM server is written in [Python](https://www.python.org/) 2.7.6 and uses well-known frameworks such as:
 
-SIM source code can be found on [GitHub](https://github.com/ireynolds/sms-immunization-manager).
+* [Django](http://www.djangoproject.com): A Python web framework.
+* [RapidSMS](http://www.rapidsms.org): An extension of Django that helps send and receive SMS messages.
+* [Bootstrap](http://www.getbootstrap.com): A UI library.
+* [nanoc](http://nanoc.ws/): A static site generator (used to build this documentation site). Depends on [Ruby](https://www.ruby-lang.org/en/) and several other [gems](http://guides.rubygems.org/) (including [Slim](http://slim-lang.com/) and [Maruku](http://maruku.rubyforge.org/maruku.html)).
 
-### Directory Structure
+Tools helpful to development:
 
-In the repository you will find the following structure:
+* [PyPI: The Python Package Index](https://pypi.python.org/pypi/pip): A package manager for Python.
+* [virtualenv](https://pypi.python.org/pypi/virtualenv) and [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/index.html): A tool that isolates the installation of Python packages to prevent interference with other software.
+
+## Source Code Repository
+
+You can find our source repository on [GitHub](https://github.com/ireynolds/sms-immunization-manager). Our source code is divided into small modules that can easily be included or removed from your deployment. In the repository you will find the following structure:
 
     .
     ├── contextual
     ├── dhis2
+    ├── envaya
+    |   ├── migrations
+    |   └── templates
     ├── equipment
     ├── info
+    ├── messagelog
     ├── moderation
     |   ├── locale
     |   └── templates
@@ -51,231 +61,87 @@ In the repository you will find the following structure:
     |  └── management
     |      └── commands
     └── website
-        ├── content
-        └── layouts
 
-The folders are:
+The folders are briefly described below:
 
-`contextual`: ...
+`contextual`: The syntax for contextual SMS operations such as FacilityCode.
 
-`dhis2`: app that communicates with a DHIS2 server. This app performs the semantic checks for permissions as well as retrieving from and saving to a DHIS2 database.
+`dhis2`: Sends data to and syncs data from the DHIS2 remote database. Currently unimplemented.
 
-`equipment`: app that reacts to SMS messages that include reports on equipment status.
+`equipment`: The syntax for SMS operations that relate to equipment status such as EquipmentFailure.
 
-`info`: app that responds to SMS messages that include help requests.
+`info`: The syntax for SMS operations that return information, such as Help.
 
-`moderation`: contains code for the admin moderation web interface.
+`moderation`: Views, templates, and models for the moderation interface. 
 
-`notifications`: app that sends notifications to different users based on registered intrest.
+`notifications`: Sends notifications in response to certain SMS operations such as EquipmentFailure.
 
-`operation_parser`: app that parses the different operation codes and their block of arguments from a single message.
+`operation_parser`: Parses the different operation codes and their block of arguments from a single message.
 
-`permisions`: app that verifies permissions of the user that is sent an incoming SMS message.
+`permisions`: Verifies permissions of the user that sends an incoming SMS message.
 
-`project_report`: ... THIS MIGHT BE REMOVED BEFORE END OF QUARTER?
+`project_report`: Contains the LaTeX source of the original CSE 481 project report.
 
-`prototype`: ... THIS MIGHT BE REMOVED BEFORE END OF QUARTER?
+`response`: Sends a response to the sender of an SMS message.
 
-`registration`: ...
+`sim`: Main Django app settings.
 
-`response`: app that sends the response to the sender of a message.
+`stock`: Syntax for SMS operations related to vaccine stock, such as StockLevel and StockOut.
 
-`sim`: main Django app settings
+`user_registration`: The syntax for registration SMS operations such as UserRegistration and PreferredLanguage.
 
-`stock`: app that reacts to SMS messages that include reports about inventory stock levels.
+`utils`: Utility classes that are used throughout SIM.
 
-`user_registration`: ...
+`website`: The source of this documentation website. Learn more about [contributing to the website](docs).
 
-`utils`: utility classes that are used throughout SIM.
+## Architecture
 
-`website`: contains the version controlled content used to generate this web site.
+SIM's major architectural decisions are documented [here](architecture). It's critical that you read all of this information before working on SIM in earnest. You can also find a more complete and precise definition of the content of each folder in the repository's root.
 
-Typically, developers create new features in a separate "feature branch". Developers regularly merge the master branch into their feature branch to keep it up-to-date. Once development of a feature is complete and fully-tested, the developer submits a pull request to alert the rest of the development team to do a code review.
+## Getting Started
 
-Our Languages, Libraries, and Frameworks
----------------
+You can find our source repository on [GitHub](https://github.com/ireynolds/sms-immunization-manager). Our source code is divided into small modules that can easily be included or removed from your deployment.
 
-The SIM server is written in [Python](https://www.python.org/) 2.7.6.
+### Installing SIM
 
-SIM is built using the well known frameworks:
+Read [these instructions](install) to prepare to run SIM's tests and a development instance.
 
-* [Django](http://www.djangoproject.com)
-* [RapidSMS](http://www.rapidsms.org)
-* [Bootstrap](http://www.getbootstrap.com)
+### Syncing a Development Database
 
-Tools helpful to development:
+SIM is configured to use a [SQLite](http://www.sqlite.org/) database at `$SIMROOT/db.sqlite3`. Before running SIM, this database must be initialized (by creating tables and installing any initial data). To sync the database, run `python $SIMROOT/manage.py syncdb --migrate`.
 
-* [PyPI: The Python Package Index](https://pypi.python.org/pypi/pip)
-* [virtualenvwrapper](http://virtualenvwrapper.readthedocs.org/en/latest/index.html)
+The `syncdb` command creates the necessary tables, and the `--migrate` command runs necessary [database migrations](http://south.readthedocs.org/en/latest/tutorial/part1.html#changing-the-model) for all tables.
 
-This documentation page is created with [nanoc](http://nanoc.ws/). You will need it if you want to edit these pages.
+You can also run these the `syncdb` command to clear the database and ensure a consistent state. This is especially helpful when you're creating, removing, or redefining models during development.
 
-Getting Started
----------------
+### Running a Development Instance
 
-If you are an experience Django developer you will already have an idea of how to get started. We have detailed instructions here to make sure you don't miss anything.
+To run a development instance of SIM, run `python $SIMROOT/manage.py runserver`. This will run the SIM instance on port 8000.
 
-### Short Instructions -- Experts Only
+If you are running SIM inside a virtual machine, you will need to run, for example, `python $SIMROOT/manage.py runserver 0.0.0.0:8000`. Setting the IP to `0.0.0.0` configures Django to accept requests from the host machine. 
 
-First, install Ubuntu 13.04 Desktop (32- or 64-bit). Add the following to `~/.bashrc`:
+In either case, you can interact with SIM at [http://localhost:8000](http://localhost:8000) in a web browser. You can exit the server by typing `Ctrl-C`. 
 
-        export WORKON_HOME=~/Envs
-        mkdir -p $WORKON_HOME
-        source /usr/local/bin/virtualenvwrapper.sh
-        export SIMROOT=~/sms-immunization-manager
+Any `print` statements executed as part of interacting with the development instance will print their output here. This is an incredibly useful tool for debugging.
 
-Add the following to a new file called `~/setup-sms-immunization-manager.sh`:
+### Running an Interactive Shell Session
 
-        sudo apt-get install python2.7 -y
-        sudo apt-get install git -y
+To run a Python shell in the same context as SIM, run `python $SIMROOT/manage.py shell` (you can exit the shell by typing `Ctrl-D`). This shell allows you to, among other things, query and modify SIM's database.
 
-        sudo apt-get install python-pip -y
-        sudo pip install virtualenv
-        sudo pip install virtualenvwrapper
+### Running Tests
 
-        source ~/.bashrc
+SIM includes automated tests that you can run with `python manage.py simtest`. 
 
-        cd ~/
+You can also run manual end-to-end tests by opening the moderation interface, navigating to the RapidSMS dashboard, and then navigating to the Message Tester interface; this allows you to send fake SMS messages through SIM and see the side effects, including any responses.
 
-        git clone https://github.com/ireynolds/sms-immunization-manager.git
-        mkvirtualenv -r $SIMROOT/requirements.txt sms-immunization-manager
-        workon sms-immunization-manager
+### Reviewing Bugs
 
-Then run `source ~/setup-sms-immunization-manager.sh`. To run the server, run `python $SIMROOT/manage.py runserver 0.0.0.0:8000`. Then you can access the server either by running `wget localhost:8000` or by visiting `localhost:8000` in your browser.
+We use [GitHub's built-in bug tracker](https://github.com/ireynolds/sms-immunization-manager/issues?state=open).
 
-### Extended Instructions
+## The Google Drive Repository
 
-#### Install PyPI
+The team also has content in Google Drive. Read more about [the Google Drive repository](google-drive).
 
-PyPI (`pip` at the terminal) is a tool for installing Python packages. Install it by running `sudo apt-get install python-pip`.
+## The Product Documentation Site
 
-#### Install VirtualEnv
-
-VirtualEnv is a tool for managing what python packages are installed from the perspective of a particular instance of the Python process. We use it to ensure consistency between the Python libraries installed in our development and deployment environments. The VirtualEnvWrapper package adds some additional tools to VirtualEnv that make it more user-friendly.
-
-Install VirtualEnv and VirtualEnvWrapper by running the following commands. Don’t be alarmed if some warnings appear.
-
-`sudo pip install virtualenv`
-
-`sudo pip install virtualenvwrapper`
-
-VirtualEnvWrapper requires some changes to your `~/.bashrc` file. Add the following to `~/.bashrc` (you will likely have to install vim, for example, by running `sudo apt-get install vim`):
-
-        export WORKON_HOME=~/Envs #Set up virtualenvwrapper directory
-        mkdir -p $WORKON_HOME
-        source /usr/local/bin/virtualenvwrapper.sh
-
-This change to `~/.bashrc` creates a directory Envs within your home directory, which will contain the Python libraries used by each virtual Python environment you create. After making changes to .bashrc, you must either launch a new terminal session, or re-load your bashrc file by running source `~/.bashrc`.
-
-### Check out SIM’s source code
-
-#### Install Git
-
-`sudo apt-get install git`
-
-#### Configure User Information in Git
-
-Define your name and email address using the following commands. This information will appear in Git’s commit log next to commits you make.
-
-`git config --global user.name "Your Name Here"`
-
-`git config --global user.email "your_netid@uw.edu"`
-
-You may use either your UW or CSE email address. If you mistype your name or email address, or wish to change this information in the future, simply re-execute the commands above.
-
-#### Check out SIM from Github
-
-You will need to decide on a location to keep SIM’s source code within your VM’s file system. In the following commands, we assume you wish you wish to check out the source code into the root of your home directory (accessed using the path `~/` ). However, you may check out the code into any folder you wish, and modify the following commands accordingly to reference a different parent folder than `~`.
-
-`cd ~/`
-
-`git clone https://github.com/ireynolds/sms-immunization-manager.git`
-
-You will have to enter your username and password for GitHub. After this, a directory `sms-immunization-manager` should now exist within your home directory.
-
-#### Create an environment variable pointing to the repository root
-
-To help simplify commands (and to allow convenient copy-pasting between teammates), define an environment variable SIMROOT that points to the root directory of SIM’s Git repository. If you checked out our Git repository using the commands above, this can be accomplished by adding the following to your bashrc file:
-
-`export SIMROOT=~/sms-immunization-manager`
-
-Again, you will need to start a new terminal session, or re-load your bashrc file by running `source ~/.bashrc`
-
-Once this environment variable is defined, you can use it to reference the repository root directory. For example, this command lists the files in the Git repository:
-
-`ls $SIMROOT`
-
-#### Create a Virtual Environment for SIM
-
-To create a new virtual environment named ‘sms-immunization-manager’ containing the Python packages needed to run SIM, run the following:
-
-`mkvirtualenv -r $SIMROOT/requirements.txt sms-immunization-manager`
-
-This command will download the packages listed in `requirements.txt`, and install them to a subdirectory of `~/Envs`.
-
-### Running SIM
-
-#### Enabling and disabling virtual environments
-
-To enable SIM’s virtual environment, run:
-
-`workon sms-immunization-manager`
-
-To disable the currently enabled virtual environment, run:
-
-`deactivate`
-
-Make sure to enable SIM’s virtual environment before trying to run SIM. When run outside of its virtual environment, SIM will encounter an error when importing Django.
-
-#### Initializing a testing database
-
-SIM is configured to use a sqlite3 database at `$SIMROOT/db.sqlite3` by default. Before running SIM, this database must be initialized (by creating tables and installing any initial data). To sync the database, run the following commands:
-
-`python $SIMROOT/manage.py syncdb`
-
-`python $SIMROOT/manage.py migrate`
-
-#### Start an interactive shell session
-
-`python $SIMROOT/manage.py shell`
-
-You can exit the shell by typing Ctrl-D.
-
-#### Start Django’s built-in development server
-
-`python $SIMROOT/manage.py runserver`
-
-To interact with the server, visit [http://localhost:8000](http://localhost:8000) in a web browser. You can exit the server by typing Ctrl-C.
-
-### Celebrate
-That’s it! Your VM is ready to be used for development!
-
-
-Core Architecture
----------------
-<!-- overview of Django, RapidSMS, SIM; class-level implementation with UML class/sequence diagrams; assumptions/requirements for syntax and I/O -->
-
-Modiying SIM
----------------
-<!-- How, if at all, do these modifications make it back into our repos? -->
-
-Modify Existing Syntaxes
----------------
-<!-- remove; rename arguments -->
-
-Create New Syntaxes
----------------
-
-Modify Existing Operations
----------------
-
-Create new Operations
----------------
-
-Releasing
----------------
-<!-- Code and docs -->
-
-In the Future
----------------
-<!-- Unimplemented; Half-assed; Next priorities -->
+The source of this documentation site is in the `website/` directory of the repository. The published content is generated from that source using [nanoc](http://nanoc.ws/). [Read about contributing to the documentation site](docs).

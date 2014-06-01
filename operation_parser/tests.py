@@ -258,5 +258,5 @@ class GobblerTest(TestCase):
 
     def test_strip_delimiters(self):
         self.assertEqual(
-            "Hello there-",
+            "Hello there",
             gobbler.strip_delimiters("; \t,,;Hello there-   ;,;,,\t "))

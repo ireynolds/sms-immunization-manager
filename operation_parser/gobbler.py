@@ -14,10 +14,12 @@ import re
 
 # The delimiters that are skipped from the beginning of the string
 # before any gobble* calls.
-DELIMS = re.compile("[\\s;,]+")
+DELIMS = re.compile("[\\s,;+-]+")
+
+LABEL_LENGTH = 1
 
 # The regexes for "label", "integer", and "opcode" in operation syntax.
-LABEL = "[A-Z]"
+LABEL = "[A-Z]{%s}" % (LABEL_LENGTH,)
 INTEGER = "\\d+"
 OPCODE = "[A-Z]{2}"
 

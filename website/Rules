@@ -22,9 +22,11 @@ compile '*' do
     filter :slim
     layout 'default'
   elsif ['md', 'markdown'].include? item[:extension]
-    filter :kramdown
+    filter :maruku
     layout 'default'
   end
+
+  filter :relativize_paths, type: :html
 end
 
 route '*' do

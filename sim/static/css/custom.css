@@ -15,9 +15,14 @@ h1 {
   margin-top: 0.1em;
 }
 
-/* Make bootstrap's dropdown list styling apply to links wrapped in forms,
-   for the language selection menu. */
+/* Give media div's (used in the message log) more bottom padding, to better
+   separate messages */
+div.media {
+  margin-bottom: 4em;
+}
 
+/* Make bootstrap's dropdown list styling apply to links wrapped in forms,
+   for the language selection menu and action menus. */
 .dropdown-menu > li > form > a {
   display: block;
   padding: 3px 20px;
@@ -32,4 +37,9 @@ h1 {
   color: #262626;
   text-decoration: none;
   background-color: #f5f5f5;
+}
+
+/* Hidden class for message effects */
+.effect-hidden {
+  display: none;
 }

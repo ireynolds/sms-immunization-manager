@@ -1,10 +1,27 @@
+{% load i18n %}
 {% with effect_wrapper.effect as effect %}
-<tr class="{{ effect_wrapper.row_class }}">
+<tr class="{% if not effect.moderator_dismissed %}{{ effect_wrapper.row_class }}{% endif %}">
     <td>{{ effect.get_stage_display }}</td>
-    <td><span class="label label-{{ effect_wrapper.label_class }}">{{ effect.get_priority_display }}</span></td>
+    <td class="text-center"><span class="label label-{{ effect_wrapper.label_class }}">{{ effect.get_priority_display }}</span></td>
     <td>{{ effect.opcode }}</td>
     <td>{{ effect.get_name }}</td>
     <td>{{ effect.get_desc }}</td>
-    <td></td>
+    <td class="text-center">
+        {% if effect_wrapper.dismissable %}
+            <form action="{% url "dismiss" effect.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-xs btn-block btn-success" data-placement="top" data-toggle="tooltip" title="{% trans "Indicate that this error does not require moderator action" %}">
+                    {% trans "Dismiss Error" %}
+                </button>
+            </form>
+        {% elif effect_wrapper.undismissable %}
+            <form action="{% url "undismiss" effect.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-xs btn-block btn-danger" data-placement="top" data-toggle="tooltip" title="{% trans "Indicate that this error requires moderator action" %}">
+                    {% trans "Undismiss Error" %}
+                </button>
+            </form>
+        {% endif %}
+    </td>
 </tr>
 {% endwith %}

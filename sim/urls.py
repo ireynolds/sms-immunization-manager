@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     # TODO: Add user settings and password reset pages
 
     # SIM-specific URLs
+    url(r'^envaya/', include('envaya.urls')),
     url(r'^moderation/', include('moderation.urls')),
     url(r'^$', 'moderation.views.home', name='moderation-home'),
 

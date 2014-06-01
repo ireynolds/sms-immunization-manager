@@ -12,32 +12,6 @@ from django.dispatch import receiver
 from django.core.urlresolvers import reverse
 
 ##
-## The following helper methods for Parse stage
-## success/failure define the convention for a response.
-##
-
-def error_parse(opcode, arg_string, reason=None):
-    name = "Error Parsing %(op_code)s Arguments"
-
-    desc_start = "Error in %(op_code)s: %(arg_string)s."
-    desc_end = "Please fix and send again."
-    if reason:
-        desc = "%s %s %s" % (desc_start, reason, desc_end)
-    else:
-        desc = "%s %s" % (desc_start, desc_end)
-
-    return error(
-        ugettext_noop(name), { 'op_code': opcode },
-        ugettext_noop(desc), { 'op_code': opcode, 'arg_string': arg_string }
-    )
-
-def ok_parse(opcode, desc_fmstr, desc_ctxt):
-    return info(
-        ugettext_noop("Parsed %(op_code)s Arguments"), { 'op_code': opcode },
-        ugettext_noop(desc_fmstr), desc_ctxt
-    )
-
-##
 ## Wrappers for creating effects
 ##
 
@@ -276,7 +250,7 @@ class ModeratorProfile(models.Model):
 
     def get_home_url(self):
         """
-        Returns the preferred landing page for this user. If facility is set, returns the url for 
+        Returns the preferred landing page for this user. If facility is set, returns the url for
         that facility. Otherwise, returns the url corresponding to node. If node is not set, returns
         None.
         """

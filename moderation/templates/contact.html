@@ -24,50 +24,48 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="col-sm-12">
-            <h1>{{ contact }}</h1>
+        <div class="col-sm-8">
+            <h1>
+                {{ contact }} &nbsp;
+                <small>{{ contact.contactprofile.get_phone_number }}</small>
+            </h1>
+            <h4>
+                {{ contact.contactprofile.get_role_name_display }} &nbsp;
+                <small>
+                    {% comment %}This is a hack to get the name of the contact's language in the user's language. Adding a context value containing dict(LANGUAGE) is a possible alternative{% endcomment %}
+                    {% for code, name in LANGUAGES %}
+                        {% if code == contact.language %}
+                            {% blocktrans with lang_name=name%}Prefers {{ lang_name }}{% endblocktrans %}
+                        {% endif %}
+                    {% endfor %}
+                </small>
+            </h4>
+        </div>
+
+        <div class="col-sm-4 text-center">
+            <div class="btn-group">
+                <a href="#" class="btn btn-default" role="button">Edit Contact</a>
+                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+
+                <ul class="dropdown-menu text-left" role="menu">
+                    <li>
+                        <form action="{% url "moderation.views.contact_dismiss" contact.pk %}" method="post">
+                            {% csrf_token %}
+                            <a class="submit-link" href="#">{% trans "Dismiss All Errors" %}</a>
+                        </form>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href="#">{% trans "Delete Contact" %}</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 
     <hr />
 
     <div class="row">
-        <!-- Edit Form -->
-        <div class="col-md-3">
-            <div class="panel panel-default">
-                <div class="panel-heading">{% trans "Contact Information" %}</div>
-                <table class="table">
-                    <tbody>
-                        <tr>
-                            <th class="text-right">{% trans "Name" %}</th>
-                            <td>{{ contact.name }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-right">{% trans "Phone Number" %}</th>
-                            <td>{{ contact.contactprofile.get_phone_number }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-right">{% trans "Preferred Language" %}</th>
-                            {% comment %}This is a hack to get the name of the contact's language in the user's language. Adding a context value containing dict(LANGUAGE) is a possible alternative{% endcomment %}
-                            {% for code, name in LANGUAGES %}
-                                {% if code == contact.language %}
-                                    <td>{{ name }}</td>
-                                {% endif %}
-                            {% endfor %}
-                        </tr>
-                        <tr>
-                            <th class="text-right">{% trans "Role" %}</th>
-                            <td>{{ contact.contactprofile.get_role_name_display }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-<a href="#" class="btn btn-default text-center" role="button">Primary link</a>
-                <a href="{% url "moderation.views.contact_edit" contact.pk %}">Edit</a>
-            </div>
-        </div>
-
         <!-- Message Log -->
-        <div class="col-md-9">
+        <div class="col-md-12">
             {% for wrapper in wrapped_messages %}
                 {% include "include/message.html" %}
             {% endfor %}
