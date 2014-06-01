@@ -11,7 +11,7 @@ title: Configuring Amazon AWS
 
 1. Open up the EC2 dashboard for the US-West (Oregon) availability zone.
 2. Click Launch Instance.
-3. Choose the host operating system "Ubuntu Server 'Ubuntu Server 14.04 LTS (PV)'", with 64 bit selected.
+3. Choose the host operating system "Ubuntu Server 'Ubuntu Server 14.04 LTS (PV)'", with 64-bit selected.
 4. Check that the Instance Type is micro (unless you wish to provision a larger instance).
 5. Click "Next: Configure Instance Details".
 6. Select "No Preference" for the launch subnet.
@@ -26,8 +26,8 @@ title: Configuring Amazon AWS
 15. Either create a new security group that allows SSH connections (this is the default security group settings), or use an existing security group that you know to be configured correctly. Add inbound HTTP access as well.
 16. Click "Review and Launch".
 17. Click "Launch".
-18. Either generate a new keypair, or use an existing one. This keypair should only be used for our 403 project, and not for any personal EC2 instances you may have, since you may need to share it with other team members.
-19. Make sure you have downloaded the keypair as a .pem file. Pace this file into your home directory and run chmod 400 on the file.
+18. Either generate a new keypair, or use an existing one. Keep in mind that you may have to share with keypair with other developers on this project.
+19. Make sure you have downloaded the keypair as a .pem file. Pace this file into your home directory and run `chmod 400` on the file.
 
 ## Enabling external HTTP and HTTPS access
 
