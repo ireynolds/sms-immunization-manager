@@ -94,6 +94,10 @@ def contact(request, contact_id):
             self.effect = effect
             self.row_class = self.ROW_CLASSES[effect.priority]
             self.label_class = self.LABEL_CLASSES[effect.priority]
+            self.dismissable = (effect.priority in MODERATOR_PRIORITIES 
+                and not effect.moderator_dismissed)
+            self.undismissable = (effect.priority in MODERATOR_PRIORITIES 
+                and effect.moderator_dismissed)
 
     contact = get_object_or_404(Contact, pk=contact_id)
 

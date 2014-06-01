@@ -24,7 +24,7 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-sm-8">
             <h1>
                 {{ contact }} &nbsp;
                 <small>{{ contact.contactprofile.get_phone_number }}</small>
@@ -41,30 +41,29 @@
                 </small>
             </h4>
         </div>
+
+        <div class="col-sm-4 text-right">
+            <div class="btn-group">
+                <a href="#" class="btn btn-default" role="button">Edit Contact</a>
+                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
+
+                <ul class="dropdown-menu text-left" role="menu">
+                    <li><a href="#" data-toggle="dropdown" data-placement="right" data-toggle="tooltip" title="{% trans "Dismiss all errors from this contact" %}">{% trans "Dismiss All Errors" %}</a></li>
+                    <li class="divider"></li>
+                    <li><a href="#">{% trans "Delete Contact" %}</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <hr />
 
     <div class="row">
         <!-- Message Log -->
-        <div class="col-md-10">
+        <div class="col-md-12">
             {% for wrapper in wrapped_messages %}
                 {% include "include/message.html" %}
             {% endfor %}
-        </div>
-
-        <!-- Month Select -->
-        <div class="col-md-2">
-            <div class="panel panel-default text-center">
-                <div class="panel-heading">{% trans "Months" %}</div>
-                <ul class="nav nav-pills nav-stacked">
-                    <li><a href="#">January 2014</a></li>
-                    <li><a href="#">February 2014</a></li>
-                    <li><a href="#">March 2014</a></li>
-                    <li><a href="#">April 2014</a></li>
-                    <li><a href="#">May 2014</a></li>
-                </ul>
-            </div>
         </div>
     </div>
 </div>

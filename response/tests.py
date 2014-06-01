@@ -4,9 +4,7 @@ from moderation.models import *
 from rapidsms.tests.harness.router import CreateDataMixin
 from rapidsms.contrib.messagelog.app import MessageLogApp
 from rapidsms.log.mixin import LoggerMixin
-
-PLACEHOLDER_GROUP_SENDS_RESPONSE = "AAA"
-PLACEHOLDER_GROUP_NO_RESPONSE = "BBB"
+from sim.settings import INFORMATION
 
 def add_info_effect(message, name, desc, stage=SYNTAX):
     effect = info(ugettext_noop(name), {}, ugettext_noop(desc), {})
@@ -45,7 +43,9 @@ class ResponseTest(CreateDataMixin, TestCase):
 
         message.fields = {}
         message.fields['operation_effects'] = []
-        message.fields['group'] = PLACEHOLDER_GROUP_SENDS_RESPONSE
+        message.fields['group'] = "OTHER"
+        message.connections[0].contact = self.create_contact()
+        message.connections[0].contact.language = "en"
 
         return message
 
@@ -79,9 +79,9 @@ class ResponseTest(CreateDataMixin, TestCase):
         add_info_effect(message, "Info4", "No errors")
         self.resp.cleanup(message)
 
-        self.assertNumEffects(message, 4)
+        self.assertNumEffects(message, 5)
         self.assertResponseSent(message.fields['operation_effects'][0])
-        for i in range(1, 4):
+        for i in range(1, 5):
             self.assertResponseNotSent(message.fields['operation_effects'][i])
 
     def test_multiple_effects_one_errors_mid(self):
@@ -92,11 +92,12 @@ class ResponseTest(CreateDataMixin, TestCase):
         add_info_effect(message, "Info4", "No errors")
         self.resp.cleanup(message)
 
-        self.assertNumEffects(message, 4)
+        self.assertNumEffects(message, 5)
         self.assertResponseNotSent(message.fields['operation_effects'][0])
         self.assertResponseNotSent(message.fields['operation_effects'][1])
         self.assertResponseSent(message.fields['operation_effects'][2])
         self.assertResponseNotSent(message.fields['operation_effects'][3])
+        self.assertResponseNotSent(message.fields['operation_effects'][4])
 
     def test_multiple_effects_one_errors_last(self):
         message = self.createMessage()
@@ -106,10 +107,11 @@ class ResponseTest(CreateDataMixin, TestCase):
         add_error_effect(message, "Error", "Big errors")
         self.resp.cleanup(message)
 
-        self.assertNumEffects(message, 4)
+        self.assertNumEffects(message, 5)
         for i in range(3):
             self.assertResponseNotSent(message.fields['operation_effects'][i])
         self.assertResponseSent(message.fields['operation_effects'][3])
+        self.assertResponseNotSent(message.fields['operation_effects'][4])
 
     def test_multiple_errors(self):
         message = self.createMessage()
@@ -120,12 +122,13 @@ class ResponseTest(CreateDataMixin, TestCase):
         add_error_effect(message, "Error3", "Big errors")
         self.resp.cleanup(message)
 
-        self.assertNumEffects(message, 5)
+        self.assertNumEffects(message, 6)
         self.assertResponseNotSent(message.fields['operation_effects'][0])
         self.assertResponseSent(message.fields['operation_effects'][1])
         self.assertResponseNotSent(message.fields['operation_effects'][2])
         self.assertResponseNotSent(message.fields['operation_effects'][3])
         self.assertResponseNotSent(message.fields['operation_effects'][4])
+        self.assertResponseNotSent(message.fields['operation_effects'][5])
 
     def test_one_urgent_no_errors_with_confirm(self):
         message = self.createMessage()
@@ -135,12 +138,13 @@ class ResponseTest(CreateDataMixin, TestCase):
         add_info_effect(message, "Info3", "No errors")
         self.resp.cleanup(message)
 
-        self.assertNumEffects(message, 5)
+        self.assertNumEffects(message, 6)
         self.assertResponseNotSent(message.fields['operation_effects'][0])
         self.assertResponseSent(message.fields['operation_effects'][1])
         self.assertResponseNotSent(message.fields['operation_effects'][2])
         self.assertResponseNotSent(message.fields['operation_effects'][3])
-        self.assertResponseSent(message.fields['operation_effects'][4])
+        self.assertResponseNotSent(message.fields['operation_effects'][4])
+        self.assertResponseSent(message.fields['operation_effects'][5])
 
     def test_multiple_urgent_no_errors_with_confirm(self):
         message = self.createMessage()
@@ -150,43 +154,49 @@ class ResponseTest(CreateDataMixin, TestCase):
         add_urgent_effect(message, "Urgent3", "No errors")
         self.resp.cleanup(message)
 
-        self.assertNumEffects(message, 5)
+        self.assertNumEffects(message, 8)
         self.assertResponseNotSent(message.fields['operation_effects'][0])
-        for i in range(1, 5):
+        for i in range(1, 4):
             self.assertResponseSent(message.fields['operation_effects'][i])
+        for i in range(4, 7):
+            self.assertResponseNotSent(message.fields['operation_effects'][i])
+        self.assertResponseSent(message.fields['operation_effects'][7])
 
     def test_one_urgent_no_errors_no_confirm(self):
         message = self.createMessage()
-        message.fields['group'] = PLACEHOLDER_GROUP_NO_RESPONSE
+        message.fields['group'] = INFORMATION
         add_info_effect(message, "Info1", "No errors")
         add_urgent_effect(message, "Urgent", "No errors")
         add_info_effect(message, "Info2", "No errors")
         add_info_effect(message, "Info3", "No errors")
         self.resp.cleanup(message)
 
-        self.assertNumEffects(message, 4)
+        self.assertNumEffects(message, 5)
         self.assertResponseNotSent(message.fields['operation_effects'][0])
         self.assertResponseSent(message.fields['operation_effects'][1])
         self.assertResponseNotSent(message.fields['operation_effects'][2])
         self.assertResponseNotSent(message.fields['operation_effects'][3])
+        self.assertResponseNotSent(message.fields['operation_effects'][4])
 
     def test_multiple_urgent_no_errors_no_confirm(self):
         message = self.createMessage()
-        message.fields['group'] = PLACEHOLDER_GROUP_NO_RESPONSE
+        message.fields['group'] = INFORMATION
         add_info_effect(message, "Info1", "No errors")
         add_urgent_effect(message, "Urgent1", "No errors")
         add_urgent_effect(message, "Urgent2", "No errors")
         add_urgent_effect(message, "Urgent3", "No errors")
         self.resp.cleanup(message)
 
-        self.assertNumEffects(message, 4)
+        self.assertNumEffects(message, 7)
         self.assertResponseNotSent(message.fields['operation_effects'][0])
         for i in range(1, 4):
             self.assertResponseSent(message.fields['operation_effects'][i])
+        for i in range(4, 7):
+            self.assertResponseNotSent(message.fields['operation_effects'][i])
 
     def test_no_errors_no_confirm(self):
         message = self.createMessage()
-        message.fields['group'] = PLACEHOLDER_GROUP_NO_RESPONSE
+        message.fields['group'] = INFORMATION
         add_info_effect(message, "Info1", "No errors")
         add_info_effect(message, "Info2", "No errors")
         add_info_effect(message, "Info3", "No errors")
@@ -196,3 +206,31 @@ class ResponseTest(CreateDataMixin, TestCase):
         self.assertNumEffects(message, 4)
         for i in range(1, 4):
             self.assertResponseNotSent(message.fields['operation_effects'][i])
+
+    def test_ignore_commit_errors(self):
+        message = self.createMessage()
+        add_info_effect(message, "Info1", "No errors")
+        add_info_effect(message, "Info2", "No errors")
+        add_error_effect(message, "Error", "No errors", COMMIT)
+        add_info_effect(message, "Info3", "No errors")
+        self.resp.cleanup(message)
+
+        self.assertNumEffects(message, 5)
+        for i in range(0, 4):
+            self.assertResponseNotSent(message.fields['operation_effects'][i])
+        self.assertResponseSent(message.fields['operation_effects'][4])
+
+    def test_ignore_commit_errors_with_other_errors(self):
+        message = self.createMessage()
+        add_info_effect(message, "Info1", "No errors")
+        add_error_effect(message, "Error1", "No errors", COMMIT)
+        add_error_effect(message, "Error2", "No errors")
+        add_error_effect(message, "Error3", "No errors")
+        self.resp.cleanup(message)
+
+        self.assertNumEffects(message, 5)
+        self.assertResponseNotSent(message.fields['operation_effects'][0])
+        self.assertResponseNotSent(message.fields['operation_effects'][1])
+        self.assertResponseSent(message.fields['operation_effects'][2])
+        self.assertResponseNotSent(message.fields['operation_effects'][3])
+        self.assertResponseNotSent(message.fields['operation_effects'][4])
