@@ -11,6 +11,8 @@ html lang="en"
 
   body
     div id="main"
+      == breadcrumbs_trail.map {|i| link_to(i.attributes[:title], i.reps[0].path) }.join(' / ')
+
       == yield
     
     div id="sidebar"

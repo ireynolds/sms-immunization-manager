@@ -12,12 +12,7 @@ chain information manager for its data storage, is simple to deploy and maintain
 modify for your deployment (it's written in [Python](https://www.python.org/) and is based on the 
 well-known [Django](https://www.djangoproject.com/) and [RapidSMS](https://www.rapidsms.org/) frameworks).
 
-If you're interesting in learning more about something in specific, you can 
-
-* Learn __[what SIM can do for you](/use)__
-* Learn __[how to deploy SIM](/deploy/)__
-* Learn __[how to contribute to SIM's development](/contribute/)__
-
+If you're interesting in learning more about something in specific, you can follow the links in the sidebar. 
 Otherwise, continue reading to get an overview of what SIM can do.
 
 ## A Community Health Worker (CHW) Reports Vaccine Stock Via SMS ##
