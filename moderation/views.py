@@ -1,4 +1,3 @@
-from models import *
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseNotAllowed, HttpResponseBadRequest
@@ -10,6 +9,7 @@ from django.contrib import messages
 from django.utils.translation import ugettext as _
 from user_registration.models import *
 from moderation.models import *
+from rapidsms.contrib.messagelog.models import Message
 from forms import *
 
 @login_required
@@ -70,6 +70,8 @@ def contact(request, contact_id):
             self.wrapped_effects = map(EffectWrapper, self.effects)
             self.needs_action = self.effects.filter(priority__in=MODERATOR_PRIORITIES, 
                 moderator_dismissed=False).exists()
+            self.dismissed = (not self.needs_action 
+                and self.effects.filter(priority__in=MODERATOR_PRIORITIES).exists())
             self.created_by_moderator = message.connection.backend.name == settings.MODERATOR_BACKEND
 
     class EffectWrapper(object):
@@ -141,16 +143,45 @@ def contact_edit(request, contact_id):
         context_instance=RequestContext(request))
 
 @login_required
-def dismiss_effect(request, effect_id):
-    pass
+def effect_dismiss(request, effect_id, dismiss_value):
+    """
+    Sets the dismissal state of the given effect to dismiss_value. Redirects to the contact view
+    of the sender of the message containing the given effect.
+    """
+    if request.method == 'POST':
+        effect = get_object_or_404(MessageEffect, pk=effect_id)
+        effect.moderator_dismissed = dismiss_value
+        effect.save()
+        return HttpResponseRedirect(reverse(contact, args=(effect.message.contact.pk,)))
+    else:
+        return HttpResponseNotAllowed(['POST']) 
 
 @login_required
-def dismiss_message(request, message_id):
-    pass
+def message_dismiss(request, message_id):
+    """
+    Dismisses all effects requiring moderator action in the given message.
+    """
+    if request.method == 'POST':
+        message = get_object_or_404(Message, pk=message_id)
+        effects = message.messageeffect_set.filter(priority__in=MODERATOR_PRIORITIES)
+        effects.update(moderator_dismissed=True)
+        return HttpResponseRedirect(reverse(contact, args=(message.contact.pk,)))
+    else:
+        return HttpResponseNotAllowed(['POST']) 
 
 @login_required
-def dismiss_contact(request, contact_id):
-    pass
+def contact_dismiss(request, contact_id):
+    """
+    Dismisses all effects requiring moderator action in the given contact
+    """
+    if request.method == 'POST':
+        contact = get_object_or_404(Contact, pk=contact_id)
+        effects = MessageEffect.objects.filter(message__contact=contact, 
+            priority__in=MODERATOR_PRIORITIES)
+        effects.update(moderator_dismissed=True)
+        return HttpResponseRedirect(reverse("moderation.views.contact", args=(contact.pk,)))
+    else:
+        return HttpResponseNotAllowed(['POST']) 
 
 def set_language(request):
     """

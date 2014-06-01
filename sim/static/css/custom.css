@@ -22,8 +22,7 @@ div.media {
 }
 
 /* Make bootstrap's dropdown list styling apply to links wrapped in forms,
-   for the language selection menu. */
-
+   for the language selection menu and action menus. */
 .dropdown-menu > li > form > a {
   display: block;
   padding: 3px 20px;

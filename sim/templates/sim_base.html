@@ -53,7 +53,7 @@
                                             {% csrf_token %}
                                             <input name="next" type="hidden" value="{{ redirect_to }}" />
                                             <input name="language" type="hidden" value="{{ l.code }}" />
-                                            <a href="#" class="language-link">
+                                            <a href="#" class="submit-link">
                                                 {% if l.code == LANGUAGE_CODE %}<strong>{% endif %}
                                                 {% if l.code == user.moderator_profile.language %}
                                                     {% blocktrans with l.name_local as language %}{{ language }} (default){% endblocktrans %}

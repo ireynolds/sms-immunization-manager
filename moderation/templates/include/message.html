@@ -1,7 +1,7 @@
 {% load i18n %}
 {% with wrapper.message as message %}
     <div id="message-{{ message.pk }}" class="media">
-        <p class="pull-left {% if wrapper.needs_action %}text-danger{% else %}text-success{% endif %}">
+        <p class="pull-left {% if wrapper.needs_action %}text-danger{% elif wrapper.dismissed %}text-warning{% else %}text-success{% endif %}">
         {% if wrapper.created_by_moderator %}
             <span class="glyphicon glyphicon-repeat conversation-icon" data-placement="top" data-toggle="tooltip" title="{% trans "This message was created by a moderator"%}"></span>
         {% elif message.direction = "I" %}
@@ -11,7 +11,7 @@
         {% endif %}
         </p>
         <div class="media-body">
-            <h4 class="media-heading {% if wrapper.needs_action %}text-danger{% else %}text-success{% endif %}">{{ message.text }}</h4>
+            <h4 class="media-heading {% if wrapper.needs_action %}text-danger{% elif wrapper.dismissed %}text-warning{% else %}text-success{% endif %}">{{ message.text }}</h4>
             <table class="table table-condensed">
                 <tr>
                     <td>{% trans "Date" %}</td>
@@ -38,9 +38,12 @@
                             <th>{% trans "Name" %}</th>
                             <th>{% trans "Description" %}</th>
                             <th class="text-center">
-                                <button type="button" {% if not wrapper.needs_action %}disabled="disabled"{% endif %} class="btn btn-xs btn-default btn-block" data-placement="top" data-toggle="tooltip" title="{% trans "Dismiss all errors in this message" %}">
-                                    {% trans "Dismiss All" %}
-                                </button>
+                                <form action="{% url "moderation.views.message_dismiss" message.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" {% if not wrapper.needs_action %}disabled="disabled"{% endif %} class="btn btn-xs btn-default btn-block" data-placement="top" data-toggle="tooltip" title="{% trans "Dismiss all errors in this message" %}">
+                                        {% trans "Dismiss All" %}
+                                    </button>
+                                </form>
                             </th>
                         </tr>
                     </thead>

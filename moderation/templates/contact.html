@@ -42,13 +42,18 @@
             </h4>
         </div>
 
-        <div class="col-sm-4 text-right">
+        <div class="col-sm-4 text-center">
             <div class="btn-group">
                 <a href="#" class="btn btn-default" role="button">Edit Contact</a>
                 <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
 
                 <ul class="dropdown-menu text-left" role="menu">
-                    <li><a href="#" data-toggle="dropdown" data-placement="right" data-toggle="tooltip" title="{% trans "Dismiss all errors from this contact" %}">{% trans "Dismiss All Errors" %}</a></li>
+                    <li>
+                        <form action="{% url "moderation.views.contact_dismiss" contact.pk %}" method="post">
+                            {% csrf_token %}
+                            <a class="submit-link" href="#">{% trans "Dismiss All Errors" %}</a>
+                        </form>
+                    </li>
                     <li class="divider"></li>
                     <li><a href="#">{% trans "Delete Contact" %}</a></li>
                 </ul>

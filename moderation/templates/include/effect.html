@@ -8,13 +8,19 @@
     <td>{{ effect.get_desc }}</td>
     <td class="text-center">
         {% if effect_wrapper.dismissable %}
-            <button type="button" class="btn btn-xs btn-block btn-success" data-placement="top" data-toggle="tooltip" title="{% trans "Indicate that this error does not require moderator action" %}">
-                {% trans "Dismiss Error" %}
-            </button>
+            <form action="{% url "dismiss" effect.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-xs btn-block btn-success" data-placement="top" data-toggle="tooltip" title="{% trans "Indicate that this error does not require moderator action" %}">
+                    {% trans "Dismiss Error" %}
+                </button>
+            </form>
         {% elif effect_wrapper.undismissable %}
-            <button type="button" class="btn btn-xs btn-block btn-danger" data-placement="top" data-toggle="tooltip" title="{% trans "Indicate that this error requires moderator action" %}">
-                {% trans "Undismiss Error" %}
-            </button>
+            <form action="{% url "undismiss" effect.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-xs btn-block btn-danger" data-placement="top" data-toggle="tooltip" title="{% trans "Indicate that this error requires moderator action" %}">
+                    {% trans "Undismiss Error" %}
+                </button>
+            </form>
         {% endif %}
     </td>
 </tr>

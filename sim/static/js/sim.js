@@ -1,5 +1,6 @@
-// Submit the language form each time the language link is clicked
-$('.language-link').click(
+// Submits the containing form. Used for putting forms into dropdown menus
+// For example, the language select and contact actions.
+$('.submit-link').click(
     function(event){
         // Prevent the browser from navigating to the link location
         event.preventDefault();
