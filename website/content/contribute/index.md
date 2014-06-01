@@ -146,4 +146,4 @@ The team also has content in Google Drive. Read more about [the Google Drive rep
 
 The source of this documentation site is in the `website/` directory of the repository. The published content is generated from that source using [nanoc](http://nanoc.ws/). The nanoc documentation is excellent and our configuration is simple, so we recommend using their docs.
 
-To publish the documentation site, run `nanoc` to generate the static site in the `content/` directory. Then copy the contents of `content/` (not the `content/` folder itself, though) into the `docs/` folder in the Document Root (as [configured](/deploy/apache) in Apache).
+To publish the documentation site, run `nanoc` to generate the static site in the `content/` directory. Then copy the contents of `content/` (not the `content/` folder itself, though) into the `docs/` folder in the Document Root (as [configured](/deploy/apache/#configure_apaches_to_host_sim) in Apache).
