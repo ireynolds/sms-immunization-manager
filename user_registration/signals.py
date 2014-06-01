@@ -1,8 +1,7 @@
-import string
-import random
 from utils.operations import semantic_signal, commit_signal
 from user_registration.apps import *
 from user_registration.models import *
+from django.conf import settings
 from django.dispatch.dispatcher import receiver
 from django.utils.translation import ugettext_noop as _
 from rapidsms.models import Backend, Contact, Connection
@@ -19,19 +18,6 @@ def preferred_language_commit(message, **kwargs):
     effect = info(_("Changed Language Preferences"), {}, result_fmtstr, result_context)
     return [effect] #[complete_effect(effect, message.logger_msg, COMMIT, opcode="PL")]
 
-
-# Taken from CreateDataMixin in rapidsms.tests.harness.base
-def random_string(self, length=255, extra_chars=''):
-    """
-    Generate a random string of characters.
-
-    :param length: Length of generated string.
-    :param extra_chars: Additional characters to include in generated string.
-    """
-
-    chars = string.letters + extra_chars
-    return ''.join([random.choice(chars) for i in range(length)])
-
 @receiver(commit_signal, sender=UserRegistration)
 def user_registration_commit(sender, message, **kwargs):
     # Check if a Connection for this new user already exists
@@ -43,7 +29,8 @@ def user_registration_commit(sender, message, **kwargs):
                 )
 
     else:
-        backend_data = {'name' : random_string(12)}
+        #TODO: Add facility
+        backend_data = {'name' : settings.PHONE_BACKEND}
         contact_data = {}
         if 'contact_name' in kwargs.keys():
             contact_data['name'] = kwargs['contact_name']
