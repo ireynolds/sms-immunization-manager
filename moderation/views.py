@@ -10,6 +10,7 @@ from django.utils.translation import ugettext as _
 from user_registration.models import *
 from moderation.models import *
 from rapidsms.contrib.messagelog.models import Message
+from rapidsms.router import receive, lookup_connections
 from forms import *
 
 @login_required
@@ -179,6 +180,38 @@ def contact_create(request):
         },
         context_instance=RequestContext(request))
 
+@login_required
+def message_resend(request, message_id):
+    """
+    Re-sends the given message
+    """
+    message = get_object_or_404(Message, pk=message_id)
+    contact = message.contact
+
+    if request.method == 'POST':
+        form = ResendForm(request.POST)
+
+        if form.is_valid():
+            text = form.cleaned_data['text']
+            number = contact.contactprofile.get_phone_number()
+
+            connection = lookup_connections(settings.MODERATOR_BACKEND, [number])[0]
+            receive(text, connection)
+
+            messages.success(request, _("The message %(text)s was successfully resent") % 
+                    {'text': unicode(text)})
+
+            return HttpResponseRedirect(reverse("moderation.views.contact", args=(contact.pk,)))
+    else:
+        form = ResendForm(initial={'text': message.text})
+
+    return render_to_response("message_resend.html", 
+        {   'contact': contact,
+            'message': message,
+            'form': form, 
+        },
+        context_instance=RequestContext(request))
+
 
 def get_redirect_url(request):
     """
@@ -231,7 +264,7 @@ def contact_dismiss(request, contact_id):
         effects.update(moderator_dismissed=True)
         return HttpResponseRedirect(get_redirect_url(request))
     else:
-        return HttpResponseNotAllowed(['POST']) 
+        return HttpResponseNotAllowed(['POST'])
 
 def set_language(request):
     """

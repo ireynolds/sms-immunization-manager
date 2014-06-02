@@ -1,0 +1,39 @@
+{% extends "sim_base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% trans "Create Contact" %}
+{% endblock %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li><a href="{% url "moderation.views.root_nodes" %}">{% include "include/country.html" %}</a></li>
+    <li class="active">{% trans "Create Contact" %}</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{% trans "Create Contact" %}</h1>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <!-- Edit Form -->
+        <div class="col-md-6 col-md-offset-3">
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                {{ profile_form|crispy }}
+                <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

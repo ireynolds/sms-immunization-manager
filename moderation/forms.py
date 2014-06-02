@@ -87,3 +87,9 @@ class ContactProfileForm(forms.ModelForm):
     class Meta:
         model = ContactProfile
         fields = ['role_name', 'facility']
+
+class ResendForm(forms.Form):
+    """
+    A form for re-sending an SMS message
+    """
+    text = forms.CharField(widget=forms.Textarea)
