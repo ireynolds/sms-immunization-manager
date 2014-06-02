@@ -4,7 +4,6 @@ from django.conf import settings
 from django.utils.translation import ugettext_noop as _
 from rapidsms.apps.base import AppBase
 from moderation.models import *
-#from user_registration.models import *
 
 # Define which priorities halt message processing
 HALTING_PRIORITIES = set([ERROR])
@@ -24,13 +23,6 @@ class OperationBase(AppBase):
         Must be implemented by subclasses of OperationBase.
         """
         raise NotImplementedError("parse_message must be implemented by OperationBase subclasses")
-
-    def parse_contact(self, message):
-        rapidsms_contact = message.connections[0].contact
-        sim_contact = SimContact(contact_ptr_id=rapidsms_contact.pk)
-        sim_contact.__dict__.update(rapidsms_contact.__dict__)
-        sim_contact.save()
-        message.connections[0].contact = sim_contact
 
     def parse(self, message):
         """

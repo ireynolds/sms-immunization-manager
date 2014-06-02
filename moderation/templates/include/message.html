@@ -11,7 +11,15 @@
         {% endif %}
         </p>
         <div class="media-body">
-            <h4 class="media-heading {% if wrapper.needs_action %}text-danger{% elif wrapper.dismissed %}text-warning{% else %}text-success{% endif %}">{{ message.text }}</h4>
+            <h4 class="media-heading {% if wrapper.needs_action %}text-danger{% elif wrapper.dismissed %}text-warning{% else %}text-success{% endif %}">
+                {{ message.text }}
+                {% if message.direction = "I" and wrapper.needs_action %}
+                    <a href="{% url "moderation.views.message_resend" message.pk %}" class="btn btn-default btn-xs pull-right" role="button">
+                        <span class="glyphicon glyphicon-repeat"></span>
+                        {% trans "Resend Message" %}
+                    </a>
+                {% endif %}
+            </h4>
             <table class="table table-condensed">
                 <tr>
                     <td>{% trans "Date" %}</td>

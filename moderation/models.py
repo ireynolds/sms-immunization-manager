@@ -80,6 +80,17 @@ def urgent(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
     """
     return create_effect(URGENT, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
 
+def notify(noop_i18n_name, name_context, noop_i18n_desc, desc_context):
+    """
+    Returns an un-saved MessageEffect with a notify priority. See create_effect for a description
+    of this function's parameters.
+
+    Notify effects are critically important information that require human interventions and 
+    must be seen and acted upon by a moderator. Their messages are sent to moderators
+    and do not halt further message processing.
+    """
+    return create_effect(NOTIFY, noop_i18n_name, name_context, noop_i18n_desc, desc_context)
+
 def complete_effect(effect, message, stage, operation_index = None, opcode = '', sent_as_response = False):
     """
     Adds any remaining fields to effect not assigned by create_effect or its shortcut functions, and
@@ -103,6 +114,7 @@ INFO = 'INFO'
 WARN = 'WARN'
 ERROR = 'ERROR'
 URGENT = 'URGENT'
+NOTIFY = 'NOTIFY'
 
 PRIORITY_CHOICES = (
     (DEBUG, ugettext_lazy("Debug")),
@@ -110,18 +122,21 @@ PRIORITY_CHOICES = (
     (WARN, ugettext_lazy("Warning")),
     (ERROR, ugettext_lazy("Error")),
     (URGENT, ugettext_lazy("Urgent")),
+    (NOTIFY, ugettext_lazy("Notify")),
 )
 
 # Define what priorities require moderator action
 MODERATOR_PRIORITIES = [ERROR]
 
 # Define the stage an effect can occur in.
+FILTER = 'FILTER'
 SYNTAX = 'SYNTAX'
 SEMANTIC = 'SEMANTIC'
 COMMIT = 'COMMIT'
 RESPOND = 'RESPOND'
 
 STAGE_CHOICES = (
+    (FILTER, ugettext_lazy("Filter")),
     (SYNTAX, ugettext_lazy("Syntax")),
     (SEMANTIC, ugettext_lazy('Semantic')),
     (COMMIT, ugettext_lazy('Commit')),
