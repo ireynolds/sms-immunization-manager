@@ -71,7 +71,7 @@ class Facility(models.Model):
     A facility represented in DHIS2
     """
     # The DHIS2 facility code for this facility
-#    facility_code = models.CharField(max_length=100)
+    facility_code = models.IntegerField()
     
     # The complete name of this facility
     name = models.CharField(max_length=250)
@@ -96,9 +96,7 @@ class Facility(models.Model):
         Returns the facility with the given facility code, or raises an
         error if no such facility exists.
         ''' 
-        #return Facility.objects.get(facility_code=code)
-        # TODO: Implement
-        return None
+        return Facility.objects.get(facility_code=code)
 
     def moderation_effects(self):
         """
@@ -129,6 +127,7 @@ class ContactProfile(models.Model):
     # The rapidsms Contact that this ContactProfile maps to
     contact = models.OneToOneField(Contact, primary_key=True)
 
+    #TODO: Make required
     # The facility where this user works
     facility = models.ForeignKey(Facility, blank=True, null=True)
 
