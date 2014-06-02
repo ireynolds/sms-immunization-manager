@@ -33,8 +33,11 @@ def equipment_failure_check(message, **kwargs):
 
 @receiver(commit_signal, sender=EquipmentFailure)
 def equipment_failure_commit(message, **kwargs):
-    # TODO Implement
-    return []
+    effect = notify(
+        _("Equipment Failure!"), {},
+        _("Equipment label: %(equipment_id)s"), {'equipment_id' : kwargs['equipment_id']}
+    )
+    return [effect]
 
 ##
 ## Equipment Repaired
@@ -59,18 +62,21 @@ def equipment_repaired_check(message, **kwargs):
 
 @receiver(commit_signal, sender=EquipmentRepaired)
 def equipment_repaired_commit(message, **kwargs):
-    # TODO Implement
-    return []
+    effect = notify(
+        _("Equipment Repaired"), {},
+        _("Equipment label: %(equipment_id)s"), {'equipment_id' : kwargs['equipment_id']}
+    )
+    return [effect]
 
 ##
 ## Stock Out
 ##
 
+@receiver(commit_signal, sender=StockOut)
 def stock_out_notification(message, **kwargs):
-    """
-    A notification stub
-    """
-    logger.debug("Stock out notification sent")
-    message.respond("Stock out notification sent")
+    effect = notify(
+        _("Stock Out"), {},
+        _("Vaccine %(stock_out)s is out of stock"), {'stock_out' : kwargs['stock_out']}
+    )
 
-#commit_signal.connect(stock_out_notification, sender=StockOut)
+    return [effect]

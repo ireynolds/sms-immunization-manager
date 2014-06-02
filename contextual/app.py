@@ -2,7 +2,7 @@ from user_registration.models import Facility
 from rapidsms.apps.base import AppBase
 from django.dispatch.dispatcher import receiver
 from operation_parser.gobbler import Gobbler, INTEGER
-from moderation.models import error, info, complete_effect, SYNTAX
+from moderation.models import error, info, urgent, complete_effect, SYNTAX
 from django.conf import settings
 from django.utils.translation import ugettext_noop as _
 
@@ -100,7 +100,7 @@ class FacilityCode(AppBase):
                     effect = self._ok(opcode, facility_code)
                 else: 
                     # See comment in parse() to understand why this is urgent.
-                    effect = self._urgent_invalid_facility_code(opcode, code)
+                    effect = self._urgent_invalid_facility_code(opcode, facility_code)
         else:
             if g.remainder:
                 fac, effect = None, self._error_unrecognized_chars(opcode, arg_string)
