@@ -29,26 +29,34 @@ def user_registration_commit(message, **kwargs):
                 )
 
     else:
-        #TODO: Add facility
+        # create a new rapidSMS Contact
         contact_data = {}
-        if 'contact_name' in kwargs.keys():
+        if 'contact_name' in kwargs:
             contact_data['name'] = kwargs['contact_name']
 
-#        if message.fields['facility'] is not None:
-#            contact_data['facility'] = message.fields['facility']
-#        else:
-#            # Find the facility of the Admin registering this new user, and use that
-#            contact_data['facility'] = message.connections[0].contact.contactprofile.facility
+        contact = Contact.objects.create(**contact_data)
 
-        
+        # get or create a new Backend
         backend = get_backend(settings.PHONE_BACKEND)
         if backend is None:
             backend = Backend.objects.create(name=settings.PHONE_BACKEND)
 
+        # make a Connection for this user
         connection_data = {'identity' : kwargs['phone_number'], 
                            'backend' : backend,
-                           'contact' : Contact.objects.create(**contact_data)}
+                           'contact' : contact}
         Connection.objects.create(**connection_data)
+
+        # update this user's facility. If a facility code was provided,
+        # set new user's facility to the requested facility. Otherwise,
+        # find the facility of the Admin registering this new user,
+        # and use that facility
+        contact_profile = ContactProfile.objects.get(contact=contact)
+        if 'facility' in message.fields:
+            contact_profile.facility = message.fields['facility']
+        else:
+            contact_profile.facility = message.connections[0].contact.contactprofile.facility
+        contact_profile.save()
 
         effect = info(
                 _("Registered New User"), {},
