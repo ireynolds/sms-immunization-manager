@@ -2,6 +2,10 @@
   margin-left: 2em;
 }
 
+dd {
+  margin-left: 40px;
+}
+
 * {
   margin: 0;
   padding: 0;
