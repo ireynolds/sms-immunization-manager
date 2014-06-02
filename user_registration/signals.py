@@ -19,7 +19,7 @@ def preferred_language_commit(message, **kwargs):
     return [effect] #[complete_effect(effect, message.logger_msg, COMMIT, opcode="PL")]
 
 @receiver(commit_signal, sender=UserRegistration)
-def user_registration_commit(sender, message, **kwargs):
+def user_registration_commit(message, **kwargs):
     # Check if a Connection for this new user already exists
     connection = get_connection(kwargs['phone_number'])
     if connection is not None:
