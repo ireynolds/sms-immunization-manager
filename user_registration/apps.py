@@ -5,15 +5,12 @@ from operation_parser import gobbler
 from moderation.models import *
 from django.utils.translation import ugettext_noop as _
 
-# TODO: extract out _errors into Base class??
-
 class PreferredLanguage(OperationBase):
     """Implements the SMS API for setting a user's preferred language."""
 
     # TODO: Change help string to reflect settings??
     helptext = "For example, %(opcode)s 1. Sets the preferred language to English"
 
-    # TODO: this is basically copied from help.apps -- extract to somewhere?
     def _ok(self, opcode, args):
         """
         Return a MessageEffect that indicates success.
@@ -75,14 +72,12 @@ class PreferredLanguage(OperationBase):
 
         return ([effect], args)
 
-# TODO: Fix the regex
 PHONE_NUMBER = "\d{8}|\d{4}-\d{4}|\+\d{13}"
 class UserRegistration(OperationBase):
     """Implements the SMS API for registering a new user."""
-    # TODO: complete this
-    helptext = "For example....."
+    helptext = "For example, %(opcode)s 12345678 Janice Smith. Creates a new user " + \
+    "with phone number 12345678 and name Janice Smith"
 
-    # TODO: should this be %(phone_number) instead?
     def _ok_phone(self, opcode, args):
         """
         Return a MessageEffect that indicates success.
