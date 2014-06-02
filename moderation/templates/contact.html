@@ -27,10 +27,22 @@
         <div class="col-sm-8">
             <h1>
                 {{ contact }} &nbsp;
-                <small>{{ contact.contactprofile.get_phone_number }}</small>
+                <small>
+                    {% if contact.contactprofile.get_phone_number %}
+                        {{ contact.contactprofile.get_phone_number }}
+                    {% else %}
+                        {% trans "No phone number" %}
+                    {% endif %}
+                </small>
             </h1>
             <h4>
-                {{ contact.contactprofile.get_role_name_display }} &nbsp;
+                {% if contact.contactprofile.get_role_name_display %}
+                    {{ contact.contactprofile.get_role_name_display }}
+                {% else %}
+                    {% trans "No role" %}
+                {% endif %}
+
+                &nbsp;
                 <small>
                     {% comment %}This is a hack to get the name of the contact's language in the user's language. Adding a context value containing dict(LANGUAGE) is a possible alternative{% endcomment %}
                     {% for code, name in LANGUAGES %}
@@ -42,16 +54,16 @@
             </h4>
         </div>
 
-        <div class="col-sm-4 text-center">
+        <div class="col-sm-4 text-right">
             <div class="btn-group">
-                <a href="#" class="btn btn-default" role="button">Edit Contact</a>
+                <a href="{% url "moderation.views.contact_edit" contact.pk %}" class="btn btn-default" role="button">{% trans "Edit Contact" %}</a>
                 <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
 
                 <ul class="dropdown-menu text-left" role="menu">
                     <li>
                         <form action="{% url "moderation.views.contact_dismiss" contact.pk %}" method="post">
                             {% csrf_token %}
-                            <a class="submit-link" href="#">{% trans "Dismiss All Errors" %}</a>
+                            <a class="submit-link" href="#">{% trans "Dismiss All Messages" %}</a>
                         </form>
                     </li>
                     <li class="divider"></li>

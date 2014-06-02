@@ -115,32 +115,82 @@ def contact(request, contact_id):
 
 @login_required
 def contact_edit(request, contact_id):
+    """
+    Edits the given contact
+    """
     contact = get_object_or_404(Contact, pk=contact_id)
     if request.method == "POST":
         form = ContactForm(request.POST, instance=contact)
-        profile_formset = ContactProfileFormSet(request.POST, instance=contact)
-        connection_formset = ConnectionFormSet(request.POST, instance=contact)
+        profile_form = ContactProfileForm(request.POST, instance=contact.contactprofile)
 
-        if form.is_valid() and profile_formset.is_valid() and connection_formset.is_valid():
-            form.save()
-            profile_formset.save()
-            connection_formset.save()
+        if form.is_valid() and profile_form.is_valid():
+            contact = form.save()
+            profile_form.save()
 
-            messages.success(_("The contact %(name)s was successfully updated") % 
+            messages.success(request, _("The contact %(name)s was successfully updated") % 
                 {'name': unicode(contact)})
-            return HttpResponseRedirect(reverse("moderation.views.contact", contact.pk))
+            return HttpResponseRedirect(reverse("moderation.views.contact", args=(contact.pk,)))
     else:
         form = ContactForm(instance=contact)
-        profile_formset = ContactProfileFormSet(instance=contact)
-        connection_formset = ConnectionFormSet(instance=contact)
+        profile_form = ContactProfileForm(instance=contact.contactprofile)
 
     return render_to_response("contact_edit.html", 
         {   'contact': contact, 
             'form': form, 
-            'profile_formset': profile_formset,
-            'connection_formset': connection_formset
+            'profile_form': profile_form,
         },
         context_instance=RequestContext(request))
+
+@login_required
+def contact_create(request):
+    """
+    Creates a new contact. May be passed optional GET parameters 'facility' and 'phone_number' that
+    pre-populate the creation form.
+    """
+
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        profile_form = ContactProfileForm(request.POST)
+
+        if form.is_valid() and profile_form.is_valid():
+            contact = form.save()
+
+            # Populate the required 'contact' field before saving
+            profile = profile_form.save(commit=False)
+            profile.contact = contact
+            profile.save()
+
+            messages.success(request, _("The contact %(name)s was successfully created") % 
+                {'name': unicode(contact)})
+            return HttpResponseRedirect(reverse("moderation.views.contact", args=(contact.pk,)))
+    else:
+        form_initial = {'phone_number': request.GET.get('phone_number', '')}
+        form = ContactForm(initial=form_initial)
+
+        profile_initial = {}
+        if "facility" in request.GET:
+            facility = get_object_or_404(Facility, pk=request.GET['facility'])
+            profile_initial['facility'] = facility.pk
+        profile_form = ContactProfileForm(initial=profile_initial)
+
+    return render_to_response("contact_create.html", 
+        {   'form': form, 
+            'profile_form': profile_form,
+        },
+        context_instance=RequestContext(request))
+
+
+def get_redirect_url(request):
+    """
+    Returns a redirect URL based on a 'next' POST variable, a 'next' GET variable, or the
+    request's referer (in that order). If none are set, returns "/".
+    """
+    next = request.POST.get('next', request.GET.get('next'))
+    if not is_safe_url(url=next, host=request.get_host()):
+        next = request.META.get('HTTP_REFERER')
+        if not is_safe_url(url=next, host=request.get_host()):
+            next = '/'
+    return next
 
 @login_required
 def effect_dismiss(request, effect_id, dismiss_value):
@@ -152,7 +202,7 @@ def effect_dismiss(request, effect_id, dismiss_value):
         effect = get_object_or_404(MessageEffect, pk=effect_id)
         effect.moderator_dismissed = dismiss_value
         effect.save()
-        return HttpResponseRedirect(reverse(contact, args=(effect.message.contact.pk,)))
+        return HttpResponseRedirect(get_redirect_url(request))
     else:
         return HttpResponseNotAllowed(['POST']) 
 
@@ -165,7 +215,7 @@ def message_dismiss(request, message_id):
         message = get_object_or_404(Message, pk=message_id)
         effects = message.messageeffect_set.filter(priority__in=MODERATOR_PRIORITIES)
         effects.update(moderator_dismissed=True)
-        return HttpResponseRedirect(reverse(contact, args=(message.contact.pk,)))
+        return HttpResponseRedirect(get_redirect_url(request))
     else:
         return HttpResponseNotAllowed(['POST']) 
 
@@ -179,7 +229,7 @@ def contact_dismiss(request, contact_id):
         effects = MessageEffect.objects.filter(message__contact=contact, 
             priority__in=MODERATOR_PRIORITIES)
         effects.update(moderator_dismissed=True)
-        return HttpResponseRedirect(reverse("moderation.views.contact", args=(contact.pk,)))
+        return HttpResponseRedirect(get_redirect_url(request))
     else:
         return HttpResponseNotAllowed(['POST']) 
 
@@ -188,12 +238,7 @@ def set_language(request):
     Sets the user's session language. Based on the view django.views.i18n in Django 1.7, with slight
     modifications to make the view exclusively use sessions for storing a prefered language.
     """
-    next = request.POST.get('next', request.GET.get('next'))
-    if not is_safe_url(url=next, host=request.get_host()):
-        next = request.META.get('HTTP_REFERER')
-        if not is_safe_url(url=next, host=request.get_host()):
-            next = '/'
-    response = HttpResponseRedirect(next)
+    response = HttpResponseRedirect(get_redirect_url(request))
 
     if request.method == 'POST':
         lang_code = request.POST.get('language', None)
@@ -207,12 +252,7 @@ def set_default_language(request):
     """
     Sets the user's default language.
     """
-    next = request.POST.get('next', request.GET.get('next'))
-    if not is_safe_url(url=next, host=request.get_host()):
-        next = request.META.get('HTTP_REFERER')
-        if not is_safe_url(url=next, host=request.get_host()):
-            next = '/'
-    response = HttpResponseRedirect(next)
+    response = HttpResponseRedirect(get_redirect_url(request))
 
     if request.method == 'POST':
         lang_code = request.POST.get('language', None)
@@ -238,4 +278,4 @@ def set_affiliation(request):
         else:
             return HttpResponseBadRequest()
     else:
-        return HttpResponseNotAllowed(['POST']) 
+        return HttpResponseNotAllowed(['POST'])

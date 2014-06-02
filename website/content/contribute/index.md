@@ -7,7 +7,7 @@ title: Contributing to SIM
 * toc
 {:toc}
 
-SIM's development is overseen by the University of Washington's Department of Computer Science and Engineering, but any other interested developers are welcome to contribute. If you need to modify SIM for your deployment, please work with us so that useful changes can be merged into the core product.
+SIM's development is overseen by the University of Washington's Department of Computer Science and Engineering, but any other interested developers are welcome to contribute. If you need to modify SIM for your deployment, please work with us so that useful changes can be merged into the core product ([contact us](/about) and read about [merging your changes into trunk](#merging_your_changes_into_trunk)).
 
 ## Tools and Frameworks
 
@@ -138,10 +138,22 @@ You can also run manual end-to-end tests by opening the moderation interface, na
 
 We use [GitHub's built-in bug tracker](https://github.com/ireynolds/sms-immunization-manager/issues?state=open).
 
+## Releasing SIM
+
+TODO
+
+## Future Work
+
+TODO
+
+### Merging Your Changes Into Trunk
+
+TODO How, if at all, do these modifications make it back into our repos?
+
 ## The Google Drive Repository
 
 The team also has content in Google Drive. Read more about [the Google Drive repository](google-drive).
 
 ## The Product Documentation Site
 
-The source of this documentation site is in the `website/` directory of the repository. The published content is generated from that source using [nanoc](http://nanoc.ws/). [Read about contributing to the documentation site](docs).
+The source of this documentation site is in the `website/` directory of the repository. The published content is generated from that source using [nanoc](http://nanoc.ws/). You can read our [overview of how the site works](docs) to get started or the nanoc documentation, which is excellent, to learn even more. 
