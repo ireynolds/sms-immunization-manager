@@ -31,19 +31,15 @@ def user_registration_commit(message, **kwargs):
 
     else:
         #TODO: Add facility
-        # TODO: change backend name?
-        # backend name must be unique
-        backend_data = {'name' : kwargs['phone_number'] } 
         contact_data = {}
         if 'contact_name' in kwargs.keys():
             contact_data['name'] = kwargs['contact_name']
 
         connection_data = {'identity' : kwargs['phone_number'], 
-                           'backend' : Backend.objects.create(**backend_data),
+                           'backend' : Backend.objects.get(name=settings.PHONE_BACKEND),
                            'contact' : Contact.objects.create(**contact_data)}
         Connection.objects.create(**connection_data)
 
-        #TODO: Add name info?????
         effect = info(
                 _("Registered New User"), {},
                 _("Phone number: %(phone_number)s"), { 'phone_number' : kwargs['phone_number'] }
