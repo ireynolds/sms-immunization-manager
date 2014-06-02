@@ -18,6 +18,7 @@ def preferred_language_commit(message, **kwargs):
     effect = info(_("Changed Language Preferences"), {}, result_fmtstr, result_context)
     return [effect] #[complete_effect(effect, message.logger_msg, COMMIT, opcode="PL")]
 
+
 @receiver(commit_signal, sender=UserRegistration)
 def user_registration_commit(message, **kwargs):
     # Check if a Connection for this new user already exists
@@ -30,7 +31,9 @@ def user_registration_commit(message, **kwargs):
 
     else:
         #TODO: Add facility
-        backend_data = {'name' : settings.PHONE_BACKEND}
+        # TODO: change backend name?
+        # backend name must be unique
+        backend_data = {'name' : kwargs['phone_number'] } 
         contact_data = {}
         if 'contact_name' in kwargs.keys():
             contact_data['name'] = kwargs['contact_name']
