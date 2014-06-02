@@ -14,6 +14,9 @@ urlpatterns = patterns('moderation.views',
     url(r'^effect/(\d+)/dismiss/$', 'effect_dismiss', {"dismiss_value": True}, name="dismiss"),
     url(r'^effect/(\d+)/undismiss/$', 'effect_dismiss', {"dismiss_value": False}, name="undismiss"),
     url(r'^message/(\d+)/dismiss/$', 'message_dismiss'),
+
+    url(r'^message/(\d+)/resend/$', 'message_resend'),
+
     url(r'^contact/(\d+)/dismiss/$', 'contact_dismiss'),
 
     url(r'^set_language/$', 'set_language', name="set_language"),
