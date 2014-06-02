@@ -142,6 +142,18 @@ def contact_edit(request, contact_id):
         },
         context_instance=RequestContext(request))
 
+def get_redirect_url(request):
+    """
+    Returns a redirect URL based on a 'next' POST variable, a 'next' GET variable, or the
+    request's referer (in that order). If none are set, returns "/".
+    """
+    next = request.POST.get('next', request.GET.get('next'))
+    if not is_safe_url(url=next, host=request.get_host()):
+        next = request.META.get('HTTP_REFERER')
+        if not is_safe_url(url=next, host=request.get_host()):
+            next = '/'
+    return next
+
 @login_required
 def effect_dismiss(request, effect_id, dismiss_value):
     """
@@ -152,7 +164,7 @@ def effect_dismiss(request, effect_id, dismiss_value):
         effect = get_object_or_404(MessageEffect, pk=effect_id)
         effect.moderator_dismissed = dismiss_value
         effect.save()
-        return HttpResponseRedirect(reverse(contact, args=(effect.message.contact.pk,)))
+        return HttpResponseRedirect(get_redirect_url(request))
     else:
         return HttpResponseNotAllowed(['POST']) 
 
@@ -165,7 +177,7 @@ def message_dismiss(request, message_id):
         message = get_object_or_404(Message, pk=message_id)
         effects = message.messageeffect_set.filter(priority__in=MODERATOR_PRIORITIES)
         effects.update(moderator_dismissed=True)
-        return HttpResponseRedirect(reverse(contact, args=(message.contact.pk,)))
+        return HttpResponseRedirect(get_redirect_url(request))
     else:
         return HttpResponseNotAllowed(['POST']) 
 
@@ -179,7 +191,7 @@ def contact_dismiss(request, contact_id):
         effects = MessageEffect.objects.filter(message__contact=contact, 
             priority__in=MODERATOR_PRIORITIES)
         effects.update(moderator_dismissed=True)
-        return HttpResponseRedirect(reverse("moderation.views.contact", args=(contact.pk,)))
+        return HttpResponseRedirect(get_redirect_url(request))
     else:
         return HttpResponseNotAllowed(['POST']) 
 
@@ -188,12 +200,7 @@ def set_language(request):
     Sets the user's session language. Based on the view django.views.i18n in Django 1.7, with slight
     modifications to make the view exclusively use sessions for storing a prefered language.
     """
-    next = request.POST.get('next', request.GET.get('next'))
-    if not is_safe_url(url=next, host=request.get_host()):
-        next = request.META.get('HTTP_REFERER')
-        if not is_safe_url(url=next, host=request.get_host()):
-            next = '/'
-    response = HttpResponseRedirect(next)
+    response = HttpResponseRedirect(get_redirect_url(request))
 
     if request.method == 'POST':
         lang_code = request.POST.get('language', None)
@@ -207,12 +214,7 @@ def set_default_language(request):
     """
     Sets the user's default language.
     """
-    next = request.POST.get('next', request.GET.get('next'))
-    if not is_safe_url(url=next, host=request.get_host()):
-        next = request.META.get('HTTP_REFERER')
-        if not is_safe_url(url=next, host=request.get_host()):
-            next = '/'
-    response = HttpResponseRedirect(next)
+    response = HttpResponseRedirect(get_redirect_url(request))
 
     if request.method == 'POST':
         lang_code = request.POST.get('language', None)

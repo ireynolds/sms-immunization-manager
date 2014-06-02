@@ -51,7 +51,7 @@
                     <li>
                         <form action="{% url "moderation.views.contact_dismiss" contact.pk %}" method="post">
                             {% csrf_token %}
-                            <a class="submit-link" href="#">{% trans "Dismiss All Errors" %}</a>
+                            <a class="submit-link" href="#">{% trans "Dismiss All Messages" %}</a>
                         </form>
                     </li>
                     <li class="divider"></li>
