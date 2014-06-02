@@ -22,7 +22,6 @@ def preferred_language_commit(message, **kwargs):
 def user_registration_commit(message, **kwargs):
     # Check if a Connection for this new user already exists
     connection = get_connection(kwargs['phone_number'])
-    print connection
     if connection is not None and connection.contact is not None:
         effect = error(
                 _("Error: Contact already exists"), {},

@@ -6,9 +6,10 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.conf import settings
 from rapidsms.tests.harness import RapidTest
-from rapidsms.contrib.messagelog.app import MessageLogApp
-from rapidsms.models import Connection, Contact
+from messagelog.app import MessageLogApp
+from rapidsms.models import Connection, Contact, Backend
 from user_registration.apps import PreferredLanguage
 from user_registration.signals import *
 from user_registration.models import ContactProfile, get_connection
@@ -58,6 +59,11 @@ class PreferredLanguageTest(TestCase):
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
 
+    def test_no_lang_code(self):
+        effects, kwargs = self.send_args("")
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
 
 class PreferredLanguageSignalTest(RapidTest):
     def setUp(self):
@@ -158,6 +164,8 @@ class UserRegistrationSignalTest(RapidTest):
             'text' : "hello world!",
             'connections' : [self.connection]
         }
+        self.hierarchyNode = HierarchyNode.objects.create(name="Level1")
+        self.facility = Facility.objects.create(facility_code=1, name="ABC", hierarchy_node=self.hierarchyNode)
 
     def createMessage(self):
         msgLogger = MessageLogApp(None)
@@ -172,7 +180,7 @@ class UserRegistrationSignalTest(RapidTest):
         kwargs = {'phone_number' : "12345678"}
         self.mesg = self.createMessage() 
 
-        # Check that now Connection previously exists for this new user
+        # Check that no Connection previously exists for this new user
         self.assertIsNone(get_connection(kwargs['phone_number']))
         effects = user_registration_commit(self.mesg, **kwargs)
 
@@ -182,6 +190,111 @@ class UserRegistrationSignalTest(RapidTest):
         # Check that Connection and associated Contact and ContactProfile exists
         cxn = get_connection(kwargs['phone_number'])
         self.assertIsNotNone(cxn)
+        self.assertEqual(cxn.identity, kwargs['phone_number'])
         cp = ContactProfile.objects.get(contact=cxn.contact.pk)
         self.assertIsNotNone(cp)
+
+    def test_new_backend(self):
+        Backend.objects.all().delete()
+        self.assertEqual(len(Backend.objects.all()), 0)
+
+        kwargs = {'phone_number' : "1234-1234"}
+        self.mesg = self.createMessage()
+
+        self.assertIsNone(get_connection(kwargs['phone_number']))
+        effects = user_registration_commit(self.mesg, **kwargs)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+        
+        cxn = get_connection(kwargs['phone_number'])
+        self.assertIsNotNone(cxn)
+        self.assertEqual(cxn.identity, kwargs['phone_number'])
+        self.assertEqual(cxn.backend.name, settings.PHONE_BACKEND)
+        cp = ContactProfile.objects.get(contact=cxn.contact.pk)
+        self.assertIsNotNone(cp)
+
+    def test_contact_already_exists(self):
+        kwargs = {'phone_number' : "12345678"}
+        self.mesg = self.createMessage()
+        self.assertIsNotNone(self.mesg.connections[0])
+
+        effects = user_registration_commit(self.mesg, **kwargs)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+
+        # try to add same user again
+        effects = user_registration_commit(self.mesg, **kwargs)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'ERROR')
+
+    def test_contact_name(self):
+        kwargs = {'phone_number' : "12341111",
+                  'contact_name' : "Alice Walker"}
+        self.mesg = self.createMessage()
+        self.assertIsNotNone(self.mesg.connections[0])
+
+        effects = user_registration_commit(self.mesg, **kwargs)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+
+        cxn = get_connection(kwargs['phone_number'])
+        self.assertIsNotNone(cxn)
+        self.assertEqual(cxn.identity, kwargs['phone_number'])
+        self.assertEqual(cxn.backend.name, settings.PHONE_BACKEND)
+        self.assertEqual(cxn.contact.name, "Alice Walker")
+        cp = ContactProfile.objects.get(contact=cxn.contact.pk)
+        self.assertIsNotNone(cp)
+
+    def test_contact_connection_already_exists(self):
+        pass
+
+    def test_facility_code(self):
+        kwargs = {"phone_number" : "11110000"}
+        self.mesg = self.createMessage()
+        self.mesg.connections[0].contact.contactprofile.facility = self.facility
+        
+        temp_facility = Facility.objects.create(facility_code=2, name="XYZ", hierarchy_node=self.hierarchyNode)
+        self.mesg.fields['facility'] = temp_facility
+
+        self.assertIsNotNone(self.mesg.connections[0])
+
+        effects = user_registration_commit(self.mesg, **kwargs)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+
+        cxn = get_connection(kwargs['phone_number'])
+        self.assertIsNotNone(cxn)
+        self.assertEqual(cxn.identity, kwargs['phone_number'])
+        self.assertEqual(cxn.backend.name, settings.PHONE_BACKEND)
+        cp = ContactProfile.objects.get(contact=cxn.contact.pk)
+        self.assertIsNotNone(cp)
+        self.assertEqual(cp.facility, temp_facility)
+        
+
+    def test_no_facility_code(self):
+        kwargs = {"phone_number" : "+1234567812345"}
+        self.mesg = self.createMessage()
+        self.assertIsNotNone(self.mesg.connections[0])
+        self.mesg.connections[0].contact.contactprofile.facility = self.facility
+        self.assertEqual(len(self.mesg.fields), 1)
+
+        effects = user_registration_commit(self.mesg, **kwargs)
+
+        self.assertEqual(len(effects), 1)
+        self.assertEqual(effects[0].priority, 'INFO')
+
+        cxn = get_connection(kwargs['phone_number'])
+        self.assertIsNotNone(cxn)
+        self.assertEqual(cxn.identity, kwargs['phone_number'])
+        self.assertEqual(cxn.backend.name, settings.PHONE_BACKEND)
+        cp = ContactProfile.objects.get(contact=cxn.contact.pk)
+        self.assertIsNotNone(cp)
+        self.assertEqual(cp.facility, self.facility)
+
+
 
