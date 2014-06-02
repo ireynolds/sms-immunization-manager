@@ -201,6 +201,8 @@ def get_backend(name):
     except Backend.DoesNotExist:
         backend = None
 
+    return backend
+
 # Register models for versioning
 reversion.register(HierarchyNode)
 reversion.register(Facility)
