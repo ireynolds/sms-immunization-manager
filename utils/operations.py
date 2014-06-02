@@ -24,13 +24,6 @@ class OperationBase(AppBase):
         """
         raise NotImplementedError("parse_message must be implemented by OperationBase subclasses")
 
-    def parse_contact(self, message):
-        rapidsms_contact = message.connections[0].contact
-        sim_contact = SimContact(contact_ptr_id=rapidsms_contact.pk)
-        sim_contact.__dict__.update(rapidsms_contact.__dict__)
-        sim_contact.save()
-        message.connections[0].contact = sim_contact
-
     def parse(self, message):
         """
         Implements RapidSMS' parse phase. Adds a field 'operation_arguments' to message containing
