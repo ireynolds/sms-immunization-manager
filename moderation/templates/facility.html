@@ -76,7 +76,12 @@
                                         </button>
                                         <ul class="dropdown-menu" role="menu">
                                             <li><a href="#">{% trans "Edit Contact" %}</a></li>
-                                            <li><a href="#">{% trans "Dismiss All Messages" %}</a></li>
+                                            <li>
+                                                <form action="{% url "moderation.views.contact_dismiss" cp.contact.pk %}" method="post">
+                                                    {% csrf_token %}
+                                                    <a class="submit-link" href="#">{% trans "Dismiss All Messages" %}</a>
+                                                </form>
+                                            </li>
                                             <li class="divider"></li>
                                             <li><a href="#">Delete Contact</a></li>
                                         </ul>
