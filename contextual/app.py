@@ -51,6 +51,16 @@ class FacilityCode(AppBase):
             _("Must provide a facility code."), {}
         )
 
+    def _urgent_invalid_facility_code(self, opcode, code):
+        '''
+        Return a MessageEffect that indicates a failure as a result of 
+        the given facility code being invalid.
+        '''
+        return urgent(
+            _("Error Verifying %(opcode)s Arguments"), { 'opcode': opcode },
+            _("There is no facility %(code)s."), { 'code': code }
+        )
+
     def _get_opcodes(self):
         '''
         Returns the set of operation codes associated with this operation.
@@ -60,6 +70,16 @@ class FacilityCode(AppBase):
             if appbase == self.__class__:
                 result.add(opcode)
         return result
+
+    def _facility_from_code(self, code):
+        '''
+        Returns the Facility instance corresponding to the given facility code,
+        or None if no such Facility exists.
+        '''
+        try:
+            return Facility.from_code(int(code))
+        except:
+            return None
 
     def _parse_fc(self, opcode, arg_string):
         '''
@@ -75,7 +95,12 @@ class FacilityCode(AppBase):
             if g.remainder:
                 fac, effect = None, self._error_extra_chars(opcode, arg_string)
             else:
-                fac, effect = Facility.from_code(int(facility_code)), self._ok(opcode, facility_code)
+                fac = self._facility_from_code(facility_code)
+                if fac:
+                    effect = self._ok(opcode, facility_code)
+                else: 
+                    # See comment in parse() to understand why this is urgent.
+                    effect = self._urgent_invalid_facility_code(opcode, code)
         else:
             if g.remainder:
                 fac, effect = None, self._error_unrecognized_chars(opcode, arg_string)
@@ -114,6 +139,15 @@ class FacilityCode(AppBase):
             effects.extend(more_effects)
         
         # If FC code is not present -OR- contained an error.
+        #
+        # This is done even in case of error above to prevent raising exceptions while processing
+        # other SMS APIs that access the message's facility.
+        #
+        # If the facility code exists but is invalid, then this condition will succeed. Because
+        # only the first error is returned, then it may be that an earlier operation fails because
+        # the FC code did, but only that one's error (the symptom, not the cause) is returned. To
+        # prevent this, an error due to an invalid facility code is marked urgent to guarantee that
+        # it, as well, is returned.
         if facility == None:
             facility = message.connections[0].contact.contactprofile.facility
 
