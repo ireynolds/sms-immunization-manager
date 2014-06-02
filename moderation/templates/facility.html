@@ -46,49 +46,64 @@
                             <th>{% trans "Name" %}</th>
                             <th>{% trans "Role" %}</th>
                             <th></th>
-                            <th></th>
+                            <th class="text-right">
+                                <form action="{% url "moderation.views.contact_create" %}" method="get">
+                                    <input type="hidden" name="facility" value="{{ facility.pk }}" />
+                                    <button type="submit" class="btn btn-primary btn-xs" data-placement="top" data-toggle="tooltip" title="{% trans "Creates a new contact at this facility" %}">
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                    </button>
+                                </form>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for cp in facility.contactprofile_set.all %}
+                        {% if facility.contactprofile_set.all %}
+                            {% for cp in facility.contactprofile_set.all %}
+                                <tr>
+                                    <!-- Contact information -->
+                                    <td><a href="{% url "moderation.views.contact" cp.pk %}">{{ cp.get_phone_number }}</a></td>
+                                    <td><a href="{% url "moderation.views.contact" cp.pk %}">{{ cp.contact }}</a></td>
+                                    <td>{{ cp.get_role_name_display }}</td>
+
+                                    <!-- Message count label -->
+                                    <td>
+                                        {% with cp.moderation_messages.count as count %}
+                                            {% if count %}
+                                                <span class="label label-danger" data-placement="top" data-toggle="tooltip" title="{% blocktrans count count=count%}This contact has {{ count }} message that requires moderator action{% plural %}This contact has {{ count }} messages that require moderator action{% endblocktrans %}">
+                                                        {% blocktrans count count=count%}{{ count }} message{% plural %}{{ count }} messages{% endblocktrans %}
+                                                </span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+
+                                    <!-- Action menu -->
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                                                {% trans "Actions" %} <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu" role="menu">
+                                                <li><a href="{% url "moderation.views.contact_edit" cp.contact.pk %}">{% trans "Edit Contact" %}</a></li>
+                                                <li>
+                                                    <form action="{% url "moderation.views.contact_dismiss" cp.contact.pk %}" method="post">
+                                                        {% csrf_token %}
+                                                        <a class="submit-link" href="#">{% trans "Dismiss All Messages" %}</a>
+                                                    </form>
+                                                </li>
+                                                <li class="divider"></li>
+                                                <li><a href="#">Delete Contact</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
                             <tr>
-                                <!-- Contact information -->
-                                <td><a href="{% url "moderation.views.contact" cp.pk %}">{{ cp.get_phone_number }}</a></td>
-                                <td><a href="{% url "moderation.views.contact" cp.pk %}">{{ cp.contact }}</a></td>
-                                <td>{{ cp.get_role_name_display }}</td>
-
-                                <!-- Message count label -->
-                                <td>
-                                    {% with cp.moderation_messages.count as count %}
-                                        {% if count %}
-                                            <span class="label label-warning" data-placement="top" data-toggle="tooltip" title="{% blocktrans count count=count%}This contact has {{ count }} message that requires moderator action{% plural %}This contact has {{ count }} messages that require moderator action{% endblocktrans %}">
-                                                    {% blocktrans count count=count%}{{ count }} message{% plural %}{{ count }} messages{% endblocktrans %}
-                                            </span>
-                                        {% endif %}
-                                    {% endwith %}
-                                </td>
-
-                                <!-- Action menu -->
-                                <td>
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-                                            {% trans "Actions" %} <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu" role="menu">
-                                            <li><a href="{% url "moderation.views.contact_edit" cp.contact.pk %}">{% trans "Edit Contact" %}</a></li>
-                                            <li>
-                                                <form action="{% url "moderation.views.contact_dismiss" cp.contact.pk %}" method="post">
-                                                    {% csrf_token %}
-                                                    <a class="submit-link" href="#">{% trans "Dismiss All Messages" %}</a>
-                                                </form>
-                                            </li>
-                                            <li class="divider"></li>
-                                            <li><a href="#">Delete Contact</a></li>
-                                        </ul>
-                                    </div>
+                                <td colspan="5" class="text-center">
+                                    {% trans "No Contacts" %}
                                 </td>
                             </tr>
-                        {% endfor %}
+                        {% endif %}
                     </tbody>
                 </table>
             </div>

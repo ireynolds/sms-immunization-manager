@@ -44,7 +44,7 @@ class ContactForm(forms.ModelForm):
         """
         number = self.cleaned_data['phone_number']
         if Connection.objects.filter(identity=number).exclude(contact=None)\
-                .exclude(contact=self.instance).exists():
+                .exclude(contact__pk=self.instance.pk).exists():
             raise forms.ValidationError(_("This number is already in use by another contact"))
 
         return number
@@ -52,6 +52,11 @@ class ContactForm(forms.ModelForm):
     def save(self, *args, **kwargs):
         # Save the Contact's fields, and get the saved instance
         instance = super(ContactForm, self).save(*args, **kwargs)
+
+        # Short-circuit if the user wishes to clear the contact's phone number
+        if self.cleaned_data['phone_number'] == '':
+            instance.connection_set.update(contact=None)
+            return instance
 
         # Obtain Connection instances for the phone and moderator backends. If contact instances
         # do not already exist, they are created by lookup_connections
@@ -78,6 +83,7 @@ class ContactForm(forms.ModelForm):
         # Return the contact instance, to satisfy the spec of save()
         return instance
 
-
-
-ContactProfileFormSet = inlineformset_factory(Contact, ContactProfile, max_num=1, can_delete=False)
+class ContactProfileForm(forms.ModelForm):
+    class Meta:
+        model = ContactProfile
+        fields = ['role_name', 'facility']

@@ -115,28 +115,70 @@ def contact(request, contact_id):
 
 @login_required
 def contact_edit(request, contact_id):
+    """
+    Edits the given contact
+    """
     contact = get_object_or_404(Contact, pk=contact_id)
     if request.method == "POST":
         form = ContactForm(request.POST, instance=contact)
-        profile_formset = ContactProfileFormSet(request.POST, instance=contact)
+        profile_form = ContactProfileForm(request.POST, instance=contact.contactprofile)
 
-        if form.is_valid() and profile_formset.is_valid():
-            form.save()
-            profile_formset.save()
+        if form.is_valid() and profile_form.is_valid():
+            contact = form.save()
+            profile_form.save()
 
             messages.success(request, _("The contact %(name)s was successfully updated") % 
                 {'name': unicode(contact)})
             return HttpResponseRedirect(reverse("moderation.views.contact", args=(contact.pk,)))
     else:
         form = ContactForm(instance=contact)
-        profile_formset = ContactProfileFormSet(instance=contact)
+        profile_form = ContactProfileForm(instance=contact.contactprofile)
 
     return render_to_response("contact_edit.html", 
         {   'contact': contact, 
             'form': form, 
-            'profile_formset': profile_formset,
+            'profile_form': profile_form,
         },
         context_instance=RequestContext(request))
+
+@login_required
+def contact_create(request):
+    """
+    Creates a new contact. May be passed optional GET parameters 'facility' and 'phone_number' that
+    pre-populate the creation form.
+    """
+
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        profile_form = ContactProfileForm(request.POST)
+
+        if form.is_valid() and profile_form.is_valid():
+            contact = form.save()
+
+            # Populate the required 'contact' field before saving
+            profile = profile_form.save(commit=False)
+            profile.contact = contact
+            profile.save()
+
+            messages.success(request, _("The contact %(name)s was successfully created") % 
+                {'name': unicode(contact)})
+            return HttpResponseRedirect(reverse("moderation.views.contact", args=(contact.pk,)))
+    else:
+        form_initial = {'phone_number': request.GET.get('phone_number', '')}
+        form = ContactForm(initial=form_initial)
+
+        profile_initial = {}
+        if "facility" in request.GET:
+            facility = get_object_or_404(Facility, pk=request.GET['facility'])
+            profile_initial['facility'] = facility.pk
+        profile_form = ContactProfileForm(initial=profile_initial)
+
+    return render_to_response("contact_create.html", 
+        {   'form': form, 
+            'profile_form': profile_form,
+        },
+        context_instance=RequestContext(request))
+
 
 def get_redirect_url(request):
     """

@@ -40,7 +40,7 @@
             <form method="post">
                 {% csrf_token %}
                 {{ form|crispy }}
-                {{ profile_formset|crispy }}
+                {{ profile_form|crispy }}
                 <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
             </form>
         </div>

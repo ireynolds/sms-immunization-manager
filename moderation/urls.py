@@ -7,6 +7,7 @@ urlpatterns = patterns('moderation.views',
 
     url(r'^facility/(\d+)/$', 'facility'),
 
+    url(r'^contact/create/$', 'contact_create'),
     url(r'^contact/(\d+)/$', 'contact'),
     url(r'^contact/(\d+)/edit/$', 'contact_edit'),
 
