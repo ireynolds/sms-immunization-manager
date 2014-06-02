@@ -223,6 +223,7 @@ class UserRegistrationSignalTest(RapidTest):
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
+        self.assertIsNotNone(self.mesg.connections[0].contact)
 
         # try to add same user again
         effects = user_registration_commit(self.mesg, **kwargs)
@@ -249,8 +250,6 @@ class UserRegistrationSignalTest(RapidTest):
         cp = ContactProfile.objects.get(contact=cxn.contact.pk)
         self.assertIsNotNone(cp)
 
-    def test_contact_connection_already_exists(self):
-        pass
 
     def test_facility_code(self):
         kwargs = {"phone_number" : "11110000"}
