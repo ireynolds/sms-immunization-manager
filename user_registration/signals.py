@@ -16,8 +16,7 @@ def preferred_language_commit(message, **kwargs):
     result_fmtstr = _("Changed language preference to %(language)s")
     result_context = {"language" : preferred_lang}
     effect = info(_("Changed Language Preferences"), {}, result_fmtstr, result_context)
-    return [effect] #[complete_effect(effect, message.logger_msg, COMMIT, opcode="PL")]
-
+    return [effect]
 
 @receiver(commit_signal, sender=UserRegistration)
 def user_registration_commit(message, **kwargs):
@@ -35,8 +34,19 @@ def user_registration_commit(message, **kwargs):
         if 'contact_name' in kwargs.keys():
             contact_data['name'] = kwargs['contact_name']
 
+#        if message.fields['facility'] is not None:
+#            contact_data['facility'] = message.fields['facility']
+#        else:
+#            # Find the facility of the Admin registering this new user, and use that
+#            contact_data['facility'] = message.connections[0].contact.contactprofile.facility
+
+        
+        backend = get_backend(settings.PHONE_BACKEND)
+        if backend is None:
+            backend = Backend.objects.create(name=settings.PHONE_BACKEND)
+
         connection_data = {'identity' : kwargs['phone_number'], 
-                           'backend' : Backend.objects.get(name=settings.PHONE_BACKEND),
+                           'backend' : backend,
                            'contact' : Contact.objects.create(**contact_data)}
         Connection.objects.create(**connection_data)
 
@@ -44,5 +54,5 @@ def user_registration_commit(message, **kwargs):
                 _("Registered New User"), {},
                 _("Phone number: %(phone_number)s"), { 'phone_number' : kwargs['phone_number'] }
                 )
-    return [effect] #[complete_effect(effect, message.logger_msg, COMMIT, opcode="RG")]
+    return [effect]
 

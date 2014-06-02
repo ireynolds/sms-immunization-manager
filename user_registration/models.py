@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from rapidsms.models import Contact, Connection
+from rapidsms.models import Contact, Connection, Backend
 from rapidsms.contrib.messagelog.models import Message
 from moderation.models import MessageEffect, MODERATOR_PRIORITIES
 import reversion
@@ -70,6 +70,9 @@ class Facility(models.Model):
     """
     A facility represented in DHIS2
     """
+    # The DHIS2 facility code for this facility
+#    facility_code = models.CharField(max_length=100)
+    
     # The complete name of this facility
     name = models.CharField(max_length=250)
    
@@ -93,6 +96,7 @@ class Facility(models.Model):
         Returns the facility with the given facility code, or raises an
         error if no such facility exists.
         ''' 
+        #return Facility.objects.get(facility_code=code)
         # TODO: Implement
         return None
 
@@ -191,6 +195,11 @@ def get_connection(identity):
 
     return cxn
 
+def get_backend(name):
+    try:
+        backend = Backend.objects.get(name=name)
+    except Backend.DoesNotExist:
+        backend = None
 
 # Register models for versioning
 reversion.register(HierarchyNode)
