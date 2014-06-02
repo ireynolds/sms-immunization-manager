@@ -18,14 +18,20 @@ class PreferredLanguage(OperationBase):
         """
         Return a MessageEffect that indicates success.
         """
-        return ok_parse(opcode, "Parsed: requested language is %(preferred_lang)s", args)
+        return info(
+            _("Parsed %(op_code)s Arguments"), { 'op_code' : opcode },
+            _("Parsed: requested language is %(preferred_lang)s"), args
+        )
 
     def _error_extra_chars(self, opcode, arg_string):
         """
         Return a MessageEffect that indicates a failure as a result of
         the arguments having extra chars after the preferred language code.
         """
-        return error_parse(opcode, arg_string, reason="Text after preferred language code not allowed.")
+        return error(
+                _("Error Parsing %(op_code)s Arguments"), { 'op_code' : opcode },
+                _("Text after preferred language code is not allowed."), {}
+        )
 
     def _error_unrecognized_chars(self, opcode, arg_string):
         """
@@ -33,14 +39,20 @@ class PreferredLanguage(OperationBase):
         the arguments containing unrecognized characters in the argument string
         instead of a recognized language code.
         """
-        return error_parse(opcode, arg_string, reason="Should start with a recognized language code.")
+        return error(
+                _("Error Parsing %(op_code)s Arguments"), { 'op_code' : opcode },
+                _("Should start with a recognized language code."), {}
+        )
 
     def _error_no_lang_code(self, opcode, arg_string):
         """
         Return a MessageEffect that indicates a failure as a result of
         the arguments being empty.
         """
-        return error_parse(opcode, arg_string, reason="Must request a specific language code.")
+        return error(
+                _("Error Parsing %(op_code)s Arguments"), { 'op_code' : opcode },
+                _("Must include a recognized language code."), {}
+        )
 
     def parse_arguments(self, opcode, arg_string, message):
         args = {}
@@ -75,15 +87,19 @@ class UserRegistration(OperationBase):
         """
         Return a MessageEffect that indicates success.
         """
-        return ok_parse(opcode, "Parsed: phone number to register is %(phone_number)s", args)
+        return info(
+            _("Parsed %(op_code)s Arguments"), { 'op_code' : opcode },
+            _("Parsed: phone number to register is %(phone_number)s"), args
+        )
 
     def _ok_phone_and_name(self, opcode, args):
         """
         Return a MessageEffect that indicates success.
         """
-        return ok_parse(opcode, "Parsed: phone number to register for %(contact_name)s is %(phone_number)s", args)
-
-    #TODO: Make error message more helpful??? i.e. what is proper format?
+        return info(
+            _("Parsed %(op_code)s Arguments"), { 'op_code' : opcode },
+            _("Parsed: phone number to register for %(contact_name)s is %(phone_number)s"), args
+        )
 
     def _error_invalid_phone_number(self, opcode, arg_string):
         """
@@ -91,14 +107,20 @@ class UserRegistration(OperationBase):
         the arguments containing unrecognized characters in the argument string
         instead of a phone number.
         """
-        return error_parse(opcode, arg_string, reason="Should start with a properly formatted phone number.")
+        return error(
+                _("Error Parsing %(op_code)s Arguments"), { 'op_code' : opcode },
+                _("Should start with a properly formatted phone number."), {}
+        )
 
     def _error_no_phone_number(self, opcode, arg_string):
         """
         Return a MessageEffect that indicates a failure as a result of
         the arguments being empty.
         """
-        return error_parse(opcode, arg_string, reason="Must include a phone number to register for this new user.")
+        return error(
+                _("Error Parsing %(op_code)s Arguments"), { 'op_code' : opcode },
+                _("Must include a phone number to register for this new user."), {}
+        )
 
     def parse_arguments(self, opcode, arg_string, message):
         args = {} 
