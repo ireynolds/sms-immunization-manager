@@ -42,9 +42,9 @@
             </h4>
         </div>
 
-        <div class="col-sm-4 text-center">
+        <div class="col-sm-4 text-right">
             <div class="btn-group">
-                <a href="#" class="btn btn-default" role="button">Edit Contact</a>
+                <a href="{% url "moderation.views.contact_edit" contact.pk %}" class="btn btn-default" role="button">{% trans "Edit Contact" %}</a>
                 <button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
 
                 <ul class="dropdown-menu text-left" role="menu">

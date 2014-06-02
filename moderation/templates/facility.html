@@ -75,7 +75,7 @@
                                             {% trans "Actions" %} <span class="caret"></span>
                                         </button>
                                         <ul class="dropdown-menu" role="menu">
-                                            <li><a href="#">{% trans "Edit Contact" %}</a></li>
+                                            <li><a href="{% url "moderation.views.contact_edit" cp.contact.pk %}">{% trans "Edit Contact" %}</a></li>
                                             <li>
                                                 <form action="{% url "moderation.views.contact_dismiss" cp.contact.pk %}" method="post">
                                                     {% csrf_token %}

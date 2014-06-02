@@ -119,26 +119,22 @@ def contact_edit(request, contact_id):
     if request.method == "POST":
         form = ContactForm(request.POST, instance=contact)
         profile_formset = ContactProfileFormSet(request.POST, instance=contact)
-        connection_formset = ConnectionFormSet(request.POST, instance=contact)
 
-        if form.is_valid() and profile_formset.is_valid() and connection_formset.is_valid():
+        if form.is_valid() and profile_formset.is_valid():
             form.save()
             profile_formset.save()
-            connection_formset.save()
 
-            messages.success(_("The contact %(name)s was successfully updated") % 
+            messages.success(request, _("The contact %(name)s was successfully updated") % 
                 {'name': unicode(contact)})
-            return HttpResponseRedirect(reverse("moderation.views.contact", contact.pk))
+            return HttpResponseRedirect(reverse("moderation.views.contact", args=(contact.pk,)))
     else:
         form = ContactForm(instance=contact)
         profile_formset = ContactProfileFormSet(instance=contact)
-        connection_formset = ConnectionFormSet(instance=contact)
 
     return render_to_response("contact_edit.html", 
         {   'contact': contact, 
             'form': form, 
             'profile_formset': profile_formset,
-            'connection_formset': connection_formset
         },
         context_instance=RequestContext(request))
 
@@ -240,4 +236,4 @@ def set_affiliation(request):
         else:
             return HttpResponseBadRequest()
     else:
-        return HttpResponseNotAllowed(['POST']) 
+        return HttpResponseNotAllowed(['POST'])
