@@ -59,3 +59,4 @@ docs/_build/
 # Other
 website/output
 website/tmp
+!website/lib
