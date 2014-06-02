@@ -7,7 +7,7 @@ title: Contributing to SIM
 * toc
 {:toc}
 
-SIM's development is overseen by the University of Washington's Department of Computer Science and Engineering, but any other interested developers are welcome to contribute. If you need to modify SIM for your deployment, please work with us so that useful changes can be merged into the core product.
+SIM's development is overseen by the University of Washington's Department of Computer Science and Engineering, but any other interested developers are welcome to contribute. If you need to modify SIM for your deployment, please work with us so that useful changes can be merged into the core product ([contact us](/about) and read about [merging your changes into trunk](#merging_your_changes_into_trunk)).
 
 ## Tools and Frameworks
 
@@ -145,6 +145,10 @@ TODO
 ## Future Work
 
 TODO
+
+### Merging Your Changes Into Trunk
+
+TODO How, if at all, do these modifications make it back into our repos?
 
 ## The Google Drive Repository
 
