@@ -5,12 +5,12 @@
 {% block title %}
     {% if contact.contactprofile.facility %}{{ contact.contactprofile.facility }} - {% endif %}
     {{ contact.name }} -
-    {% trans "Edit Contact" %}
+    {% trans "Resend Message" %}
 {% endblock %}
 
 {% block breadcrumbs %}
 <ol class="breadcrumb">
-    {% with _("Edit Contact") as contact_action %}
+    {% with _("Resend Message") as contact_action %}
         {% with contact.contactprofile.facility as facility %}
             {% if facility %}
                 {% with facility.hierarchy_node as node %}
@@ -28,7 +28,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            <h1>{% trans "Edit Contact" %}</h1>
+            <h1>{% trans "Resend Message" %}</h1>
         </div>
     </div>
 
@@ -37,11 +37,22 @@
     <div class="row">
         <!-- Edit Form -->
         <div class="col-md-6 col-md-offset-3">
+            <div class="form-group">
+                <label for="id_sender" class="control-label requiredField">
+                {% trans "Contact" %}
+                </label>
+                <input class="form-control" id="id_sender" type="text" placeholder="{{ contact }}" disabled>
+            </div>
+            <div class="form-group">
+                <label for="id_phone_number" class="control-label requiredField">
+                {% trans "Phone Number" %}
+                </label>
+                <input class="form-control" id="id_phone_number" type="text" placeholder="{{ contact.contactprofile.get_phone_number }}" disabled>
+            </div>
             <form method="post">
                 {% csrf_token %}
                 {{ form|crispy }}
-                {{ profile_form|crispy }}
-                <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+            <button type="submit" class="btn btn-primary">{% trans "Send Message" %}</button>
             </form>
         </div>
     </div>

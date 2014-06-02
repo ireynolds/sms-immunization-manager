@@ -3,24 +3,13 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-    {% if contact.contactprofile.facility %}{{ contact.contactprofile.facility }} - {% endif %}
-    {{ contact.name }} -
-    {% trans "Edit Contact" %}
+    {% trans "Create Contact" %}
 {% endblock %}
 
 {% block breadcrumbs %}
 <ol class="breadcrumb">
-    {% with _("Edit Contact") as contact_action %}
-        {% with contact.contactprofile.facility as facility %}
-            {% if facility %}
-                {% with facility.hierarchy_node as node %}
-                    {% include "include/breadcrumbs.html" %}
-                {% endwith %}
-            {% else %}
-                {% include "include/breadcrumbs.html" %}
-            {% endif %}
-        {% endwith %}
-    {% endwith %}
+    <li><a href="{% url "moderation.views.root_nodes" %}">{% include "include/country.html" %}</a></li>
+    <li class="active">{% trans "Create Contact" %}</li>
 </ol>
 {% endblock %}
 
@@ -28,7 +17,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            <h1>{% trans "Edit Contact" %}</h1>
+            <h1>{% trans "Create Contact" %}</h1>
         </div>
     </div>
 

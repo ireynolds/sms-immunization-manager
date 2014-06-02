@@ -246,6 +246,7 @@ APPS_BEFORE_SIM = (
 )
 
 SIM_PRE_APPS = (
+    'permissions',
     'operation_parser',
     'contextual',
 )
@@ -255,7 +256,6 @@ SIM_APPS = (
     'equipment',
     'registration',
     'user_registration',
-    'permissions',
     'dhis2',
     'notifications',
     'utils',
@@ -301,6 +301,11 @@ RAPIDSMS_HANDLERS = (
 # SIM-specific settings below
 # ------------------------------------------------------------------------------
 
+# Defines acceptable choices for language preference opcode
+# TODO: Change language tags to something useful
+PREFERRED_LANGUAGE_CODE = "[1-3]"
+PREFERRED_LANGUAGES = { 1 : "English", 2 : "Karoake", 3 : "Lao" }
+
 # Define Roles and associated string of permitted opcodes
 # TODO: Require a json list of strings instead for opcodes?
 DATA_REPORTER_ROLE = "DataReporter"
@@ -311,8 +316,8 @@ ROLE_CHOICES = (
 )
 
 ROLE_OP_CODES = (
-    (DATA_REPORTER_ROLE, ["HE"]),
-    (ADMIN_ROLE, ["HE", "RG"])
+    (DATA_REPORTER_ROLE, ["FT", "SL", "SE", "RE", "NF", "HE", "FC"]),
+    (ADMIN_ROLE, ["FT", "SL", "SE", "RE", "NF", "RG", "PL", "HE", "FC"])
 )
 
 PERIODIC = "PERIODIC"
@@ -349,6 +354,8 @@ import stock.apps as _stock_apps
 import equipment.apps as _equipment_apps
 import info.apps as _info_apps
 import contextual.app as _contextual_apps
+import user_registration.apps as _user_registration_apps
+
 RAPIDSMS_APP_BASES = (
     _stock_apps.StockLevel,
     _stock_apps.StockOut,
@@ -356,6 +363,8 @@ RAPIDSMS_APP_BASES = (
     _equipment_apps.EquipmentRepaired,
     _info_apps.Help,
     _equipment_apps.FridgeTemperature,
+    _user_registration_apps.PreferredLanguage,
+    _user_registration_apps.UserRegistration,
 )
 
 # Configure the RapidSMS router based on RAPIDSMS_APP_BASES
@@ -373,4 +382,6 @@ SIM_OPERATION_CODES = {
     "HE": _info_apps.Help,
     "FT": _equipment_apps.FridgeTemperature,
     "FC": _contextual_apps.FacilityCode,
+    "PL": _user_registration_apps.PreferredLanguage,
+    "RG": _user_registration_apps.UserRegistration,
 }

@@ -201,9 +201,15 @@ class MockRouter(BlockingRouter):
         '''
         MockRouter.REGISTERED_OPCODES.append(opcode)
 
+        # add given opcode to list of permitted opcodes for all user roles
+        role_opcodes = dict(settings.ROLE_OP_CODES)
+        for opcodes in role_opcodes.itervalues():
+            opcodes.append(opcode)
+
         settings.SIM_OPERATION_CODES[opcode.upper()] = app
         settings.SIM_OPCODE_GROUPS[opcode.upper()] = group
         if limit_one: settings.SIM_OPCODE_MAY_NOT_DUPLICATE.add(opcode.upper())
+
 
     @classmethod
     def unregister_apps(cls):
@@ -211,7 +217,11 @@ class MockRouter(BlockingRouter):
         Unregister all apps (that were registered using MockRouter.register_app) from
         every instance of MockRouter.
         '''
+        role_opcodes = dict(settings.ROLE_OP_CODES)
         for opcode in MockRouter.REGISTERED_OPCODES:
+            for opcodes in role_opcodes.values():
+                if opcode in opcodes:
+                    opcodes.remove(opcode)
             del settings.SIM_OPERATION_CODES[opcode]
             del settings.SIM_OPCODE_GROUPS[opcode]
             if opcode in settings.SIM_OPCODE_MAY_NOT_DUPLICATE:
