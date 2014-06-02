@@ -22,7 +22,8 @@ def preferred_language_commit(message, **kwargs):
 def user_registration_commit(message, **kwargs):
     # Check if a Connection for this new user already exists
     connection = get_connection(kwargs['phone_number'])
-    if connection is not None:
+    print connection
+    if connection is not None and connection.contact is not None:
         effect = error(
                 _("Error: Contact already exists"), {},
                 _("Contact with phone number %(phone_number)s already exists"), { 'phone_number' : kwargs['phone_number'] }
@@ -36,16 +37,20 @@ def user_registration_commit(message, **kwargs):
 
         contact = Contact.objects.create(**contact_data)
 
-        # get or create a new Backend
-        backend = get_backend(settings.PHONE_BACKEND)
-        if backend is None:
-            backend = Backend.objects.create(name=settings.PHONE_BACKEND)
+        if connection is None:
+            # get or create a new Backend
+            backend = get_backend(settings.PHONE_BACKEND)
+            if backend is None:
+                backend = Backend.objects.create(name=settings.PHONE_BACKEND)
 
-        # make a Connection for this user
-        connection_data = {'identity' : kwargs['phone_number'], 
-                           'backend' : backend,
-                           'contact' : contact}
-        Connection.objects.create(**connection_data)
+            # make a Connection for this user
+            connection_data = {'identity' : kwargs['phone_number'], 
+                               'backend' : backend,
+                               'contact' : contact}
+            Connection.objects.create(**connection_data)
+        else:
+            connection.contact = contact
+            connection.save()
 
         # update this user's facility. If a facility code was provided,
         # set new user's facility to the requested facility. Otherwise,
@@ -57,7 +62,6 @@ def user_registration_commit(message, **kwargs):
         else:
             contact_profile.facility = message.connections[0].contact.contactprofile.facility
         contact_profile.save()
-
         effect = info(
                 _("Registered New User"), {},
                 _("Phone number: %(phone_number)s"), { 'phone_number' : kwargs['phone_number'] }
