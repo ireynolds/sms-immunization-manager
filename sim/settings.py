@@ -239,7 +239,8 @@ APPS_BEFORE_SIM = (
     "django_tables2",
     "selectable",
     "south",
-    "rapidsms.contrib.messagelog",
+    #"rapidsms.contrib.messagelog",
+    "messagelog",
     "crispy_forms",
     "envaya"
 )

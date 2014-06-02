@@ -35,11 +35,14 @@ class Responder(AppBase):
 
         # send the urgent responses
         if urgentEffects:
-            self._sendRepsponses(urgentEffects, message)
+            self._sendRepsponses(urgentEffects, message,
+                    "Responded to sender: Urgent message.")
 
         # send the error responses
         if errorEffects:
-            self._sendRepsponses(errorEffects, message, " Please fix and send again.")
+            self._sendRepsponses(errorEffects, message,
+                    "Responded to sender: Please fix and send again.",
+                    " Please fix and send again.")
 
         elif message.fields['group'] not in DO_NOT_SEND_CONFIRMATION:
             # there are no errors, and this message needs a response
@@ -64,7 +67,7 @@ class Responder(AppBase):
                 # send only the first error response
                 return [ effect ]
 
-    def _sendRepsponses(self, effects, message, additional_message=""):
+    def _sendRepsponses(self, effects, message, desc_text, additional_text=""):
         """
         Sends a response message to the original sender and creates a message
         effect to document the interaction.
@@ -72,14 +75,14 @@ class Responder(AppBase):
         for effect in effects:
             # create a new effect for sending the response
             name = _("Response Sent")
-            desc = _("Responded to sender.%s" % additional_message)
+            desc = _(desc_text)
             response = info(name, {}, desc, {})
             complete_effect(response, message.logger_msg, RESPOND, None, '', False)
 
             # set translation language for response
             with override(message.connections[0].contact.language):
 
-                msg_to_send = ugettext("%(description)s%(additional_message)s" % { 'description': unicode(effect.get_desc()), 'additional_message': additional_message })
+                msg_to_send = "%(description)s%(additional_text)s" % { 'description': ugettext(effect.get_desc()), 'additional_text': additional_text }
 
                 # send and record the effect
                 message.respond(unicode(msg_to_send))
