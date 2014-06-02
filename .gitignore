@@ -53,6 +53,9 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# Mac OSX
+.DS_Store
+
 # Other
 website/output
 website/tmp
