@@ -2,8 +2,8 @@
 lang_args = -l es
 
 # Define what directories to run makemessages and compilemessages in
-lang_dirs = contextual envaya info mkdir notifications permissions \
-            response stock utils dhis2 equipment messagelog moderation \
+lang_dirs = contextual envaya info notifications permissions response\
+            stock utils dhis2 equipment messagelog moderation \
             operation_parser sim user_registration
 
 
@@ -29,6 +29,6 @@ compilemessages:
 make_locale_dirs:
 	$(foreach dir,$(lang_dirs), mkdir -p $(dir)/locale;)
 
-# Removes all locale directories. Use with caution!
+# Removes all compiled message files
 clean:
-	$(foreach dir,$(lang_dirs), rm -rf $(dir)/locale;)
+	$(foreach dir,$(lang_dirs), rm -f $(dir)/locale/*/LC_MESSAGES/django.mo;)
