@@ -126,7 +126,7 @@ PRIORITY_CHOICES = (
 )
 
 # Define what priorities require moderator action
-MODERATOR_PRIORITIES = [ERROR]
+MODERATOR_PRIORITIES = [ERROR, NOTIFY]
 
 # Define the stage an effect can occur in.
 FILTER = 'FILTER'
