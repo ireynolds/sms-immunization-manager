@@ -346,6 +346,11 @@ SIM_OPCODE_MAY_NOT_DUPLICATE = set([
     "FC"
 ])
 
+SIM_OPCODES_MUST_APPEAR_LAST = set([
+    "RG",
+    "HE",
+])
+
 # A list of AppBase subclasses that should be used by RapidSMS' router, in
 # addition to those autodiscovered from INSTALLED_APPS.
 # TODO: Is it possible to make these references be strings, for consistency with
