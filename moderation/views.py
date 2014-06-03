@@ -85,6 +85,7 @@ def contact(request, contact_id):
             WARN: '',
             ERROR: 'danger',
             URGENT: '',
+            NOTIFY: 'danger',
         }
         LABEL_CLASSES = {
             DEBUG: 'info',
@@ -92,6 +93,7 @@ def contact(request, contact_id):
             WARN: 'warning',
             ERROR: 'danger',
             URGENT: 'warning',
+            NOTIFY: 'for moderation',
         }
         def __init__(self, effect):
             self.effect = effect
