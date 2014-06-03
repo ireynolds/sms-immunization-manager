@@ -72,7 +72,8 @@ class PreferredLanguage(OperationBase):
 
         return ([effect], args)
 
-PHONE_NUMBER = "\d{8}|\d{4}-\d{4}|\+\d{13}"
+# Match US phone numbers for UW demo
+PHONE_NUMBER = "\d{10}|\d{3}-\d{3}-\d{4}" 
 class UserRegistration(OperationBase):
     """Implements the SMS API for registering a new user."""
     helptext = "For example, %(opcode)s 12345678 Janice Smith. Creates a new user " + \
@@ -117,6 +118,11 @@ class UserRegistration(OperationBase):
                 _("Must include a phone number to register for this new user."), {}
         )
 
+    def format_phone_number(self, phone_number):
+        import re
+        phone_number = re.sub("-", "", phone_number)
+        return "+1" + phone_number
+        
     def parse_arguments(self, opcode, arg_string, message):
         args = {} 
         phone_number, remaining = gobbler.gobble(PHONE_NUMBER, arg_string)
@@ -127,7 +133,7 @@ class UserRegistration(OperationBase):
             else:
                 effect, args = self._error_no_phone_number(opcode, arg_string), None
         else:
-            args['phone_number'] = phone_number
+            args['phone_number'] = self.format_phone_number(phone_number)
             if remaining:
                 # Treats all text after phone number as user name
                 args['contact_name'] = remaining.strip() 
