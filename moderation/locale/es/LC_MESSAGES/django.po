@@ -1,14 +1,12 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# THESE TRANSLATIONS CONTAIN INACCURACIES, AND ARE FOR TESTING ONLY.
+# They were created by a non-native spanish speaker.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-06 16:45-0700\n"
+"POT-Creation-Date: 2014-06-02 17:48-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,15 +16,326 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: models.py:71
-msgid "Success"
-msgstr "Exito"
+#: forms.py:21
+msgid "Phone number"
+msgstr "Número de teléfono"
 
-#: models.py:73
-msgid "Failure"
-msgstr "Fracaso"
+#: forms.py:24
+msgid "Language"
+msgstr "Idioma"
 
-#: models.py:75
+#: forms.py:28 templates/facility.html:46 templates/include/message.html:46
+msgid "Name"
+msgstr "Nombre"
+
+#: forms.py:52
+msgid "This number is already in use by another contact"
+msgstr "Este número ya está en uso por otro contacto"
+
+#: models.py:120
+msgid "Debug"
+msgstr "Depurar"
+
+#: models.py:121
+msgid "Info"
+msgstr "Info"
+
+#: models.py:122
+msgid "Warning"
+msgstr "Advertencia"
+
+#: models.py:123
+msgid "Error"
+msgstr "Error"
+
+#: models.py:124
+msgid "Urgent"
+msgstr "Urgente"
+
+#: models.py:125
+msgid "Notify"
+msgstr "Notificar"
+
+#: models.py:139
+msgid "Filter"
+msgstr "Filtro"
+
+#: models.py:140
+msgid "Syntax"
+msgstr "Sintaxis"
+
+#: models.py:141
+msgid "Semantic"
+msgstr "Semántico"
+
+#: models.py:142
+msgid "Commit"
+msgstr "Escribir"
+
+#: models.py:143
+msgid "Respond"
+msgstr "Responder"
+
+#: models.py:197
 #, python-format
-msgid ": %(name)s: %(desc)s"
-msgstr ": %(name)s: %(desc)s"
+msgid "%(stage)s %(priority)s: %(name)s: %(desc)s"
+msgstr "%(stage)s %(priority)s: %(name)s: %(desc)s"
+
+#: views.py:131
+#, python-format
+msgid "The contact %(name)s was successfully updated"
+msgstr "El contacto %(name)s se ha actualizado correctamente"
+
+#: views.py:164
+#, python-format
+msgid "The contact %(name)s was successfully created"
+msgstr "El contacto %(name)s sido creado con éxito"
+
+#: views.py:201
+#, python-format
+msgid "The message %(text)s was successfully resent"
+msgstr "El mensaje %(text)s se resienten con éxito"
+
+#: views.py:295
+msgid "Your default language has been updated."
+msgstr "Su idioma por defecto se ha actualizado."
+
+#: views.py:309
+msgid "Your default page has been updated."
+msgstr "Tu página por defecto se ha actualizado."
+
+#: templates/contact.html:34
+msgid "No phone number"
+msgstr "Ningún número de teléfono"
+
+#: templates/contact.html:42
+msgid "No role"
+msgstr "Ningún papel"
+
+#: templates/contact.html:51
+#, python-format
+msgid "Prefers %(lang_name)s"
+msgstr "Prefiere %(lang_name)s"
+
+#: templates/contact.html:60 templates/contact_edit.html:8
+#: templates/contact_edit.html.py:13 templates/contact_edit.html:31
+#: templates/facility.html:86
+msgid "Edit Contact"
+msgstr "Editar contacto"
+
+#: templates/contact.html:67 templates/facility.html:90
+msgid "Dismiss All Messages"
+msgstr "Descartar todos los mensajes"
+
+#: templates/contact.html:71
+msgid "Delete Contact"
+msgstr "Eliminar contacto"
+
+#: templates/contact_create.html:6 templates/contact_create.html.py:12
+#: templates/contact_create.html:20
+msgid "Create Contact"
+msgstr "Crear contacto"
+
+#: templates/contact_create.html:33 templates/contact_edit.html:44
+msgid "Save Changes"
+msgstr "Guardar cambios"
+
+#: templates/facility.html:23
+msgid "Make this facility my default"
+msgstr "Hacer estas instalaciones mi defecto"
+
+#: templates/facility.html:29
+msgid "This facility is your default"
+msgstr "Esta instalación es la predeterminada"
+
+#: templates/facility.html:41
+msgid "Contacts"
+msgstr "Contactos"
+
+#: templates/facility.html:45 templates/message_resend.html:48
+#: templates/include/message.html:29
+msgid "Phone Number"
+msgstr "Número de teléfono"
+
+#: templates/facility.html:47
+msgid "Role"
+msgstr "Papel"
+
+#: templates/facility.html:52
+msgid "Creates a new contact at this facility"
+msgstr "Crea un nuevo contacto en esta instalación"
+
+#: templates/facility.html:72
+#: templates/include/moderation_contact_list.html:20
+#, python-format
+msgid "This contact has %(count)s message that requires moderator action"
+msgid_plural ""
+"This contact has %(count)s messages that require moderator action"
+msgstr[0] "Este contacto tiene %(count)s mensaje que requiere una acción moderadora"
+msgstr[1] "Este contacto tiene %(count)s mensajes que requieren una acción moderadora"
+
+#: templates/facility.html:73
+#: templates/include/moderation_contact_list.html:21
+#, python-format
+msgid "%(count)s message"
+msgid_plural "%(count)s messages"
+msgstr[0] "%(count)s mensaje"
+msgstr[1] "%(count)s mensajes"
+
+#: templates/facility.html:83
+msgid "Actions"
+msgstr "Acciones"
+
+#: templates/facility.html:103
+msgid "No Contacts"
+msgstr "No hay contactos"
+
+#: templates/facility.html:114
+msgid "Recent Changes"
+msgstr "Cambios Recientes"
+
+#: templates/message_resend.html:8 templates/message_resend.html.py:13
+#: templates/message_resend.html:31 templates/include/message.html:19
+msgid "Resend Message"
+msgstr "Reenviar mensaje"
+
+#: templates/message_resend.html:42
+msgid "Contact"
+msgstr "Contacto"
+
+#: templates/message_resend.html:55
+msgid "Send Message"
+msgstr "Enviar mensaje"
+
+#: templates/node.html:20
+msgid "Make this region my default"
+msgstr "Hacer esta región mi defecto"
+
+#: templates/node.html:26
+msgid "This region is your default"
+msgstr "Esta región es la predeterminada"
+
+#: templates/node.html:38
+msgid "Facilities"
+msgstr "Instalaciones"
+
+#: templates/node.html:47 templates/root_nodes.html:47
+msgid "Sub-Regions"
+msgstr "Subregiones"
+
+#: templates/root_nodes.html:20
+msgid "Make this page my default"
+msgstr "Hacer esta página mi defecto"
+
+#: templates/root_nodes.html:24
+msgid "This page is your default"
+msgstr "Esta página es el predeterminado"
+
+#: templates/root_nodes.html:36
+msgid "Unrecognized Messages"
+msgstr "Mensajes no reconocidos"
+
+#: templates/root_nodes.html:39
+msgid "No Messages"
+msgstr "No hay Mensajes"
+
+#: templates/include/effect.html:13
+msgid "Indicate that this error does not require moderator action"
+msgstr "Indique que este error no requiere acción moderadora"
+
+#: templates/include/effect.html:14
+msgid "Dismiss Error"
+msgstr "Descartar Error"
+
+#: templates/include/effect.html:20
+msgid "Indicate that this error requires moderator action"
+msgstr "Indique que este error requiere una acción moderadora"
+
+#: templates/include/effect.html:21
+msgid "Undismiss Error"
+msgstr "Restaurar este error"
+
+#: templates/include/facility_list.html:11
+#, python-format
+msgid "%(count)s contact at this facility requires moderator action"
+msgid_plural "%(count)s contacts at this facility require moderator action"
+msgstr[0] "%(count)s contacto en esta instalación requiere una acción moderadora"
+msgstr[1] "%(count)s contactos en esta instalación requieren una acción moderadora"
+
+#: templates/include/facility_list.html:12 templates/include/node_list.html:12
+#, python-format
+msgid "%(count)s contact"
+msgid_plural "%(count)s contacts"
+msgstr[0] "%(count)s contactos"
+msgstr[1] "%(count)s contactos"
+
+#: templates/include/facility_list.html:20
+msgid "No Facilities"
+msgstr "No hay instalaciones"
+
+#: templates/include/message.html:6
+msgid "This message was created by a moderator"
+msgstr "Este mensaje fue creado por un moderador"
+
+#: templates/include/message.html:8
+msgid "This message was sent by a user to SIM"
+msgstr "Este mensaje fue enviado por un usuario a GIS"
+
+#: templates/include/message.html:10
+msgid "This message was sent by SIM to a user"
+msgstr "Este mensaje fue enviado por GIS a un usuario"
+
+#: templates/include/message.html:25
+msgid "Date"
+msgstr "Fecha"
+
+#: templates/include/message.html:36
+msgid "Message Effects"
+msgstr ""
+
+#: templates/include/message.html:37
+msgid "Show Effects"
+msgstr "Efectos Mensaje"
+
+#: templates/include/message.html:38
+msgid "Hide Effects"
+msgstr "Ocultar efectos"
+
+#: templates/include/message.html:43
+msgid "Stage"
+msgstr "Etapa"
+
+#: templates/include/message.html:44
+msgid "Priority"
+msgstr "Prioridad"
+
+#: templates/include/message.html:45
+msgid "Operation"
+msgstr "Operación"
+
+#: templates/include/message.html:47
+msgid "Description"
+msgstr "Descripción"
+
+#: templates/include/message.html:51
+msgid "Dismiss all errors in this message"
+msgstr "Descartar todos los errores en este mensaje"
+
+#: templates/include/message.html:52
+msgid "Dismiss All"
+msgstr "Despedir a todos"
+
+#: templates/include/moderation_contact_list.html:29
+msgid "No contacts require moderation"
+msgstr "No hay contactos requieren moderación"
+
+#: templates/include/node_list.html:11
+#, python-format
+msgid "%(count)s contact in this region requires moderator action"
+msgid_plural "%(count)s contacts in this region require moderator action"
+msgstr[0] "%(count)s contacto en esta región requiere de una acción moderadora"
+msgstr[1] "%(count)s contactos en esta región requiere de una acción moderadora"
+
+#: templates/include/node_list.html:20
+msgid "No Regions"
+msgstr "Ningún Regiones"

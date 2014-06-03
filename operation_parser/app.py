@@ -25,9 +25,6 @@ class OperationParser(AppBase):
         '''
         given a string of the form [${OPCODE}${ARGUMENTS}]+, returns a sorted list
         of the indices of each opcode.
-
-        Assumes that the opcode immediately following HE is the argument to HE. 
-        This can result in misleading errors later in parsing, but is unavoidable. 
         '''
         indices = []
         for opcode in opcodes:            
@@ -39,16 +36,18 @@ class OperationParser(AppBase):
                 indices.append(index)
                 index += 2
 
+        # settings.SIM_OPCODES_MUST_APPEAR_LAST opcodes must come last and may 
+        # not appear together. Thus, find the first instance of RG or HE and 
+        # treat remove all following "opcodes" because they are, in fact, part 
+        # of the arguments to RG or HE.
         indices = sorted(indices)
         i = 0
         while i < len(indices):
             index = indices[i]
-            if text[index:index + 2] == "HE":
-                # If this test fails, then the HE received an invalid
-                # argument (if any argument), and will fail in its own
-                # parsing stage.
-                if i + 1 < len(indices):
+            if text[index:index + 2] in settings.SIM_OPCODES_MUST_APPEAR_LAST:
+                while i + 1 < len(indices):
                     del indices[i + 1]
+                    i += 1
             i += 1
 
         return indices
@@ -116,7 +115,7 @@ class OperationParser(AppBase):
         effect = error(
             "Error Verifying Operation Codes", 
                 {},
-            "Error. Cannot include %(opcode)s and %(conflicting_opcode)s in the same message. Please fix and try again.", 
+            "Cannot include %(opcode)s and %(conflicting_opcode)s in the same message.", 
                 { "opcode": opcode0, "conflicting_opcode": conflicting_opcode }
         )
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
@@ -139,7 +138,7 @@ class OperationParser(AppBase):
         effect = error(
             "Error Verifying Operation Codes", 
                 {},
-            "Error. Cannot include %(duplicated_opcode)s more than once in the same message. Please fix and try again.", 
+            "Cannot include %(duplicated_opcode)s more than once in the same message.", 
                 { "duplicated_opcode": duplicated_opcode }
         )
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
@@ -157,7 +156,7 @@ class OperationParser(AppBase):
         effect = error(
             "Error Verifying Operation Codes", 
                 {},
-            "Error. Message must also submit or request data. Please fix and try again.", 
+            "Message must also submit or request data.", 
                 {}
         )
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
