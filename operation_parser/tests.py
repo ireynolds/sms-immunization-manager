@@ -119,9 +119,9 @@ class OperationParserTest(CustomRouterMixin, SIMTestCase):
         self.check_error("WW A")
 
     def test_parses_he(self):
-        msg = self.receive("HE SL SL A 10")
+        msg = self.receive("SL A 10 HE SL ")
         self.assertEqual(
-            [("HE", "SL"), ("SL", "A 10")],
+            [("SL", "A 10"), ("HE", "SL")],
             msg.fields['operations']
         )
 
