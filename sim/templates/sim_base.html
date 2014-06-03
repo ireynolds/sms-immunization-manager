@@ -71,7 +71,7 @@
                                         {% csrf_token %}
                                         <input name="next" type="hidden" value="{{ redirect_to }}" />
                                         <input name="language" type="hidden" value="{{ LANGUAGE_CODE }}" />
-                                        <a href="#" class="language-link">{% blocktrans with language=LANGUAGE_NAME %}Make {{ language }} my default language{% endblocktrans %}</a>
+                                        <a href="#" class="submit-link">{% blocktrans with language=LANGUAGE_NAME %}Make {{ language }} my default language{% endblocktrans %}</a>
                                     </form>
                             </ul>
                         </li>
