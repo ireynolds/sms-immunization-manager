@@ -35,12 +35,12 @@ class PermissionsSignalTest(RapidTest):
         message.fields['operation_effects'] = []
         return message
 
-    def test_DataWorker_PL(self):
+    def test_DataWorker_RG(self):
         self.assertEqual(self.contact.language, u'')
 
         kwargs = {'preferred_lang_code' : 1, 'preferred_lang' : 'English'}
         self.mesg = self.createMessage() 
-        effects = opcode_permissions_check(self.mesg, "PL", **kwargs)
+        effects = opcode_permissions_check(self.mesg, "RG", **kwargs)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'ERROR')
@@ -49,7 +49,7 @@ class PermissionsSignalTest(RapidTest):
         cp = ContactProfile.objects.get(contact=self.contact.pk)
         self.assertEqual(cp.contact.language, u'')
 
-    def test_Admin_PL(self):
+    def test_Admin_RG(self):
         self.createContact("admin1", settings.ADMIN_ROLE)
         self.data['connections'] = [self.connection]
         self.assertEqual(self.contact.contactprofile.role_name, settings.ADMIN_ROLE)
@@ -58,7 +58,7 @@ class PermissionsSignalTest(RapidTest):
         kwargs = {'preferred_lang_code' : 1, 'preferred_lang' : 'English'}
         self.mesg = self.createMessage() 
         self.assertEqual(self.contact, self.mesg.connections[0].contact)
-        effects = opcode_permissions_check(self.mesg, "PL", **kwargs)
+        effects = opcode_permissions_check(self.mesg, "RG", **kwargs)
 
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')

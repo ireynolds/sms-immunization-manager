@@ -315,7 +315,7 @@ ROLE_CHOICES = (
 )
 
 ROLE_OP_CODES = (
-    (DATA_REPORTER_ROLE, ["FT", "SL", "SE", "RE", "NF", "HE", "FC"]),
+    (DATA_REPORTER_ROLE, ["FT", "SL", "SE", "RE", "NF", "HE", "FC", "PL"]),
     (ADMIN_ROLE, ["FT", "SL", "SE", "RE", "NF", "RG", "PL", "HE", "FC"])
 )
 
