@@ -23,13 +23,17 @@ If an error is detected in any operation, then all operations in that message ar
 
 ### Eliminating Ambiguous Syntax
 
+The overwhelming majority of these are a result of (a) alphabetic arguments that may contain an operation code inside them, which could confuse the parser as it identifies significant opcodes, and (b) the requirements that messages with no delimiters be allowed.
+
 It is important that operation codes do not appear in the arguments to an operation (save `HE`, which is the only exception). For example, no vaccine can be labeled `SL` if there is also an `SL` operation code. If there were, the message `SL SL 10` would be ambiguous.
 
 To further eliminate ambiguity, two operations may only appear together in one message if they are in the same group (Periodic Reporting, Spontaneous Reporting, Administration, Information). The Contextual group is an exception--any Contextual operation may appear with any other operation.
 
 The definitions below are listed using spaces as delimiters. However, if delimiters are present at all, they may be spaces, semicolons, commas, plus signs, or minus signs. To accomodate for this, the format of each SMS operation is defined carefully so that no delimiters are necessary--for example, all alphabetic codes and labels are exactly two characters, and no variable-length numeric arguments are always separated by an alphabetic argument. These measures make it much less likely that a mistake in typing a message would go unnoticed.
 
-Additionally, the system treats `o` and `0` as identical because of the difficulty many users have in distinguishing between them. This is done by converting all instances of `o` to `0` before interpreting the message. For this reason, an operation code must be defined in terms of `0` instead of `o`.
+Additionally, the system treats `o` and `0` as identical because of the difficulty many users have in distinguishing between them. This is done by converting all instances of `o` to `0` before interpreting the message. For this reason, all opcodes and arguments (including any labels and identifiers) must be written as if the letter `o` does not exist.
+
+Some operations, such as HE and RG, have inherently ambiguous arguments; they are variable-length and alphabetic, so many valid values for the arguments contain opcodes (for example, HE's argument is intended to contain opcodes!). To eliminate this ambiguity, these operations must be last in the message. If they are not last, then a possibly-confusing error message will be returned.
 
 ## Modified/Additional Requirements for Laos Only
 
@@ -132,7 +136,7 @@ These operations affect the registered users.
 
 ***Register User/Number*** 
 
-The argument `PHONE_NUMBER` is defined as `\d{8}` or `\d{4}-\d{4}` or `+\d{13}`.
+The argument `PHONE_NUMBER` is defined as `\d{8}` or `\d{4}-\d{4}` or `+\d{13}`. Must appear last in the message.
 
 <div class="sms-api-syntax" markdown="1">
 `rg PHONE_NUMBER (NAME )+` An existing user registers a new user with the given name and phone number at the sending user’s facility. (However, in the presence of the `FC` code, registers the new user for the given facility.)
@@ -157,7 +161,7 @@ __Examples__
 ### Information
 
 ***Help*** 
-For information. May only appear once in a message.
+For information. May only appear once in a message. Must appear last in the message.
 
 <div class="sms-api-syntax" markdown="1">
 `he OPCODE` Returns a brief description of the requested opcode.
@@ -175,7 +179,7 @@ These operations modify the context of the other operations in their message.
 May only appear once in a message.
 
 <div class="sms-api-syntax" markdown="1">
-`fc INTEGER` Instead of applying each operation in the message to the user’s facility, applies it to the given facility. Note that the `INTEGER` argument is of variable length.
+`fc INTEGER` Instead of applying each operation in the message to the user’s facility, applies it to the given facility. Note that the `INTEGER` argument is of variable length. 
 
 __Examples__
 * `FC 0`
