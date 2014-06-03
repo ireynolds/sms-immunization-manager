@@ -115,7 +115,7 @@ class OperationParser(AppBase):
         effect = error(
             "Error Verifying Operation Codes", 
                 {},
-            "Error. Cannot include %(opcode)s and %(conflicting_opcode)s in the same message. Please fix and try again.", 
+            "Cannot include %(opcode)s and %(conflicting_opcode)s in the same message.", 
                 { "opcode": opcode0, "conflicting_opcode": conflicting_opcode }
         )
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
@@ -138,7 +138,7 @@ class OperationParser(AppBase):
         effect = error(
             "Error Verifying Operation Codes", 
                 {},
-            "Error. Cannot include %(duplicated_opcode)s more than once in the same message. Please fix and try again.", 
+            "Cannot include %(duplicated_opcode)s more than once in the same message.", 
                 { "duplicated_opcode": duplicated_opcode }
         )
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
@@ -156,7 +156,7 @@ class OperationParser(AppBase):
         effect = error(
             "Error Verifying Operation Codes", 
                 {},
-            "Error. Message must also submit or request data. Please fix and try again.", 
+            "Message must also submit or request data.", 
                 {}
         )
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)
