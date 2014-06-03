@@ -303,7 +303,7 @@ RAPIDSMS_HANDLERS = (
 # Defines acceptable choices for language preference opcode
 # TODO: Change language tags to something useful
 PREFERRED_LANGUAGE_CODE = "[1-3]"
-PREFERRED_LANGUAGES = { 1 : "English", 2 : "Karoake", 3 : "Lao" }
+PREFERRED_LANGUAGES = { 1 : "en", 2 : "Karoake", 3 : "la" }
 
 # Define Roles and associated string of permitted opcodes
 # TODO: Require a json list of strings instead for opcodes?
