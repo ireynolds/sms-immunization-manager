@@ -52,32 +52,32 @@ Next, define the Syntax stage.
 
 	    def parse_arguments(self, opcode, arg_string, message):
 	        '''
-	        Parses the given message into a Python representation of its 
+	        Parses the given message into a Python representation of its
 	        syntactical meaning. Returns the 2-tuple (effects, args), where
 
 	        effects
 	            A list of MessageEffects representing the results of parsing.
 
 	        args
-	            A dictionary of keyword arguments to the semantic and commit 
+	            A dictionary of keyword arguments to the semantic and commit
 	            stage receivers for this operation.
 	        '''
 	        return [], {}
 
 You may read about MessageEffects [here](#sims_modifications_to_).
 
-Finally, define the Semantic and Commit stages. There is no restriction on the number of handlers implementing each of the Semantic and Commit stages. This minimizes coupling between syntax and behavior and leaves you free to easily add and remove behaviors without interfering with existing ones. 
+Finally, define the Semantic and Commit stages. There is no restriction on the number of handlers implementing each of the Semantic and Commit stages. This minimizes coupling between syntax and behavior and leaves you free to easily add and remove behaviors without interfering with existing ones.
 
 As an illustration of the loose coupling between Syntax, Semantic, and Commit code: these three stages, for one SMS operations, are often distributed across several modules and packages.
 
 	#!python
-	django.dispatch.dispatcher.receiver(utils.operations.semantic_signal, 
+	django.dispatch.dispatcher.receiver(utils.operations.semantic_signal,
 	    sender=ExampleSIMApp)
 	def example_semantic(self, message, opcode, *args, **kwargs):
 	    '''Implements the SIM Semantic stage.'''
 	    return []
 
-	django.dispatch.dispatcher.receiver(utils.operations.commit_signal, 
+	django.dispatch.dispatcher.receiver(utils.operations.commit_signal,
 	    sender=ExampleSIMApp)
 	def example_commit(self, message, opcode, *args, **kwargs):
 	    '''Implements the SIM commit stage.'''
@@ -94,4 +94,13 @@ As an illustration of the loose coupling between Syntax, Semantic, and Commit co
 
 ## The MessageEffect Class
 
-TODO
+Message Effects log the effects of each check and commit signal receiver for a message. They are used to report their outcome to the signal sender, as well as log the outcome for moderation purposes. The following types are provided to catagorize the effect. Of note, ERROR effects will block later processing of the message.
+
+| Message Effect | Description |
+|---|---|
+| DEBUG | Debug effects are developer information of no relevance to users. |
+| INFO | Info effects document successes or other non-errors. |
+| WARN | Warning effects document minor or non-user-actionable errors. Warnings are not typically returned to users, and do not prevent later processing from taking place. |
+| ERROR | Error effects document user-actionable errors. Their messages may be returned to users and prevent later processing from taking place. |
+| URGENT | Urgent effects are critically important information that must be seen and acted upon immediately. Their messages are always returned to users and do not halt further message processing. Use sparingly, if ever. |
+| NOTIFY | Notify effects are critically important information that require human interventions and must be seen and acted upon by a moderator. Their messages are sent to moderators and do not halt further message processing. |
