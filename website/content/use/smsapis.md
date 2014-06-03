@@ -35,10 +35,12 @@ Additionally, the system treats `o` and `0` as identical because of the difficul
 
 Some operations, such as HE and RG, have inherently ambiguous arguments; they are variable-length and alphabetic, so many valid values for the arguments contain opcodes (for example, HE's argument is intended to contain opcodes!). To eliminate this ambiguity, these operations must be last in the message. If they are not last, then a possibly-confusing error message will be returned.
 
+When defining a syntax, be careful to consider the full range of possible interactions between operation codes. For example, the message "NFC", which is correct if treated as "NF C" (reports broken equipment) without delimiters, may be incorrect if treated as "N FC" (finding the FC opcode rather than the NF). This particular message is interpreted correctly, but similar ones may not be.
+
 ## Modified/Additional Requirements for Laos Only
 
 ***Implemented***
-All labels are one character rather than two. This does not produce ambiguity in the messages below, but might in a future set of operations. 
+All labels are one character rather than two. This produces ambiguity that can be reduced by using two-character labels (the same length as opcodes).
 
 ***Not Implemented*** 
 Periodic reports contain SL and FT operations, but not necessarily FT and SL operation codes. The following mappings must be supported:
