@@ -342,7 +342,8 @@ SIM_OPCODE_MAY_NOT_DUPLICATE = set([
     "SL",
     "PL",
     "HE",
-    "FC"
+    "FC",
+    "RG",
 ])
 
 SIM_OPCODES_MUST_APPEAR_LAST = set([

@@ -136,7 +136,7 @@ These operations affect the registered users.
 
 ***Register User/Number*** 
 
-The argument `PHONE_NUMBER` is defined as `\d{8}` or `\d{4}-\d{4}` or `+\d{13}`. Must appear last in the message.
+The argument `PHONE_NUMBER` is defined as `\d{8}` or `\d{4}-\d{4}` or `+\d{13}`. May only appear once in a message. Must appear last in the message.
 
 <div class="sms-api-syntax" markdown="1">
 `rg PHONE_NUMBER (NAME )+` An existing user registers a new user with the given name and phone number at the sending user’s facility. (However, in the presence of the `FC` code, registers the new user for the given facility.)
