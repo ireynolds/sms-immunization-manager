@@ -84,7 +84,7 @@ class OperationParser(AppBase):
         were parsed from the given message.
         '''
         result_fmtstr = _("Parser detected operations: %(ops)s")
-        result_context = {"ops": repr(operations)}
+        result_context = {"ops": ', '.join(operations)}
         effect = info(_("Parsed Operation Codes"), {}, result_fmtstr, result_context)
         return complete_effect(effect, message.logger_msg, SYNTAX)
 
@@ -193,7 +193,8 @@ class OperationParser(AppBase):
         effects.append(self._if_contains_only_contextual(operations, message))
         effects = filter(None, effects)
         if len(effects) == 0:
-            effects = [self._ok_effect(operations, message)]
+            opcodes = [opcode for opcode, _ in operations]
+            effects = [self._ok_effect(opcodes, message)]
 
         message.fields['group'] = self._group(operations)
         message.fields['operations'] = operations
