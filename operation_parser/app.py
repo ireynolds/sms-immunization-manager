@@ -52,7 +52,7 @@ class OperationParser(AppBase):
 
         return indices
 
-    def _get_operations(self, text, opcodes):
+    def _get_operations(self, text, opcodes, message):
         '''
         Given the text of a message (in the form [${OPCODE}${ARGUMENTS}]+) and a list 
         of valid opcodes, returns a sorted list of pair (opcode, arguments). 
@@ -71,7 +71,11 @@ class OperationParser(AppBase):
             operation = text[start:end]
 
             opcode = operation[:2]
-            args = gobbler.strip_delimiters(operation[2:])
+            if opcode in settings.SIM_OPCODES_PASS_ORIGINAL_ARGS:
+                arg_string = message.text[start + 2:end]
+            else:
+                arg_string = operation[2:]
+            args = gobbler.strip_delimiters(arg_string)
 
             operations.append( (opcode, args) )
 
@@ -182,8 +186,8 @@ class OperationParser(AppBase):
 
         Returned arguments have had delimiters stripped from front and back.
         '''
-        text = disambiguate_o0(gobbler.strip_delimiters(message.text).upper())
-        operations = self._get_operations(text, settings.SIM_OPERATION_CODES.keys())
+        text = disambiguate_o0(message.text.upper())
+        operations = self._get_operations(text, settings.SIM_OPERATION_CODES.keys(), message)
 
         # Check for errors between all operations
         effects = []

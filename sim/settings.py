@@ -283,7 +283,7 @@ INSTALLED_BACKENDS = {
 }
 
 # The name of the backend used to represent phone numbers
-PHONE_BACKEND = "envaya"
+PHONE_BACKEND = "message_tester"
 
 # The name of the backend used to represent messages sent using the moderator
 # web interface
@@ -349,6 +349,10 @@ SIM_OPCODE_MAY_NOT_DUPLICATE = set([
 SIM_OPCODES_MUST_APPEAR_LAST = set([
     "RG",
     "HE",
+])
+
+SIM_OPCODES_PASS_ORIGINAL_ARGS = set([
+    "RG",
 ])
 
 # A list of AppBase subclasses that should be used by RapidSMS' router, in
