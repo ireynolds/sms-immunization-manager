@@ -1,0 +1,96 @@
+# THESE TRANSLATIONS CONTAIN INACCURACIES, AND ARE FOR TESTING ONLY.
+# They were created by a non-native spanish speaker.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-06-02 17:48-0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: PROD_settings.py:46 settings.py:46
+msgid "English"
+msgstr "Inglés"
+
+#: PROD_settings.py:47 settings.py:47
+msgid "Spanish"
+msgstr "Español"
+
+#: PROD_settings.py:48 settings.py:48
+msgid "Lao"
+msgstr "Lao"
+
+#: PROD_settings.py:301 settings.py:313
+msgid "Data Reporter"
+msgstr "Reportero de datos"
+
+#: PROD_settings.py:302 settings.py:314
+msgid "Administrator"
+msgstr "Administrador"
+
+#: templates/login.html:24
+msgid "Log In"
+msgstr "Iniciar sesión"
+
+#: templates/login.html:36
+msgid "Language"
+msgstr "Idioma"
+
+#: templates/sim_base.html:34
+msgid "Toggle navigation"
+msgstr "Mostrar navegación"
+
+#: templates/sim_base.html:59
+#, python-format
+msgid "%(language)s (default)"
+msgstr "%(language)s (predeterminada)"
+
+#: templates/sim_base.html:74
+#, python-format
+msgid "Make %(language)s my default language"
+msgstr "Haga %(language)s mi idioma por defecto"
+
+#: templates/sim_base.html:84
+msgid "Administration"
+msgstr "Administración"
+
+#: templates/sim_base.html:86
+msgid "Django Admin Site"
+msgstr "Sitio Administrativa de Django"
+
+#: templates/sim_base.html:88
+msgid "RapidSMS Dashboard"
+msgstr "Salpicadero de RapidSMS"
+
+#: templates/sim_base.html:94
+#, python-format
+msgid "Logged in as %(name)s"
+msgstr "Sesión iniciada como %(name)s"
+
+#: templates/sim_base.html:98
+msgid "Change Password"
+msgstr "Cambiar contraseña"
+
+#: templates/sim_base.html:100
+msgid "Log Out"
+msgstr "Finalizar la sesión"
+
+#: templates/include/brand.html:2
+msgid "SMS Immunization Manager"
+msgstr "Gerente de Inmunización SMS"
+
+#: templates/include/brand_abbrev.html:2
+msgid "SIM"
+msgstr "GIS"
+
+#: templates/include/country.html:2
+msgid "United States"
+msgstr "Estados Unidos"

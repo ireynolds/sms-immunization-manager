@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-06 16:04-0700\n"
+"POT-Creation-Date: 2014-06-02 17:48-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,16 +18,38 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: signals.py:10
-msgid "Valid Phone Number Check"
-msgstr "Verification de numero correcto"
+#: app.py:12
+msgid "Received message from unrecognized user"
+msgstr ""
 
-#: signals.py:13
+#: app.py:13
 #, python-format
-msgid "The number %(n)d is not even"
-msgstr "El numero %(n)d no es par"
+msgid "%(phone_number)s is an unrecognized user"
+msgstr ""
 
-#: signals.py:14
+#: app.py:21
+msgid "Received message from recognized user"
+msgstr ""
+
+#: app.py:22
 #, python-format
-msgid "The number %(n)d is even"
-msgstr "El numero %(n)d es par"
+msgid "%(phone_number)s is a recognized user"
+msgstr ""
+
+#: signals.py:32
+msgid "Operation allowed"
+msgstr ""
+
+#: signals.py:33
+#, python-format
+msgid "%(role)s requested to perform permitted operation %(requested_opcode)s."
+msgstr ""
+
+#: signals.py:37
+msgid "Operation not permitted for this user"
+msgstr ""
+
+#: signals.py:38
+#, python-format
+msgid "%(role)s is not allowed to perform operation %(requested_opcode)s."
+msgstr ""

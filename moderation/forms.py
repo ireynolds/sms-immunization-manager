@@ -18,10 +18,14 @@ class ContactForm(forms.ModelForm):
     of a Connection. This form is somewhat of a hack, and is a symptom of using RapidSMS' built-in
     Connection and Contact models.
     """
-    phone_number = forms.CharField(max_length=100, required=False)
+    phone_number = forms.CharField(max_length=100, required=False, label=_("Phone number"))
 
     # Override the language widget to be restricted to settings.LANGUAGES
-    language = forms.ChoiceField(choices=settings.LANGUAGES)
+    language = forms.ChoiceField(choices=settings.LANGUAGES, label=_("Language"))
+
+    # Replace the auto-generated name field with one that has an internationalized label.
+    # TODO: Replace with the label Meta option once we upgrade to Django >= 1.6
+    name = forms.CharField(max_length=20, required=False, label=_("Name"))
 
     class Meta:
         model = Contact

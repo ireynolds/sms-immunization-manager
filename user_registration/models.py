@@ -1,3 +1,4 @@
+from django.utils.translation import ugettext_lazy as _
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
@@ -125,17 +126,18 @@ class ContactProfile(models.Model):
     A user who interacts with the SMS immunization manager
     """
     # The rapidsms Contact that this ContactProfile maps to
-    contact = models.OneToOneField(Contact, primary_key=True)
+    contact = models.OneToOneField(Contact, primary_key=True, verbose_name=_("contact"))
 
     #TODO: Make required
     # The facility where this user works
-    facility = models.ForeignKey(Facility, blank=True, null=True)
+    facility = models.ForeignKey(Facility, blank=True, null=True, verbose_name=_("facility"))
 
     # The name of this role
     # TODO: For consistency this should just be 'role'
     role_name = models.CharField(max_length=100, 
                             choices=settings.ROLE_CHOICES, 
-                            default=settings.DATA_REPORTER_ROLE)
+                            default=settings.DATA_REPORTER_ROLE,
+                            verbose_name=_("role name"))
 
     def __unicode__(self):
         return "%s (%s)" % (self.contact.name, self.get_role_name_display())

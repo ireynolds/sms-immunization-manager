@@ -254,7 +254,6 @@ SIM_PRE_APPS = (
 SIM_APPS = (
     'stock',
     'equipment',
-    'registration',
     'user_registration',
     'dhis2',
     'notifications',
@@ -284,7 +283,7 @@ INSTALLED_BACKENDS = {
 }
 
 # The name of the backend used to represent phone numbers
-PHONE_BACKEND = "message_tester"
+PHONE_BACKEND = "envaya"
 
 # The name of the backend used to represent messages sent using the moderator
 # web interface
