@@ -47,6 +47,7 @@ class OperationParser(AppBase):
             if text[index:index + 2] in settings.SIM_OPCODES_MUST_APPEAR_LAST:
                 while i + 1 < len(indices):
                     del indices[i + 1]
+                    i += 1
             i += 1
 
         return indices

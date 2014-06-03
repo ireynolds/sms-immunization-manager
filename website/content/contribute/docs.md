@@ -8,8 +8,8 @@ title: Contributing Documentation
 {:toc}
 
 The SIM documentation is provided as the static HTML you are reading right now.
-These documents are produced from [Markdown](http://daringfireball.net/projects/markdown) 
-templates with a ruby tool called [nanoc](http://nanoc.ws/). To help contribute you 
+These documents are produced from [Markdown](http://daringfireball.net/projects/markdown)
+templates with a ruby tool called [nanoc](http://nanoc.ws/). To help contribute you
 need to install:
 * [ruby](https://www.ruby-lang.org)
 * [nanoc](http://nanoc.ws/)
@@ -36,7 +36,7 @@ structure for the final HTML version that will be created by nanoc.
 `layouts/default.slim` slim template file defines more advanced HTML features
 that are applied to all pages.
 
-## Making edits
+## Making Edits
 
 Edits should be made to the markdown files (.md) and pushed to the master
 repository when complete. Consult the markdown documentation for the supported
@@ -51,4 +51,4 @@ or hosted on a web server.
 
 ## Publishing
 
-To publish the documentation site, run `nanoc` to generate the static site in the `content/` directory. Then copy the contents of `content/` (not the `content/` folder itself, though) into the `docs/` folder in the Document Root (as [configured](/deploy/apache/#configure_apaches_to_host_sim) in Apache).
+To publish the documentation site, run `nanoc` to generate the static site in the `content/` directory. Then copy the contents of `output/` (not the `content/` folder itself, though) into the `docs/` folder in the Document Root (as [configured](/deploy/apache/#configure_apaches_to_host_sim) in Apache).
