@@ -105,9 +105,17 @@ Message Effects log the effects of each check and commit signal receiver for a m
 | URGENT | Urgent effects are critically important information that must be seen and acted upon immediately. Their messages are always returned to users and do not halt further message processing. Use sparingly, if ever. |
 | NOTIFY | Notify effects are critically important information that require human interventions and must be seen and acted upon by a moderator. Their messages are sent to moderators and do not halt further message processing. |
 
-## Message Groups
+## Operation Code Groups
 
-TODO
+The operation codes in a message sometimes interact with each other to form different semantic meanings. For this reason there are some operation codes that are not permitted in the presence of others. Operation codes are defined to be permissible in certain  groups. The groups are as follows:
+
+| Op-Code Group | Description |
+|---|---|
+| PERIODIC | Periodic codes are used in a repeating manner for tasks like monthly, or weekly reporting. |
+| SPONTANEOUS | Spontaneous codes represent some important information needs to be sent outside of a typical reporting schedule. |
+| ADMINISTRATION | Administration codes handle the setup and configuration tasks. |
+| INFORMATION | Information codes represent informative support codes such as a help system. |
+| CONTEXTUAL | Contextual codes are intended to change some meaning of a message that might be derived from the sender. |
 
 ## SPAM Filter
 
@@ -115,7 +123,7 @@ TODO
 
 ## Global Message Parser
 
-TODO
+TODO (FILL-IN ANY IMPORTANT DETAILS) The global message parser acts during the RapidSMS Parse phase and creates Message Effects in the Syntax stage. It is responsible for finding the registered operation codes in an incoming message. The parser will annotate the message with the discovered operation codes and the arguments that followed each code. These annotations will be used by the individual apps that support each operation code. The annotations are created in the order they are found in the message.
 
 ## Notifier
 
@@ -123,7 +131,7 @@ TODO
 
 ## Responder
 
-The Responder app is responsible for sending a message back to the sender of an incoming SMS message. Hopefully this message will typically be a "Thank You" response. In the event of one or more `ERROR`s, the responder will select an error as the basis of the response.
+The Responder app acts during the Cleanup RapidSMS phase and creates Message Effects in the Response stage. It is responsible for sending a message back to the sender of an incoming SMS message. Hopefully this message will typically be a "Thank You" response. In the event of one or more `ERROR`s, the responder will select an error as the basis of the response.
 
 The Responder selects the first `ERROR` attached to the message to use as the base of the response. This is by design, so that the sender can correct multiple errors one at a time in the order that they appeared in the original message. Since the size of an SMS message is limited, it was decided that trying to report multiple errors in one message would be too difficult.
 
