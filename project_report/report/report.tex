@@ -101,7 +101,28 @@ The project is driven by goals to
 \end{itemize}
 
 \section{Related Work}
-What have others done - both closely and loosely related?  It is important to make sure you do a good job of this and draw upon a wide range of information sources including conferences and journals in the area, magazines and popular press, newsletters, and, of course, web searches.  Feel free to build on what was done in Winter quarter but go further.  In particular make sure you do a survey of related technologies, not just research projects.  This is where the bulk of the citations will be and should be about 1 page clearly explaining why these other works were not enough to solve the problem.
+
+Using SMS operations to resolve failures in cold chain reporting is not a new idea. There are many projects, including research projects, commercial technologies, development frameworks, and extensions of existing software that address a similar problem. Many of these products have been deployed, and many have more time to collect requirements and features.
+
+However, SIM has several fundamental differences from these packages that make it a better general solution.
+
+One solution is DHIS2 Mobile SMS Commands. DHIS2 is a widely-used, powerful, open-source cold chain information/equipment manager. Because the SMS commands are supported on the same platform as the permanent data store, the integration between them is perfect. For example, the most up-to-date information about facilities and data is always available and any DHIS2 form can be turned into an SMS command. Furthermore, this module is meant to be used by non-technical staff, so new custom SMS operations with syntax and behavior can be configured through a web application. There are many behaviors, including scheduled notifications, data updating, listserves, and data queries. It is a powerful and complete solution \cite{dhis2:smsref, dhis2:smsoverview}.
+
+However, the DHIS2 system has several limitation that SIM does not. First, it requires that DHIS2 is the deployment's permanent data store (however, the country may already be using a different solution or would prefer something easier to deploy). Second, configuring SMS syntaxes in a web interface (SIM defines this in code) produces syntaxes that require careful delimiting with special characters (including the `+' and space characters), which is more difficult for data reporters to use. Third, there is little capacity to define custom actions or behaviors separate from what DHIS2 has implemented, so some behaviors may be impossible to obtain and others may be more complex than necessary. Finally, and perhaps most importantly, there is no way for moderators to see detailed logs of incoming SMS messages, especially ones that were rejected. This makes it difficult to diagnose common errors (fixing the syntax to reduce errors is be difficult as well) and identify particular people or facilities that require training \cite{dhis2:smsref, dhis2:smsoverview}.
+
+In order to address syntax problems, DHIS2 publishes a Java Micro Edition (J2ME) application that can be installed on cell phones from many vendors (although DHIS2 recommends that the country buy and distribute a common device to provide better support and reliability). The application presents a user interface with input fields for the user to fill in, and then the phone produces a well-formatted SMS message to send to the server \cite{dhis2:smsoverview, dhis2:j2me}. This is an effective solution, but requires the country to invest in both creating, deploying, supporting, and updating an application installed on dozens or hundreds of phones as well as purchasing phones to distribute.
+
+Another solution more similar to SIM is RapidSMS. In fact, SIM is based on RapidSMS, but with several key architectural changes (which are discussed later, but whose motivations are discussed here). RapidSMS allows syntax and behavior to be described in code, just like SIM does. It's also written in the powerful Python language and based on a widely-used rapid web development framework called Django. This makes RapidSMS easy to customize and deploy. However, SIM and RapidSMS both require programmers in order to implement new behaviors and syntaxes while other solutions can generate these things based configuration by non-technical users through a web interface. The RapidSMS XForms library attempts to mitigate this by allowing syntaxes, at least, to be defined in a similar way to DHIS2, if not behaviors (though with similar limitations).
+
+The differences between SIM and RapidSMS were largely driven by SIM's allowing multiple independent operations per message (whereas RapidSMS allows only one). TODO why does this requirement prevent us from just using RapidSMS?
+
+DHIS2
+  * Raw SMS
+  * J2ME
+
+RapidSMS
+  * Raw
+  * XForms
 
 \section{Approach}
 How are you going about realizing your idea?  What are the main pieces?  Why did you choose these pieces?  How do they interact?  How generally reusable will these pieces be?  This should be a fairly large section with several figures and should probably run about 1.5 to 2 pages.
