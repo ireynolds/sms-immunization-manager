@@ -27,14 +27,13 @@ class OperationParser(AppBase):
         of the indices of each opcode.
         '''
         indices = []
-        for opcode in opcodes:            
-            index = 0
-            while True:
-                index = text.find(opcode, index)
-                if index == -1:
-                    break
-                indices.append(index)
-                index += 2
+        i = 0
+        while i < len(text) - 1:
+            possible_opcode = text[i:i + 2]
+            if possible_opcode in opcodes:
+                indices.append(i)
+                i += 1
+            i += 1
 
         # settings.SIM_OPCODES_MUST_APPEAR_LAST opcodes must come last and may 
         # not appear together. Thus, find the first instance of RG or HE and 
@@ -45,9 +44,7 @@ class OperationParser(AppBase):
         while i < len(indices):
             index = indices[i]
             if text[index:index + 2] in settings.SIM_OPCODES_MUST_APPEAR_LAST:
-                while i + 1 < len(indices):
-                    del indices[i + 1]
-                    i += 1
+                del indices[i + 1:]
             i += 1
 
         return indices

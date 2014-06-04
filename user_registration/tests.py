@@ -33,7 +33,7 @@ class PreferredLanguageTest(TestCase):
         self.assertEqual(len(effects), 1)
         self.assertEqual(effects[0].priority, 'INFO')
         self.assertEqual(kwargs['preferred_lang_code'], 1)
-        self.assertEqual(kwargs['preferred_lang'], 'English')
+        self.assertEqual(kwargs['preferred_lang'], 'en')
 
     def test_extra_char(self):
         effects, kwargs = self.send_args("1 2")
