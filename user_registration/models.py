@@ -128,8 +128,11 @@ class ContactProfile(models.Model):
     # The rapidsms Contact that this ContactProfile maps to
     contact = models.OneToOneField(Contact, primary_key=True, verbose_name=_("contact"))
 
-    #TODO: Make required
-    # The facility where this user works
+    # The facility where this user works.
+    # Facility is not a required field becauase it is not possible to pass 
+    # in facility information to set in create_contact_profile_if_none_exists 
+    # when creating a new ContactProfile in respones to the creation of a 
+    # rapidSMS Contact. However, every user should be associated with a facility.
     facility = models.ForeignKey(Facility, blank=True, null=True, verbose_name=_("facility"))
 
     # The name of this role
