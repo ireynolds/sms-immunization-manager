@@ -3,6 +3,10 @@
 \usepackage{natbib}
 \usepackage{url}
 
+\makeatletter
+\def\@copyrightspace{\relax}
+\makeatother
+
 \begin{document}
 
 \title{SMS Immunization Manager (SIM)}
@@ -41,11 +45,57 @@ Unfortunately, the current data collection schedule means that each facility is 
 
 \subsection{SMS-Based Reporting}
 
-We present SMS Immunization Manager (SIM), an easy-to-install and easy-to-customize framework that allows CHWs to report information about the vaccine cold chain (such as fridge temperature and condition) instantly by SMS. 
+We present SMS Immunization Manager (SIM), a framework that allows CHWs to report information about the vaccine cold chain (such as fridge temperature and condition) quickly by SMS. SIM's main features include 
 
-SIM's main features include robust SMS-based operations that correctly handle even poorly-formatted messages and a moderation web application for administrators to review the system's operation. 
+\begin{itemize}
+\item Robust SMS-based operations that correctly handle even poorly-formatted messages through careful design of message formats. The included operatations were inspired by a current need in Laos.
+\item A moderation web application for administrators to review the system's operation.
+\item A simple and well-documented design that enables one or two developers to deploy a complete system in only several weeks.
+\end{itemize}
 
-The system will be deployed in Laos in the coming months and possibly to other countries after.
+The system will be deployed in Laos in mid-2014, but it is useful for any cold chain reporting system and could easily be adapted for new deployments. A diagram describing how SIM interacts with surrounding systems is shown below.
+
+\begin{figure*}
+\centering
+\epsfig{file=sim-broad-diagram.pdf}
+\caption{SIM's relationship with other systems.}
+\end{figure*}
+
+SIM communicates exclusively via HTTP, which means it can be deployed on any web host. In order for CHWs to communicate with SIM via SMS, a ``gateway device'' must be deployed on the CHW's cellular network or a connected cellular network. The gateway device may be as simple as a midrange Android phone (the system was originally implemented using EnvayaSMS running on such a phone), or it may be as complex as a high-load custom-built gateway provided by the cellular provider. 
+
+Although SIM was built to handle poorly-formatted SMS messages typed by hand by people with little access to training, there is no requirement that messages are hand-typed. The messages could just as easily be created by a simple application running on an embedded controller --- for example, the FoneAstra system could automate data reporting by sending properly-formed SMS messages to SIM \cite{foneastra}.
+
+The choice of where and when to use SMS and HTTP protocols was made carefully. The majority of users, especially CHWs reporting cold chain data, are without reliable access to Internet and power. This required limiting the use of HTTP. However, cell coverage in developing countries is good; recent estimates say that roughly five billion people in developing countries have access to a cell phone \cite{worldbank:mobileaccess}. SIM only requires several minutes of coverage per report and expects reports one or two times per month.
+
+However, SIM requires the gateway to have Internet access so that it may relay messages between SMS users and the SIM server. It also requires that moderators have Internet access. This allows SIM to provide a powerful, usable, bug-free moderation interface to review the system's operation.
+
+In order to prevent malicious or accidental misuse, SIM only allows access from registered users (SMS users and moderators), each of whom is assigned one of several ``roles'' (with associated permissions). Among other things, privileged SMS users may register new users via SMS (for example, the facility manager would be able to register the other workers), and privileged moderators can access special tools for administering the Django and RapidSMS architectures on which SIM is based. This user information, which also includes each user's preferred language, is kept in a database managed by SIM.
+
+However, SIM does not attempt to store any more cold chain information than necessary (typically only the facility hierarchy). Instead, SIM is intended to pass all of this data to a complete remote cold chain information/equipment management system such as DHIS2. That remote database will become the permanent repository for cold chain data.
+
+CHWs interact with SIM by sending structured text messages to SIM. Common use cases in Laos include
+
+\begin{itemize}
+\item A CHW periodically (monthly or more) sends one SMS message including both (a) their facility's current stock of each vaccine and (b) the number of times each of their fridges dipped below or rose above ideal temperature during the reporting period. Fridge data in Laos is recorded automatically by a Fridge-tag \textsuperscript{\textregistered} \cite{fridgetag}. If the CHW's message is too poorly-formatted to interpret, within several minutes a useful error message is returned (otherwise, a ``thank you'' message is returned).
+\item A facility unexpectedly runs out of stock of a particular vaccine, so a worker at the facility sends, as soon as possible, an SMS message identifying the vaccine. The stock outage is brought to the attention of the moderator the next time they log in so the outage can be handled rapidly. The same process can be used if any equipment fails.
+\item It is a fact of life that workers come and go, change facilities, and change SIM cards. Privileged SMS users can register a new data reporter with a name, phone number, and associated facility by sending a single SMS message. Any worker can also change their preferred language at any time and see all SMS responses in that language.
+\end{itemize}
+
+Moderators interact with SIM by using a web application. Common use cases include
+
+\begin{itemize}
+\item Any incoming SMS messages that failed (for syntax or permissions reasons) are brought to the attention of a moderator. The notification persists in the moderation application until the moderator explicitly views and dismisses the source of the error. Errors are viewing in the context of any of that sender's other messages, which allows moderators to track individuals and make informed decisions about the effectiveness of the system.
+\item When viewing an SMS message with an error, a moderator can edit the message and resend it (internally, without incurring SMS charges) with any explicit permissions level. This gives moderators the power to quickly correct messages that the system cannot understand but a human can.
+\item Moderators can view per-message logs of every side effect the message produced and each operation the system applied to the message (including parsing, verifying permissions, filtering for spam, etc.). This allows moderators to quickly identify bugs in the system and provide accurate and useful bug reports to developers.
+\end{itemize}
+
+The project is driven by goals to 
+
+\begin{itemize}
+\item Define unambiguous syntaxes so that poorly-formatted messages may be parsed successfully and no delimiters are necessary.
+\item Provide an architecture in which new SMS operations may be easily implemented and integrated into the moderation interface and the side effects of existing or new SMS operations are easy to add, remove, and modify.
+\item Provide extensive documentation so that a complete, reliable solution can be implemented and deployed by a team of one or two developers in just several weeks.
+\end{itemize}
 
 \section{Related Work}
 What have others done - both closely and loosely related?  It is important to make sure you do a good job of this and draw upon a wide range of information sources including conferences and journals in the area, magazines and popular press, newsletters, and, of course, web searches.  Feel free to build on what was done in Winter quarter but go further.  In particular make sure you do a survey of related technologies, not just research projects.  This is where the bulk of the citations will be and should be about 1 page clearly explaining why these other works were not enough to solve the problem.
