@@ -128,9 +128,8 @@ class ContactProfile(models.Model):
     # The rapidsms Contact that this ContactProfile maps to
     contact = models.OneToOneField(Contact, primary_key=True, verbose_name=_("contact"))
 
-    #TODO: Make required
     # The facility where this user works
-    facility = models.ForeignKey(Facility, blank=True, null=True, verbose_name=_("facility"))
+    facility = models.ForeignKey(Facility, verbose_name=_("facility"))
 
     # The name of this role
     # TODO: For consistency this should just be 'role'
