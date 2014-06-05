@@ -95,7 +95,7 @@ Moderators interact with SIM by using a web application. Common use cases includ
 The project is driven by goals to 
 
 \begin{itemize}
-\item Define unambiguous syntaxes so that poorly-formatted messages may be parsed successfully and no delimiters are necessary.
+\item Define unambiguous syntaxes so that poorly-formatted messages may be parsed successfully (even in the absence of delimiters).
 \item Provide an architecture in which new SMS operations may be easily implemented and integrated into the moderation interface and the side effects of existing or new SMS operations are easy to add, remove, and modify.
 \item Provide extensive documentation so that a complete, reliable solution can be implemented and deployed by a team of one or two developers in just several weeks.
 \end{itemize}
@@ -112,17 +112,16 @@ However, the DHIS2 system has several limitation that SIM does not. First, it re
 
 In order to address syntax problems, DHIS2 publishes a Java Micro Edition (J2ME) application that can be installed on cell phones from many vendors (although DHIS2 recommends that the country buy and distribute a common device to provide better support and reliability). The application presents a user interface with input fields for the user to fill in, and then the phone produces a well-formatted SMS message to send to the server \cite{dhis2:smsoverview, dhis2:j2me}. This is an effective solution, but requires the country to invest in both creating, deploying, supporting, and updating an application installed on dozens or hundreds of phones as well as purchasing phones to distribute.
 
-Another solution more similar to SIM is RapidSMS. In fact, SIM is based on RapidSMS, but with several key architectural changes (which are discussed later, but whose motivations are discussed here). RapidSMS allows syntax and behavior to be described in code, just like SIM does. It's also written in the powerful Python language and based on a widely-used rapid web development framework called Django. This makes RapidSMS easy to customize and deploy. However, SIM and RapidSMS both require programmers in order to implement new behaviors and syntaxes while other solutions can generate these things based configuration by non-technical users through a web interface. The RapidSMS XForms library attempts to mitigate this by allowing syntaxes, at least, to be defined in a similar way to DHIS2, if not behaviors (though with similar limitations).
+Another solution more similar to SIM is RapidSMS. In fact, SIM is based on RapidSMS, but with several key changes (which are discussed later, but whose motivations are discussed here). RapidSMS allows syntax and behavior to be described in code, just like SIM does. It's also written in the powerful Python language and based on a widely-used rapid web development framework called Django. This makes RapidSMS easy to customize and deploy. However, RapidSMS (and SIM by extension) requires programmers in order to implement new behaviors and syntaxes while other solutions can generate these things based configuration by non-technical users through a web interface. The RapidSMS XForms library attempts to mitigate this by allowing syntaxes, at least, to be defined in a similar way to DHIS2, if not behaviors (though with similar limitations) \cite{rapidsms:overview, rapidsms:xforms}.
 
-The differences between SIM and RapidSMS were largely driven by SIM's allowing multiple independent operations per message (whereas RapidSMS allows only one). TODO why does this requirement prevent us from just using RapidSMS?
+SIM is a framework based on RapidSMS (and this release represents an implementation of a reporting system for Laos using the SIM framework). While offering the same benefits as RapidSMS does (ease of deployment and ease of customizing syntaxes and behaviors), SIM also provides two further benefits: 
 
-DHIS2
-  * Raw SMS
-  * J2ME
+\begin{itemize}
+\item Looser coupling between operation syntax and behavior. RapidSMS suggests implementing policy decisions about behaviors (including updating remote databases, checking permissions, and more) in the same place as the syntax is defined. This means that changing a poly about behavior requires modifying code in many locations across many files. SIM, however, uses the observer design pattern to centralize and separate policy decisions so they can be modified or replaced easily in a single location in the codebase without risking interfering with other behaviors.
+\item A powerful and easily-integrated moderation interface. Any module that interacts with a message registers an ``effect'' in the database. The moderation interface merely displays these effects to the moderators. This both encourages developers to keep consistent, rich, and useful logs (in the form of these ``effects''), the benefits of which are well-known, and produces a minimal coupling between implementing new syntaxes/behaviors and integrating them into the moderation interface.
+\end{itemize}
 
-RapidSMS
-  * Raw
-  * XForms
+RapidSMS was the only framework that offered the flexibility that our requirements dictated, and even then it was not flexible or featureful enough to satisfy our requirements (especially because RapidSMS cannot allow multiple independent operations per SMS message, which we require). For that reason, we chose to implement a new framework. SIM has many advantages---it's easy to deploy, customize, and moderate as well as free to use and well-documented---that no single other framework provides.
 
 \section{Approach}
 How are you going about realizing your idea?  What are the main pieces?  Why did you choose these pieces?  How do they interact?  How generally reusable will these pieces be?  This should be a fairly large section with several figures and should probably run about 1.5 to 2 pages.
