@@ -290,10 +290,7 @@ PHONE_BACKEND = "envaya"
 MODERATOR_BACKEND = "moderation"
 
 RAPIDSMS_HANDLERS = (
-    'rapidsms.contrib.echo.handlers.echo.EchoHandler',
-    'rapidsms.contrib.echo.handlers.ping.PingHandler',
-    # 'rapidsms.contrib.handlers.KeywordHandler',
-    'handlers.HelpHandler',
+    # Empty
 )
 
 # ------------------------------------------------------------------------------
