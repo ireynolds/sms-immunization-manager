@@ -72,7 +72,7 @@ class StockLevel(StockBase):
 
         if levels == None:
             # did not find any stock code and level combos
-            effect = _error_none_found(opcode)
+            effect = self._error_none_found(opcode)
             return [effect], {}
 
         # create a dictionary: stock code -> stock level

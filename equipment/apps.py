@@ -124,9 +124,19 @@ class FridgeTemperature(OperationBase):
 
     def _ok(self, opcode, args):
         '''Return a MessageEffect that indicates success.'''
+
+        # Translate {fridge_id: [hi, lo], ...} to human-readable, non-repr form.
+        events = args['fridge_events']
+        if None in events:
+            events = '%s high and %s low events' % events[None]
+        else:
+            to_s = lambda x: "%s had %s high and %s low events" % (x[0], x[1][0], x[1][1])
+            events = map(to_s, events.items())
+            events = ', '.join(events)
+
         return info(
             _("Parsed %(op_code)s Arguments"), { 'op_code': opcode },
-            _("Parsed: fridge_events is %(fridge_events)s."), args
+            _("Parsed: %(fridge_events)s."), { 'fridge_events': events }
         )
 
     def _parse_events(self, opcode, args):

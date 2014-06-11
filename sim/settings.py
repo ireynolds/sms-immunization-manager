@@ -225,6 +225,7 @@ LOGGING = {
     }
 }
 
+# Non-SIM apps that must or may run before SIM.
 APPS_BEFORE_SIM = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -245,12 +246,15 @@ APPS_BEFORE_SIM = (
     "envaya"
 )
 
+# These applications must run before the SMS APIs in SIM_APPS
+# because they fulfill those apps' prerequisites.
 SIM_PRE_APPS = (
-    'permissions',
-    'operation_parser',
-    'contextual',
+    'permissions',          # Guarantees contact field is set.
+    'operation_parser',     # Guarantees message is parsed into opcode, arg pairs.
+    'contextual',           # Guarantees message's facility field is set.
 )
 
+# Implement SMS APIs that operate independently of each other.
 SIM_APPS = (
     'stock',
     'equipment',
@@ -262,6 +266,7 @@ SIM_APPS = (
     'info'
 )
 
+# Non-SIM aps that must or may run after SIM.
 APPS_AFTER_SIM = (
     'moderation',
     'reversion',
@@ -282,7 +287,8 @@ INSTALLED_BACKENDS = {
     },
 }
 
-# The name of the backend used to represent phone numbers
+# The name of the backend used to represent phone numbers. Set to
+# 'envaya' to use a real phone or 'message_tester' to use MessageTester.
 PHONE_BACKEND = "envaya"
 
 # The name of the backend used to represent messages sent using the moderator
@@ -290,10 +296,7 @@ PHONE_BACKEND = "envaya"
 MODERATOR_BACKEND = "moderation"
 
 RAPIDSMS_HANDLERS = (
-    'rapidsms.contrib.echo.handlers.echo.EchoHandler',
-    'rapidsms.contrib.echo.handlers.ping.PingHandler',
-    # 'rapidsms.contrib.handlers.KeywordHandler',
-    'handlers.HelpHandler',
+    # Empty
 )
 
 # ------------------------------------------------------------------------------
@@ -301,12 +304,10 @@ RAPIDSMS_HANDLERS = (
 # ------------------------------------------------------------------------------
 
 # Defines acceptable choices for language preference opcode
-# TODO: Change language tags to something useful
 PREFERRED_LANGUAGE_CODE = "[1-3]"
 PREFERRED_LANGUAGES = { 1 : "en", 2 : "Karoake", 3 : "la" }
 
-# Define Roles and associated string of permitted opcodes
-# TODO: Require a json list of strings instead for opcodes?
+# Available roles
 DATA_REPORTER_ROLE = "DataReporter"
 ADMIN_ROLE = "Admin"
 ROLE_CHOICES = (
@@ -314,17 +315,20 @@ ROLE_CHOICES = (
     (ADMIN_ROLE, _("Administrator"))
 )
 
+# Allowed opcodes for each role.
 ROLE_OP_CODES = (
     (DATA_REPORTER_ROLE, ["FT", "SL", "SE", "RE", "NF", "HE", "FC", "PL"]),
     (ADMIN_ROLE, ["FT", "SL", "SE", "RE", "NF", "RG", "PL", "HE", "FC"])
 )
 
+# Available opcode groups.
 PERIODIC = "PERIODIC"
 SPONTANEOUS = "SPONTANEOUS"
 ADMINISTRATION = "ADMINISTRATION"
 INFORMATION = "INFORMATION"
 CONTEXTUAL = "CONTEXTUAL"
 
+# Group for each opcode.
 SIM_OPCODE_GROUPS = {
     "FT": PERIODIC,
     "SL": PERIODIC,
@@ -337,6 +341,8 @@ SIM_OPCODE_GROUPS = {
     "FC": CONTEXTUAL,
 }
 
+# Error message is returned if any of these opcodes 
+# appears multiple times.
 SIM_OPCODE_MAY_NOT_DUPLICATE = set([
     "FT",
     "SL",
@@ -346,25 +352,29 @@ SIM_OPCODE_MAY_NOT_DUPLICATE = set([
     "RG",
 ])
 
+# Any text in a message after an opcode in this
+# is treated as the argument to that opcode (even
+# if this text contains an opcode). These opcodes
+# must all be in SIM_OPCODE_MAY_NOT_DUPLICATE.
 SIM_OPCODES_MUST_APPEAR_LAST = set([
     "RG",
     "HE",
 ])
 
+# Any opcode in this set is passed its exact arguments without
+# modification, such as for case-insensitivity or o/0 disambiguation.
 SIM_OPCODES_PASS_ORIGINAL_ARGS = set([
     "RG",
 ])
 
-# A list of AppBase subclasses that should be used by RapidSMS' router, in
-# addition to those autodiscovered from INSTALLED_APPS.
-# TODO: Is it possible to make these references be strings, for consistency with
-# the rest of settings.py?
 import stock.apps as _stock_apps
 import equipment.apps as _equipment_apps
 import info.apps as _info_apps
 import contextual.app as _contextual_apps
 import user_registration.apps as _user_registration_apps
 
+# A list of AppBase subclasses that should be used by RapidSMS' router, in
+# addition to those autodiscovered from INSTALLED_APPS.
 RAPIDSMS_APP_BASES = (
     _stock_apps.StockLevel,
     _stock_apps.StockOut,

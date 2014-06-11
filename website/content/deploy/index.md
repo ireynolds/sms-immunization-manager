@@ -40,7 +40,7 @@ In order to communicate with users via SMS, SIM requires an SMS-HTTP gateway dev
 
 ### Adding Users
 
-The first user was created when you [installed SIM](sim/#synchronize_a_deployment_database). This user is responsible for creating all users with moderator/administrator permissions (TODO how?). The majority of SMS users (mostly community health workers) will be added using the [SMS operation for registering new users](/use/smsapis/#administration).
+The first user was created when you [installed SIM](sim/#synchronize_a_deployment_database). This user is responsible for creating all moderators using the Django Admin Site. The moderators are responsible for creating new Administrator SMS users for every facility by visiting that facility's page and clicking the 'Add' button. Administrator SMS users can use the [`RG` operation](/use/smsapis/#administration) to register any new Data Reporter SMS users. The Data Reporter SMS users may not register any new users, however.
 
 ### Adding Facilities and Equipment
 

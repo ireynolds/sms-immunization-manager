@@ -140,15 +140,15 @@ We use [GitHub's built-in bug tracker](https://github.com/ireynolds/sms-immuniza
 
 ## Releasing SIM
 
-TODO
+SIM is released using [GitHub releases](https://github.com/ireynolds/sms-immunization-manager/releases) and [semantic versioning](http://semver.org/).
 
 ## Future Work
 
-TODO
+Read about the [future work](future-work) or review the list of current [issues](https://github.com/ireynolds/sms-immunization-manager/issues?state=open) on GitHub.
 
 ### Merging Your Changes Into Trunk
 
-TODO How, if at all, do these modifications make it back into our repos?
+If you would like to merge your changes into the main development version, merely submit a pull request on SIM's GitHub repository. A developer involved in the project will work with you to determine if the feature can and should be added to SIM.
 
 ## The Google Drive Repository
 

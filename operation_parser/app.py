@@ -157,7 +157,7 @@ class OperationParser(AppBase):
         effect = error(
             "Error Verifying Operation Codes", 
                 {},
-            "Message must also submit or request data.", 
+            "Message must submit or request information.", 
                 {}
         )
         return complete_effect(effect, message.logger_msg, SYNTAX, operation_index=None)

@@ -13,6 +13,5 @@ The gateway device must be connected to the deployment country's cell network(s)
 
 ## Configuring EnvayaSMS
 
-[EnvayaSMS](http://sms.envaya.org/) is an [Android](http://www.android.com/) application that acts as a gateway. To configure EnvayaSMS:
-
-TODO: Instructions here must be written by the owner of an Android device who can download and install EnvayaSMS. 
+[EnvayaSMS](http://sms.envaya.org/) is an [Android](http://www.android.com/) application that acts as a gateway. To configure EnvayaSMS, 
+follow [their instructions](http://sms.envaya.org/).
