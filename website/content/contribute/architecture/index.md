@@ -119,11 +119,26 @@ The operation codes in a message sometimes interact with each other to form diff
 
 ## SPAM Filter
 
-TODO
+The spam filter, `permissions.apps.SpamFilter`, acts in RapidSMS's Filter phase. It is registered in `settings.SIM_PRE_APPS` because it must come before any OperationBase classes. Within `settings.SIM_PRE_APPS`, it is also registered first, before other classes such as `operation_parser.apps.OperationParser`, so that these later classes may assume that the `message.connections[0].contact` field is not `None` (the spam filter rejects all messages for which this field is `None`).
 
 ## Global Message Parser
 
-TODO (FILL-IN ANY IMPORTANT DETAILS) The global message parser acts during the RapidSMS Parse phase and creates Message Effects in the Syntax stage. It is responsible for finding the registered operation codes in an incoming message. The parser will annotate the message with the discovered operation codes and the arguments that followed each code. These annotations will be used by the individual apps that support each operation code. The annotations are created in the order they are found in the message.
+The global message parser, `operation_parser.apps.OperationParser` acts during the RapidSMS Parse phase and creates MessageEffects in the Syntax stage. It is responsible for finding the registered operation codes in an incoming message. The parser annotates the message with the discovered operation codes their arguments. These annotations will be used by the individual apps that support each operation code. The annotations are created in the order they are found in the message.
+
+The global parser discovers every non-overlapping, contiguous opcode in an incoming message. Here are some examples:
+
+* Given `NF C`, it finds `NF`.
+* Given `N F C`, it finds nothing.
+* Given `NFC`, it finds `NF` (rather than `NF` and `FC` or just `FC`).
+* Given `NF C SL P 100`, it finds `NF` and `SL`.
+
+It is possible that alphabetic arguments (such as names) contain operation code sequences. When it's impossible to avoid this problem, such as with `RG`, add the operation code that contains the offending argument to `settings.SIM_OPCODES_MUST_APPEAR_LAST`. The global parser ignores any opcode it detects in a message after an opcode in this collection. For example:
+
+* Given `RG 1111-2222 Heather`, it finds `RG` (rather than `RG` and `HE`).
+
+It is also possible that an undelimited sequence of arguments produces an operation code sequence (such as the message `NFC`). This is avoided with careful attention when defining messages' formats. This is possible at the boundaries of any pair of alphabetic atoms (including between alphabetic arguments and opcodes).
+
+There is no module that detects messages from registered users that don't make use of defined operations (for example, if a user tries to send SMS messages to the system as if they're talking to a human being). However, if the global parser finds a message with no operation codes, it responds with an error message along the lines of "Message must submit or request information".
 
 ## Notifier
 
