@@ -22,6 +22,5 @@
 *.out
 *.synctex.gz
 
-report/report.zip
-report/report.pdf
-example/report.pdf
+report.zip
+report.pdf
