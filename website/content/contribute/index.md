@@ -144,7 +144,7 @@ SIM is released using [GitHub releases](https://github.com/ireynolds/sms-immuniz
 
 ## Future Work
 
-TODO
+Read about the [future work](future-work) or review the list of current [issues](https://github.com/ireynolds/sms-immunization-manager/issues?state=open) on GitHub.
 
 ### Merging Your Changes Into Trunk
 
