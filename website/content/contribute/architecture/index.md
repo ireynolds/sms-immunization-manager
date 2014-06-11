@@ -85,16 +85,11 @@ As an illustration of the loose coupling between Syntax, Semantic, and Commit co
 
 ## SIM's Modifications to `settings.py`
 
-* `SIM_APPS` at any index.
-* `ROLE_OP_CODES`, in the list of allowed opcodes for each role that may use that operation.
-* `SIM_OPCODE_GROUPS`, corresponding to whichever group best describes this operation.
-* `SIM_OPCODE_MAY_NOT_DUPLICATE`, if the operation may only appear once in any single message.
-* `RAPIDSMS_APP_BASES`, so that the app is registered with the RapidSMS router.
-* `SIM_OPERATION_CODES`, so that the class may handle the opcode(s) you've chosen.
+SIM adds several fields to Django's `settings.py` file. These fields are documented in `settings.py`, which can be viewed in [the repository](https://github.com/ireynolds/sms-immunization-manager).
 
 ## The MessageEffect Class
 
-Message Effects log the effects of each check and commit signal receiver for a message. They are used to report their outcome to the signal sender, as well as log the outcome for moderation purposes. The following types are provided to categorize the effect. Of note, ERROR effects will block later processing of the message.
+MessageEffects log the effects of each operation performed on a message or on behalf of one. They are used to report their outcome to the signal sender, as well as log the outcome for moderation purposes. The following types are provided to categorize the effect. Of note, ERROR effects will block later processing of the message.
 
 | Message Effect | Description |
 |---|---|
@@ -117,7 +112,7 @@ The operation codes in a message sometimes interact with each other to form diff
 | INFORMATION | Information codes represent informative support codes such as a help system. |
 | CONTEXTUAL | Contextual codes are intended to change some meaning of a message that might be derived from the sender. |
 
-## SPAM Filter
+## Spam Filter
 
 The spam filter, `permissions.apps.SpamFilter`, acts in RapidSMS's Filter phase. It is registered in `settings.SIM_PRE_APPS` because it must come before any OperationBase classes. Within `settings.SIM_PRE_APPS`, it is also registered first, before other classes such as `operation_parser.apps.OperationParser`, so that these later classes may assume that the `message.connections[0].contact` field is not `None` (the spam filter rejects all messages for which this field is `None`).
 
@@ -139,10 +134,6 @@ It is possible that alphabetic arguments (such as names) contain operation code 
 It is also possible that an undelimited sequence of arguments produces an operation code sequence (such as the message `NFC`). This is avoided with careful attention when defining messages' formats. This is possible at the boundaries of any pair of alphabetic atoms (including between alphabetic arguments and opcodes).
 
 There is no module that detects messages from registered users that don't make use of defined operations (for example, if a user tries to send SMS messages to the system as if they're talking to a human being). However, if the global parser finds a message with no operation codes, it responds with an error message along the lines of "Message must submit or request information".
-
-## Notifier
-
-TODO
 
 ## Responder
 
