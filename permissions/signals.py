@@ -20,7 +20,7 @@ def opcode_permissions_check(message, opcode, **kwargs):
     if opcode in permitted_opcodes:
         # Checks to see if the user is allowed to perform this operation for the facility specified in the message
         if 'facility' in message.fields and message.fields['facility'] != message.connections[0].contact.contactprofile.facility:
-            fmt_args['facility'] = message.fields['facility']
+            fmt_args['facility'] = message.fields['facility'].name
        
             effect = error(
                 _("Operation not permitted for this user for this facility"), {},
