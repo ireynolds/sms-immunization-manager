@@ -6,7 +6,7 @@ title: Future Work
 
 * toc
 {:toc}
-##Next Steps for Laos Deployment
+#Next Steps for Laos Deployment
 ##Internationalization    
 Translations of error messages and other Message Effects strings, messages sent to the user, and strings used in the web interface are also needed before SIM can be deployed to Laos. To this end, our group has contacted a translator who has offered to help us translate the necessary strings from English into Lao, and these translations are currently underway.
 
@@ -34,7 +34,7 @@ One interesting case to note is that if a user sends a batch of SMS messages in 
 
 Thus, in addition to the technical improvements described above, it would be useful to meet with and demo our project for health workers, administrators, and other representatives from various health organizations located in and outside of Laos to gain more feedback on the perceived usability of our system, as well as the look and feel of the moderation interface.
 
-##Potential directions for future work
+#Potential directions for future work
 ##Querying DHIS2
 Providing managers at the district and national levels with the ability to query the DHIS2 database for information regarding equipment status and stock distribution could help administrators to better assess the efficiency of the cold chain. An example use case is that such a querying system could allow managers to do analysis for a particular country and get information about how well each level of the cold chain is working. Receiving a high-level overview or comparison of the performance of various health facilities would help managers to pinpoint sections of the cold chain or specific facilities that are inefficient, and allow these managers to assess the frequency of failures and discover the reasons behind poor performance in such facilities. Thus, it would be useful for a district or national level manager to be able to send an SMS message asking about aspects of the cold chain such as equipment failures, equipment shortages, stock overflow or distribution levels, and receive a reply summarizing this information across multiple facilities for easy comparison and review.
 
