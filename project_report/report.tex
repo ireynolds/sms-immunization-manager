@@ -183,6 +183,12 @@ Finally, SIM imposes the invariant that Connections are immutable except for the
 
 \subsubsection{Message Processing}
 
+\begin{figure*}
+\centering
+\epsfig{file=appendices/adapter.pdf}
+\caption{RapidSMS/SIM Adapter Sequence Diagram}
+\end{figure*}
+
 RapidSMS and SIM make very different assumptions about the structure of incoming messages, and thus have very different message processing schemes. RapidSMS is based on the principle of each message containing a single operation, which is dispatched to and handled primarily by a single module. This module is responsible for most aspects of the message's processing, including parsing, semantic checks, side effects, and generating an SMS response. RapidSMS' phasing scheme reflects this: though some phases exist so that other modules can filter out spam (the filter phase) or add additional information such as a user's identity (the parse phase), only a single handle phase is intended to be executed for each message. More precisely, the first RapidSMS application that believes it can handle a message generally suppresses all other handlers by having its handle function return True to the router.
 
 SIM is designed to allow an arbitrary number of operations in a single message. Thus, delegating the handling of a message to a single module is not possible, as every module that implements an operation could potentially have reason to handle part of a message. SIM's stages are designed to give all apps an opportunity to act at each stage, and adds an additional mechanism (Django signals) for modules to register interest in the semantics or side effects of an operation without defining the syntax of that operation.
@@ -363,11 +369,5 @@ We would like to thank Profs. Richard Anderson and Ruth Anderson for organizing 
 
 \appendix
 Many additional materials are available in our public code repository, on GitHub as ``ireynolds/sms-immunization-manager''. A comprehensive documentation site, which can be built and previewed using the nanoc static site generator, is available in the repository in the website/ directory.
-
-\begin{figure*}
-\centering
-\epsfig{file=appendices/adapter.pdf}
-\caption{RapidSMS/SIM Adapter Sequence Diagram}
-\end{figure*}
 
 \end{document}
