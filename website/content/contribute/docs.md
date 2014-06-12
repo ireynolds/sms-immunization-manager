@@ -13,7 +13,7 @@ templates with a ruby tool called [nanoc](http://nanoc.ws/). To help contribute 
 need to install:
 * [ruby](https://www.ruby-lang.org)
 * [nanoc](http://nanoc.ws/)
-* [maruku](http://maruku.rubyforge.org/maruku.html)
+* [maruku](http://rubydoc.info/gems/maruku/0.7.2/frames)
 * [slim](http://slim-lang.com/)
 
 ## Documentation Process
